@@ -1,0 +1,38 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,400..600&family=Inter:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+:root {
+  --paper: #FFFFFF;
+  --milk-sage: #F7F5F1;      /* soft section background, not the default field */
+  --deep-wine: #4A1F2B;      /* primary brand accent */
+  --wine-soft: #6B2E3D;
+  --warm-gold: #B8863B;
+  --dusty-rose: #C97B78;
+  --moss: #5C7A5A;
+  --ink: #201A1C;
+  --line: #E7E2DA;           /* hairline borders */
+  --muted: #6F6660;          /* secondary text on white */
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+.font-display {
+  font-family: 'Fraunces', serif;
+  font-optical-sizing: auto;
+}
+
+.text-star { color: var(--warm-gold); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+
