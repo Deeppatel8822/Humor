@@ -22,8 +22,6 @@ export async function POST(request: Request) {
     const body = (await request.json()) as {
       lines?: CodLine[];
       shipping?: ShippingDetails;
-      subtotalInr?: number;
-      shippingInr?: number;
     };
 
     const lines = body.lines ?? [];
@@ -39,25 +37,31 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Please provide valid shipping details." }, { status: 400 });
     }
 
-    const productIds = lines.map((line) => line.productId);
+    const catalogIds = lines.map((line) => Number(line.productId));
+    if (catalogIds.some((id) => !Number.isInteger(id) || id < 1)) {
+      return NextResponse.json({ error: "Invalid product." }, { status: 400 });
+    }
+
+    const uniqueCatalogIds = [...new Set(catalogIds)];
     const { data: products, error: productsError } = await supabaseAdmin()
       .from("products")
-      .select("id, name, price_inr, stock_quantity, status")
-      .in("id", productIds);
+      .select("id, catalog_id, name, price_inr, stock_quantity, status")
+      .in("catalog_id", uniqueCatalogIds);
 
     if (productsError) throw productsError;
-    if (!products || products.length !== productIds.length) {
+    if (!products || products.length !== uniqueCatalogIds.length) {
       return NextResponse.json({ error: "One or more products are unavailable." }, { status: 400 });
     }
 
-    const productMap = new Map(products.map((product) => [product.id, product]));
+    const productMap = new Map(products.map((product) => [String(product.catalog_id), product]));
     let subtotalInr = 0;
 
     for (const line of lines) {
       if (!Number.isInteger(line.quantity) || line.quantity < 1) {
         return NextResponse.json({ error: "Invalid product quantity." }, { status: 400 });
       }
-      const product = productMap.get(line.productId);
+
+      const product = productMap.get(String(Number(line.productId)));
       if (!product || product.status !== "live") {
         return NextResponse.json({ error: "One or more products are unavailable." }, { status: 400 });
       }
@@ -123,7 +127,7 @@ export async function POST(request: Request) {
     if (orderError || !order) throw orderError ?? new Error("Could not create order.");
 
     const orderItems = lines.map((line) => {
-      const product = productMap.get(line.productId)!;
+      const product = productMap.get(String(Number(line.productId)))!;
       return {
         order_id: order.id,
         product_id: product.id,
