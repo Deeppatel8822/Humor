@@ -4,20 +4,77 @@ import CartBadge from "@/components/CartBadge";
 const skinCare = ["Fullmoon", "Blemish Block", "Velvet Touch", "Sunscreen"];
 const hairCare = ["Shampoo", "Conditioner", "Hair Mask"];
 
+const concerns = [
+  {
+    label: "Acne / Blemishes",
+    href: "/shop?concern=Acne#products",
+  },
+  {
+    label: "Dry Skin / Pigmentation",
+    href: "/shop?concern=Pigmentation#products",
+  },
+  {
+    label: "Whitening / Brightening",
+    href: "/shop?concern=Dry%20Skin#products",
+  },
+  {
+    label: "Hair Care",
+    href: "/shop?concern=Hair%20Care#products",
+  },
+  {
+    label: "Sun Protection",
+    href: "/shop?concern=Sun%20Protection#products",
+  },
+  {
+    label: "Body Care",
+    href: "/collections/body-care#products",
+  },
+];
+
+const routines = [
+  {
+    label: "Acne & Blemishes",
+    href: "/build-your-routine?routine=acne#routine",
+  },
+  {
+    label: "Dry & Dull Skin",
+    href: "/build-your-routine?routine=dry#routine",
+  },
+  {
+    label: "Pigmentation / Brightening",
+    href: "/build-your-routine?routine=brightening#routine",
+  },
+  {
+    label: "Everyday Skin Care",
+    href: "/build-your-routine?routine=everyday#routine",
+  },
+  {
+    label: "Hair Care",
+    href: "/build-your-routine?routine=hair#routine",
+  },
+  {
+    label: "Body Care",
+    href: "/build-your-routine?routine=body#routine",
+  },
+];
+
+const dropdownItemClass =
+  "block rounded-md px-3 py-2.5 text-sm text-[var(--ink)] transition-colors hover:bg-[var(--milk-sage)] hover:text-[var(--deep-wine)]";
+
 export default function SiteHeader() {
   return (
     <div className="sticky top-0 z-50">
-
-      {/* TOP SHIPPING BAR */}
+      {/* Top Bar */}
       <div className="bg-[var(--deep-wine)] text-white text-center text-xs py-2 px-4">
         Free shipping on all orders &nbsp;&middot;&nbsp; Dermatologist tested, made in India
       </div>
 
+      {/* Main Header */}
       <header className="bg-white/95 backdrop-blur border-b border-[var(--line)]">
         <div className="max-w-7xl mx-auto px-5 md:px-8">
           <div className="flex items-center justify-between h-16 md:h-[72px]">
 
-            {/* LOGO */}
+            {/* Logo */}
             <Link
               href="/"
               className="font-display text-xl md:text-2xl tracking-tight text-[var(--deep-wine)]"
@@ -28,101 +85,109 @@ export default function SiteHeader() {
               </span>
             </Link>
 
-            {/* DESKTOP NAVIGATION */}
+            {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center gap-7 text-[13px] font-medium text-[var(--ink)]">
 
-              {/* SHOP DROPDOWN */}
+              {/* SHOP */}
+              <Link
+                href="/shop"
+                className="hover:text-[var(--deep-wine)] transition-colors"
+              >
+                Shop
+              </Link>
+
+              {/* SHOP BY CONCERN */}
               <div className="group relative py-6 -my-6">
-                <button className="hover:text-[var(--deep-wine)]">
-                  Shop
+                <button
+                  type="button"
+                  className="hover:text-[var(--deep-wine)] transition-colors"
+                >
+                  Shop by Concern
                 </button>
 
-                <div className="absolute left-0 top-full hidden group-hover:flex bg-white shadow-lg border border-[var(--line)] rounded-lg py-5 px-6 gap-10">
+                <div className="absolute left-1/2 -translate-x-1/2 top-full hidden group-hover:block">
+                  <div className="mt-1 w-64 bg-white shadow-xl border border-[var(--line)] rounded-lg p-3">
 
-                  {/* SKIN CARE */}
-                  <div>
-                    <div className="text-[11px] uppercase tracking-wide text-[var(--muted)] mb-2">
-                      Skin Care
+                    <div className="px-3 py-2 text-[10px] uppercase tracking-[0.16em] text-[var(--muted)]">
+                      Shop by Concern
                     </div>
 
-                    <div className="flex flex-col gap-1.5 min-w-36">
-                      {skinCare.map((s) => (
+                    <div className="flex flex-col gap-1">
+                      {concerns.map((item) => (
                         <Link
-                          key={s}
-                          href={`/collections/skin-care?range=${encodeURIComponent(s)}#products`}
-                          className="block rounded-md px-3 py-2 text-sm text-[var(--ink)] transition-colors hover:bg-[var(--milk-sage)] hover:text-[var(--deep-wine)]"
+                          key={item.label}
+                          href={item.href}
+                          className={dropdownItemClass}
                         >
-                          {s}
+                          {item.label}
                         </Link>
                       ))}
                     </div>
-                  </div>
 
-                  {/* HAIR CARE */}
-                  <div>
-                    <div className="text-[11px] uppercase tracking-wide text-[var(--muted)] mb-2">
-                      Hair Care
-                    </div>
-
-                    <div className="flex flex-col gap-1.5 min-w-36">
-                      {hairCare.map((h) => (
-                        <Link
-                          key={h}
-                          href={`/collections/hair-care?type=${encodeURIComponent(h)}#products`}
-                          className="block rounded-md px-3 py-2 text-sm text-[var(--ink)] transition-colors hover:bg-[var(--milk-sage)] hover:text-[var(--deep-wine)]"
-                        >
-                          {h}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* BODY CARE */}
-                  <div>
-                    <div className="text-[11px] uppercase tracking-wide text-[var(--muted)] mb-2">
-                      Body Care
-                    </div>
-
-                    <div className="flex flex-col gap-1.5 min-w-36">
+                    <div className="border-t border-[var(--line)] mt-2 pt-2">
                       <Link
-                        href="/collections/body-care#products"
-                        className="block rounded-md px-3 py-2 text-sm text-[var(--ink)] transition-colors hover:bg-[var(--milk-sage)] hover:text-[var(--deep-wine)]"
+                        href="/shop"
+                        className="block rounded-md px-3 py-2 text-sm font-medium text-[var(--deep-wine)] hover:bg-[var(--milk-sage)] transition-colors"
                       >
-                        Shower Gel
+                        View All Products →
                       </Link>
                     </div>
 
-                    <Link
-                      href="/shop"
-                      className="inline-block mt-4 text-sm font-medium text-[var(--deep-wine)] underline"
-                    >
-                      All Products
-                    </Link>
                   </div>
-
                 </div>
               </div>
 
-              {/* SHOP BY CONCERN */}
-              <Link
-                href="/shop"
-                className="hover:text-[var(--deep-wine)]"
-              >
-                Shop by Concern
-              </Link>
-
               {/* BUILD YOUR ROUTINE */}
-              <Link
-                href="/build-your-routine"
-                className="hover:text-[var(--deep-wine)]"
-              >
-                Build Your Routine
-              </Link>
+              <div className="group relative py-6 -my-6">
+                <button
+                  type="button"
+                  className="hover:text-[var(--deep-wine)] transition-colors"
+                >
+                  Build Your Routine
+                </button>
+
+                <div className="absolute left-1/2 -translate-x-1/2 top-full hidden group-hover:block">
+                  <div className="mt-1 w-72 bg-white shadow-xl border border-[var(--line)] rounded-lg p-3">
+
+                    <div className="px-3 py-2">
+                      <div className="text-[10px] uppercase tracking-[0.16em] text-[var(--muted)]">
+                        Find Your Routine
+                      </div>
+
+                      <div className="font-display text-base text-[var(--deep-wine)] mt-1">
+                        Choose your skin goal
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                      {routines.map((item) => (
+                        <Link
+                          key={item.label}
+                          href={item.href}
+                          className={dropdownItemClass}
+                        >
+                          {item.label}
+                        </Link>
+                      ))}
+                    </div>
+
+                    <div className="border-t border-[var(--line)] mt-2 pt-2">
+                      <Link
+                        href="/build-your-routine"
+                        className="block rounded-md px-3 py-2.5 text-sm font-medium text-[var(--deep-wine)] hover:bg-[var(--milk-sage)] transition-colors"
+                      >
+                        Build My Routine →
+                      </Link>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
 
               {/* BEST SELLERS */}
               <Link
                 href="/shop?sort=bestselling"
-                className="hover:text-[var(--deep-wine)]"
+                className="hover:text-[var(--deep-wine)] transition-colors"
               >
                 Best Sellers
               </Link>
@@ -130,7 +195,7 @@ export default function SiteHeader() {
               {/* BUNDLES */}
               <Link
                 href="/bundles"
-                className="hover:text-[var(--deep-wine)]"
+                className="hover:text-[var(--deep-wine)] transition-colors"
               >
                 Bundles
               </Link>
@@ -138,7 +203,7 @@ export default function SiteHeader() {
               {/* JOURNAL */}
               <Link
                 href="/journal"
-                className="hover:text-[var(--deep-wine)]"
+                className="hover:text-[var(--deep-wine)] transition-colors"
               >
                 Journal
               </Link>
@@ -146,20 +211,20 @@ export default function SiteHeader() {
               {/* ABOUT */}
               <Link
                 href="/about"
-                className="hover:text-[var(--deep-wine)]"
+                className="hover:text-[var(--deep-wine)] transition-colors"
               >
                 About
               </Link>
-
             </nav>
 
-            {/* SEARCH + CART */}
+            {/* Right Side */}
             <div className="flex items-center gap-1">
 
+              {/* Search */}
               <Link
                 href="/search"
                 aria-label="Search"
-                className="p-2 text-[var(--ink)] hover:text-[var(--deep-wine)]"
+                className="p-2 text-[var(--ink)] hover:text-[var(--deep-wine)] transition-colors"
               >
                 <svg
                   width="19"
@@ -174,8 +239,8 @@ export default function SiteHeader() {
                 </svg>
               </Link>
 
+              {/* Cart */}
               <CartBadge />
-
             </div>
 
           </div>
