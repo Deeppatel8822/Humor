@@ -5,34 +5,13 @@ import { Product } from "@/types/product";
 import ProductCard from "@/components/ProductCard";
 
 const options = [
-  {
-    key: "acne",
-    label: "Acne & Blemishes",
-  },
-  {
-    key: "dry",
-    label: "Dry & Dull Skin",
-  },
-  {
-    key: "brightening",
-    label: "Pigmentation / Brightening",
-  },
-  {
-    key: "everyday",
-    label: "Everyday Skin Care",
-  },
-  {
-    key: "hair",
-    label: "Hair Care",
-  },
-  {
-    key: "body",
-    label: "Body Care",
-  },
-  {
-    key: "sun",
-    label: "Sun Protection",
-  },
+  { key: "acne", label: "Acne & Blemishes" },
+  { key: "dry", label: "Dry & Dull Skin" },
+  { key: "brightening", label: "Pigmentation / Brightening" },
+  { key: "everyday", label: "Everyday Skin Care" },
+  { key: "hair", label: "Hair Care" },
+  { key: "sun", label: "Sun Protection" },
+  { key: "body", label: "Body Care" },
 ];
 
 type RoutineStep = {
@@ -62,7 +41,7 @@ const routineSteps: Record<string, RoutineStep[]> = {
       title: "Treat",
       productSlug: "blemish-block-face-serum",
       description:
-        "Follow with your targeted serum as the treatment step.",
+        "Follow with Blemish Block Face Serum as your targeted treatment step.",
       howToUse:
         "Apply a few drops to clean, dry skin and gently press or massage until absorbed.",
       why:
@@ -98,11 +77,11 @@ const routineSteps: Record<string, RoutineStep[]> = {
       title: "Treat",
       productSlug: "fullmoon-face-serum",
       description:
-        "Apply your serum after cleansing to continue your targeted skincare routine.",
+        "Apply Fullmoon Face Serum after cleansing.",
       howToUse:
         "Apply a few drops to clean, dry skin and gently press until absorbed.",
       why:
-        "Serum is the concentrated treatment step of your routine.",
+        "Serum adds a focused treatment step to your skincare routine.",
     },
     {
       step: "03",
@@ -127,7 +106,7 @@ const routineSteps: Record<string, RoutineStep[]> = {
       howToUse:
         "Wet your face, apply a small amount and gently massage for 30–60 seconds. Rinse well and pat dry.",
       why:
-        "Clean skin allows the next skincare step to be applied more effectively.",
+        "Clean skin provides a fresh base for the next skincare step.",
     },
     {
       step: "02",
@@ -275,120 +254,122 @@ export default function RoutineBuilder({
   const [selected, setSelected] = useState<string | null>(initialRoutine);
 
   const steps = selected ? routineSteps[selected] ?? [] : [];
+  const selectedOption = options.find((o) => o.key === selected);
 
   const getProduct = (slug?: string) => {
     if (!slug) return null;
     return products.find((p) => p.slug === slug) ?? null;
   };
 
-  const selectedOption = options.find((o) => o.key === selected);
-
   return (
     <div id="routine" className="scroll-mt-28">
 
-      {/* Goal Selection */}
-      <div className="mb-12">
+      {/* SELECT YOUR ROUTINE */}
+      <section className="mb-14">
+
         <div className="text-[11px] uppercase tracking-[0.16em] text-[var(--warm-gold)] font-semibold mb-3">
-          Step 01
+          Choose Your Goal
         </div>
 
         <h2 className="font-display text-2xl md:text-3xl text-[var(--deep-wine)] mb-3">
-          Choose your beauty goal
+          Find the routine that fits you
         </h2>
 
-        <p className="text-[var(--muted)] mb-6">
-          Tell us what you want to focus on and we’ll guide you through a
-          simple product routine.
+        <p className="text-[var(--muted)] max-w-2xl mb-7">
+          Choose what you want to focus on and we'll guide you through a
+          simple step-by-step routine.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-          {options.map((o) => (
+          {options.map((option) => (
             <button
-              key={o.key}
-              onClick={() => setSelected(o.key)}
+              key={option.key}
+              type="button"
+              onClick={() => setSelected(option.key)}
               className={`text-left px-5 py-4 rounded-xl border transition-all ${
-                selected === o.key
+                selected === option.key
                   ? "border-[var(--deep-wine)] bg-[var(--milk-sage)] text-[var(--deep-wine)] shadow-sm"
                   : "border-[var(--line)] text-[var(--ink)] hover:border-[var(--deep-wine)]/40 hover:bg-[var(--milk-sage)]/50"
               }`}
             >
-              <span className="text-sm font-medium">{o.label}</span>
+              <span className="text-sm font-medium">
+                {option.label}
+              </span>
             </button>
           ))}
         </div>
-      </div>
+      </section>
 
-      {/* Routine */}
+      {/* SELECTED ROUTINE */}
       {selectedOption && steps.length > 0 && (
-        <div>
+        <section>
 
-          {/* Routine Header */}
+          {/* Routine Heading */}
           <div className="border-t border-[var(--line)] pt-10 mb-10">
+
             <div className="text-[11px] uppercase tracking-[0.16em] text-[var(--warm-gold)] font-semibold mb-3">
-              Your Personalized Routine
+              Your Recommended Routine
             </div>
 
             <h2 className="font-display text-3xl md:text-4xl text-[var(--deep-wine)] mb-3">
               {selectedOption.label}
             </h2>
 
-            <p className="text-[var(--muted)] max-w-2xl">
-              Follow these steps in order. Each step has a specific role in
-              creating a simple, consistent beauty ritual.
+            <p className="text-[var(--muted)] max-w-2xl leading-6">
+              Follow these steps in order. Each product has a specific role
+              in your daily beauty ritual.
             </p>
           </div>
 
-          {/* Routine Flow */}
-          <div className="space-y-10">
+          {/* STEP-BY-STEP ROUTINE */}
+          <div className="space-y-8">
+
             {steps.map((step, index) => {
               const product = getProduct(step.productSlug);
 
               return (
-                <div key={step.step}>
+                <div
+                  key={step.step}
+                  className="relative grid md:grid-cols-[1fr_300px] gap-8 md:gap-12 items-start"
+                >
 
-                  <div className="grid md:grid-cols-[80px_1fr] gap-5">
+                  {/* LEFT SIDE */}
+                  <div className="relative">
 
-                    {/* Step Number */}
-                    <div className="hidden md:flex flex-col items-center">
-                      <div className="w-12 h-12 rounded-full bg-[var(--deep-wine)] text-white flex items-center justify-center text-sm font-medium">
+                    {/* Step number */}
+                    <div className="flex items-center gap-4 mb-5">
+
+                      <div className="w-11 h-11 rounded-full bg-[var(--deep-wine)] text-white flex items-center justify-center text-xs font-medium shrink-0">
                         {step.step}
                       </div>
 
-                      {index < steps.length - 1 && (
-                        <div className="w-px flex-1 bg-[var(--line)] mt-3" />
-                      )}
-                    </div>
-
-                    {/* Step Content */}
-                    <div className="border border-[var(--line)] rounded-2xl overflow-hidden">
-
-                      <div className="p-6 md:p-7 bg-[var(--milk-sage)]/40">
-
-                        <div className="flex items-center gap-3 mb-2">
-                          <span className="md:hidden text-xs font-semibold text-[var(--warm-gold)]">
-                            STEP {step.step}
-                          </span>
-
-                          <span className="text-[11px] uppercase tracking-[0.14em] text-[var(--warm-gold)] font-semibold">
-                            {step.title}
-                          </span>
+                      <div>
+                        <div className="text-[10px] uppercase tracking-[0.16em] text-[var(--warm-gold)] font-semibold">
+                          Step {step.step}
                         </div>
 
-                        {product && (
-                          <h3 className="font-display text-2xl text-[var(--deep-wine)] mb-2">
-                            {product.name}
-                          </h3>
-                        )}
-
-                        <p className="text-sm text-[var(--muted)] leading-6">
-                          {step.description}
-                        </p>
+                        <h3 className="font-display text-2xl text-[var(--deep-wine)]">
+                          {step.title}
+                        </h3>
                       </div>
+                    </div>
 
-                      <div className="p-6 md:p-7 grid md:grid-cols-2 gap-6">
+                    {/* Connector */}
+                    {index < steps.length - 1 && (
+                      <div className="hidden md:block absolute left-[21px] top-[56px] h-[calc(100%+32px)] w-px bg-[var(--line)]" />
+                    )}
 
-                        <div>
-                          <div className="text-xs uppercase tracking-[0.12em] text-[var(--deep-wine)] font-semibold mb-2">
+                    {/* Description */}
+                    <div className="md:pl-[60px]">
+
+                      <p className="text-sm text-[var(--muted)] leading-6 mb-7 max-w-xl">
+                        {step.description}
+                      </p>
+
+                      <div className="grid sm:grid-cols-2 gap-5">
+
+                        <div className="rounded-xl bg-[var(--milk-sage)]/50 p-5">
+                          <div className="text-[10px] uppercase tracking-[0.14em] text-[var(--deep-wine)] font-semibold mb-2">
                             How to use
                           </div>
 
@@ -397,8 +378,8 @@ export default function RoutineBuilder({
                           </p>
                         </div>
 
-                        <div>
-                          <div className="text-xs uppercase tracking-[0.12em] text-[var(--deep-wine)] font-semibold mb-2">
+                        <div className="rounded-xl border border-[var(--line)] p-5">
+                          <div className="text-[10px] uppercase tracking-[0.14em] text-[var(--deep-wine)] font-semibold mb-2">
                             Why this step
                           </div>
 
@@ -408,22 +389,33 @@ export default function RoutineBuilder({
                         </div>
 
                       </div>
-
-                      {product && (
-                        <div className="border-t border-[var(--line)] p-5 md:p-6">
-                          <ProductCard product={product} />
-                        </div>
-                      )}
-
                     </div>
                   </div>
+
+                  {/* RIGHT SIDE PRODUCT */}
+                  {product && (
+                    <div className="md:pt-1">
+                      <div className="rounded-2xl border border-[var(--line)] bg-white p-3 shadow-sm">
+
+                        <div className="text-[10px] uppercase tracking-[0.14em] text-[var(--warm-gold)] font-semibold px-2 pt-1 pb-3">
+                          Recommended Product
+                        </div>
+
+                        <div className="max-w-[230px] mx-auto">
+                          <ProductCard product={product} />
+                        </div>
+
+                      </div>
+                    </div>
+                  )}
 
                 </div>
               );
             })}
+
           </div>
 
-          {/* Why This Order */}
+          {/* WHY THIS ORDER */}
           <div className="mt-14 rounded-2xl bg-[var(--deep-wine)] text-white p-7 md:p-10">
 
             <div className="text-[11px] uppercase tracking-[0.16em] text-[var(--warm-gold)] font-semibold mb-3">
@@ -435,14 +427,14 @@ export default function RoutineBuilder({
             </h3>
 
             <p className="text-white/75 max-w-2xl leading-7">
-              Start with clean skin, follow with your targeted treatment, and
-              finish with protection. Keeping the routine simple and
+              Start with clean skin, follow with your targeted treatment,
+              and finish with protection. Keeping the routine simple and
               consistent makes it easier to follow every day.
             </p>
 
           </div>
 
-          {/* Routine CTA */}
+          {/* SHOP ROUTINE */}
           <div className="mt-10 text-center">
 
             <p className="text-sm text-[var(--muted)] mb-4">
@@ -463,7 +455,7 @@ export default function RoutineBuilder({
 
           </div>
 
-          {/* Routine Products */}
+          {/* PRODUCTS */}
           <div id="routine-products" className="mt-12 scroll-mt-28">
 
             <h3 className="font-display text-2xl text-[var(--deep-wine)] mb-6">
@@ -477,27 +469,33 @@ export default function RoutineBuilder({
                 if (!product) return null;
 
                 return (
-                  <ProductCard key={product.id} product={product} />
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                  />
                 );
               })}
             </div>
 
           </div>
-        </div>
+        </section>
       )}
 
-      {/* Empty State */}
+      {/* BEFORE SELECTION */}
       {!selected && (
         <div className="border border-dashed border-[var(--line)] rounded-2xl p-10 text-center">
+
           <h3 className="font-display text-2xl text-[var(--deep-wine)] mb-2">
             Your routine starts here
           </h3>
 
           <p className="text-sm text-[var(--muted)]">
-            Select a beauty goal above to see your step-by-step routine.
+            Select a goal above to discover your step-by-step routine.
           </p>
+
         </div>
       )}
+
     </div>
   );
 }
