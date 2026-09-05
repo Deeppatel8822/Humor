@@ -25,7 +25,7 @@ export default function SiteHeader() {
                     <div className="text-[11px] uppercase tracking-wide text-[var(--muted)] mb-2">Skin Care</div>
                     <div className="flex flex-col gap-1.5 min-w-36">
                       {skinCare.map((s) => (
-                        <Link key={s} href={`/collections/skin-care?range=${encodeURIComponent(s)}`} className="text-sm hover:text-[var(--deep-wine)]">
+                        <Link key={s} href={`/collections/skin-care?range=${encodeURIComponent(s)}#products`} className="block rounded-md px-3 py-2 text-sm text-[var(--ink)] transition-colors hover:bg-[var(--milk-sage)] hover:text-[var(--deep-wine)]">
                           {s}
                         </Link>
                       ))}
