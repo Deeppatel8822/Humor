@@ -25,8 +25,7 @@ export default function CheckoutPage() {
     fullName: "", email: "", phone: "", line1: "", line2: "", city: "", state: "", pincode: "",
   });
 
-  const freeShippingThreshold = 599;
-  const shippingInr = subtotalInr >= freeShippingThreshold ? 0 : 60;
+  const shippingInr = 0;
   const totalInr = subtotalInr + shippingInr;
 
   function updateField(field: keyof typeof form, value: string) {
@@ -44,8 +43,21 @@ export default function CheckoutPage() {
   }
 
   async function handleCodOrder() {
+    const response = await fetch("/api/orders/cod", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        lines: lines.map((l) => ({ productId: l.productId, quantity: l.quantity })),
+        shipping: form,
+        subtotalInr,
+        shippingInr,
+      }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error ?? "Could not place your order.");
+
     clearCart();
-    router.push(`/order-confirmed?method=cod&total=${totalInr}`);
+    router.push(`/order-confirmed?method=cod&order=${data.orderNumber}&total=${data.totalInr}`);
   }
 
   async function handleOnlinePayment() {
@@ -175,7 +187,7 @@ export default function CheckoutPage() {
             </div>
             <div className="border-t border-[var(--line)] pt-4 space-y-2">
               <div className="flex justify-between text-sm text-[var(--muted)]"><span>Subtotal</span><span>&#8377;{subtotalInr}</span></div>
-              <div className="flex justify-between text-sm text-[var(--muted)]"><span>Shipping</span><span>{shippingInr === 0 ? "Free" : `\u20b9${shippingInr}`}</span></div>
+              <div className="flex justify-between text-sm text-[var(--muted)]"><span>Shipping</span><span>Free</span></div>
               <div className="flex justify-between text-base font-semibold text-[var(--ink)] pt-2"><span>Total</span><span>&#8377;{totalInr}</span></div>
             </div>
             <button type="submit" disabled={submitting} className="w-full mt-6 bg-[var(--deep-wine)] text-white px-6 py-3.5 rounded-full text-sm font-medium hover:bg-[var(--ink)] transition-colors disabled:opacity-50">
