@@ -5,10 +5,9 @@ import { Product } from "@/types/product";
 import ProductCard from "@/components/ProductCard";
 
 const options = [
-  { key: "acne", label: "Acne & Blemishes" },
-  { key: "dry", label: "Dry & Dull Skin" },
-  { key: "brightening", label: "Pigmentation / Brightening" },
-  { key: "everyday", label: "Everyday Skin Care" },
+  { key: "acne", label: "Acne / Blemishes" },
+  { key: "dry-pigmentation", label: "Dry / Pigmentation" },
+  { key: "brightening", label: "Whitening / Brightening" },
   { key: "hair", label: "Hair Care" },
   { key: "sun", label: "Sun Protection" },
   { key: "body", label: "Body Care" },
@@ -30,11 +29,11 @@ const routineSteps: Record<string, RoutineStep[]> = {
       title: "Cleanse",
       productSlug: "blemish-block-face-wash",
       description:
-        "Start with a gentle cleanse to remove excess oil, dirt and daily buildup.",
+        "Start by gently cleansing your skin with Blemish Block Face Wash.",
       howToUse:
         "Wet your face, apply a small amount and gently massage for 30–60 seconds. Rinse thoroughly and pat dry.",
       why:
-        "A clean skin surface prepares your face for the next skincare step.",
+        "Cleansing removes daily buildup and prepares your skin for the treatment step.",
     },
     {
       step: "02",
@@ -45,54 +44,54 @@ const routineSteps: Record<string, RoutineStep[]> = {
       howToUse:
         "Apply a few drops to clean, dry skin and gently press or massage until absorbed.",
       why:
-        "The treatment step focuses your routine on your specific skin concern.",
+        "The treatment step focuses your routine on acne-prone and blemish-prone skin.",
     },
     {
       step: "03",
       title: "Protect",
       productSlug: "sunscreen-spf-50",
       description:
-        "Finish your morning routine with broad-spectrum sun protection.",
+        "Finish your morning routine with Sunscreen SPF 50 PA++++.",
       howToUse:
-        "Apply generously as the final step of your morning skincare routine. Reapply during prolonged outdoor exposure.",
+        "Apply generously as the final step of your morning skincare routine before sun exposure. Reapply during prolonged outdoor exposure.",
       why:
-        "Daily sun protection helps protect your skin while maintaining your skincare routine.",
+        "Daily sun protection helps protect your skin while you maintain your skincare routine.",
     },
   ],
 
-  dry: [
+  "dry-pigmentation": [
     {
       step: "01",
       title: "Cleanse",
-      productSlug: "fullmoon-face-wash",
+      productSlug: "velvet-touch-face-wash",
       description:
-        "Begin with a gentle cleanse designed for a comfortable everyday skincare ritual.",
+        "Begin with Velvet Touch Face Wash to gently cleanse and prepare your skin.",
       howToUse:
-        "Wet your face, apply a small amount and massage gently for 30–60 seconds. Rinse and pat dry.",
+        "Wet your face, apply a small amount and gently massage for 30–60 seconds. Rinse well and pat dry.",
       why:
-        "Cleansing removes daily buildup while preparing your skin for treatment.",
+        "Clean skin creates a fresh base for the treatment step that follows.",
     },
     {
       step: "02",
       title: "Treat",
-      productSlug: "fullmoon-face-serum",
+      productSlug: "velvet-touch-face-serum",
       description:
-        "Apply Fullmoon Face Serum after cleansing.",
+        "Follow with Velvet Touch Face Serum as your targeted skincare step.",
       howToUse:
         "Apply a few drops to clean, dry skin and gently press until absorbed.",
       why:
-        "Serum adds a focused treatment step to your skincare routine.",
+        "The serum adds a focused treatment step to your daily skincare ritual.",
     },
     {
       step: "03",
       title: "Protect",
       productSlug: "sunscreen-spf-50",
       description:
-        "Complete your morning routine with daily sun protection.",
+        "Complete your morning routine with Sunscreen SPF 50 PA++++.",
       howToUse:
         "Apply generously as the final step before sun exposure. Reapply when spending extended time outdoors.",
       why:
-        "Protection is an essential part of a complete daytime skincare routine.",
+        "Daily sun protection is an important part of maintaining healthy-looking skin.",
     },
   ],
 
@@ -100,71 +99,35 @@ const routineSteps: Record<string, RoutineStep[]> = {
     {
       step: "01",
       title: "Cleanse",
-      productSlug: "velvet-touch-face-wash",
+      productSlug: "fullmoon-face-wash",
       description:
-        "Start with Velvet Touch Face Wash to cleanse and prepare your skin.",
+        "Start with Fullmoon Face Wash to gently cleanse and prepare your skin.",
       howToUse:
         "Wet your face, apply a small amount and gently massage for 30–60 seconds. Rinse well and pat dry.",
       why:
-        "Clean skin provides a fresh base for the next skincare step.",
+        "Clean skin provides a fresh base for your brightening routine.",
     },
     {
       step: "02",
       title: "Treat",
-      productSlug: "velvet-touch-face-serum",
+      productSlug: "fullmoon-face-serum",
       description:
-        "Apply Velvet Touch Face Serum as your targeted treatment step.",
-      howToUse:
-        "Apply a few drops to clean, dry skin. Gently spread and allow the serum to absorb.",
-      why:
-        "The serum adds a targeted treatment step to your daily routine.",
-    },
-    {
-      step: "03",
-      title: "Protect",
-      productSlug: "sunscreen-spf-50",
-      description:
-        "Finish with SPF 50 PA++++ every morning.",
-      howToUse:
-        "Apply generously as the final step of your morning skincare routine. Reapply during prolonged sun exposure.",
-      why:
-        "Daily sun protection is important when maintaining a bright, even-looking complexion.",
-    },
-  ],
-
-  everyday: [
-    {
-      step: "01",
-      title: "Cleanse",
-      productSlug: "velvet-touch-face-wash",
-      description:
-        "Begin with Velvet Touch Face Wash for your everyday cleanse.",
-      howToUse:
-        "Wet your face, massage a small amount gently for 30–60 seconds, then rinse and pat dry.",
-      why:
-        "Cleansing creates a fresh base for the rest of your routine.",
-    },
-    {
-      step: "02",
-      title: "Treat",
-      productSlug: "velvet-touch-face-serum",
-      description:
-        "Follow with Velvet Touch Face Serum.",
+        "Follow with Fullmoon Face Serum as your targeted brightening step.",
       howToUse:
         "Apply a few drops to clean, dry skin and gently press until absorbed.",
       why:
-        "Serum adds a focused treatment step to your everyday ritual.",
+        "The serum adds a focused treatment step to your everyday skincare ritual.",
     },
     {
       step: "03",
       title: "Protect",
       productSlug: "sunscreen-spf-50",
       description:
-        "Finish your morning routine with SPF 50 PA++++.",
+        "Finish with Sunscreen SPF 50 PA++++ every morning.",
       howToUse:
-        "Apply generously as the final skincare step before sun exposure.",
+        "Apply generously as the final skincare step before sun exposure. Reapply during prolonged outdoor exposure.",
       why:
-        "Sun protection completes your daytime skincare routine.",
+        "Daily sun protection is essential when caring for a bright, even-looking complexion.",
     },
   ],
 
@@ -174,11 +137,11 @@ const routineSteps: Record<string, RoutineStep[]> = {
       title: "Cleanse",
       productSlug: "repair-shampoo",
       description:
-        "Start by cleansing your scalp and hair with Repair Shampoo.",
+        "Start your haircare routine by cleansing your scalp and hair with Repair Shampoo.",
       howToUse:
-        "Apply to wet hair and scalp. Massage gently, then rinse thoroughly.",
+        "Apply to wet hair and scalp. Massage gently with your fingertips, then rinse thoroughly.",
       why:
-        "A clean scalp and hair create the foundation for your haircare routine.",
+        "A clean scalp and hair create the foundation for the rest of your haircare routine.",
     },
     {
       step: "02",
@@ -187,7 +150,7 @@ const routineSteps: Record<string, RoutineStep[]> = {
       description:
         "Follow with Repair Conditioner through the lengths of your hair.",
       howToUse:
-        "Apply mainly to mid-lengths and ends. Leave briefly, then rinse thoroughly.",
+        "Apply mainly to the mid-lengths and ends. Leave briefly, then rinse thoroughly.",
       why:
         "Conditioning helps leave the hair feeling smoother and easier to manage.",
     },
@@ -196,25 +159,11 @@ const routineSteps: Record<string, RoutineStep[]> = {
       title: "Deep Repair",
       productSlug: "repair-hair-mask",
       description:
-        "Use the Repair Hair Mask as your deeper care step.",
+        "Use Repair Hair Mask as your deeper haircare step.",
       howToUse:
-        "Apply to clean, damp hair, focusing on lengths and ends. Leave according to the product directions, then rinse.",
+        "Apply to clean, damp hair, focusing on lengths and ends. Leave according to product directions, then rinse.",
       why:
-        "A hair mask adds a deeper care step to your regular haircare ritual.",
-    },
-  ],
-
-  body: [
-    {
-      step: "01",
-      title: "Cleanse",
-      productSlug: "shower-gel",
-      description:
-        "Begin your body routine with Shower Gel.",
-      howToUse:
-        "Apply to wet skin, gently cleanse the body and rinse thoroughly.",
-      why:
-        "Cleansing removes daily dirt, sweat and buildup from the skin.",
+        "A hair mask adds an extra deep-care step to your regular haircare ritual.",
     },
   ],
 
@@ -224,22 +173,36 @@ const routineSteps: Record<string, RoutineStep[]> = {
       title: "Cleanse",
       productSlug: "velvet-touch-face-wash",
       description:
-        "Start with a clean face.",
+        "Start your morning routine with a clean face.",
       howToUse:
-        "Wet your face, massage gently for 30–60 seconds, rinse and pat dry.",
+        "Wet your face, apply a small amount and gently massage for 30–60 seconds. Rinse and pat dry.",
       why:
-        "Clean skin provides a fresh base for your morning routine.",
+        "Clean skin provides a fresh base for your daytime routine.",
     },
     {
       step: "02",
       title: "Protect",
       productSlug: "sunscreen-spf-50",
       description:
-        "Finish with SPF 50 PA++++.",
+        "Finish with Sunscreen SPF 50 PA++++ as your daily protection step.",
       howToUse:
-        "Apply generously as the final step of your morning skincare routine before sun exposure.",
+        "Apply generously as the final step of your morning skincare routine before sun exposure. Reapply during prolonged outdoor exposure.",
       why:
-        "Daily sunscreen is the key protection step in a daytime skincare routine.",
+        "Sunscreen is the essential protection step in a daytime skincare routine.",
+    },
+  ],
+
+  body: [
+    {
+      step: "01",
+      title: "Cleanse",
+      productSlug: "shower-gel",
+      description:
+        "Begin your bodycare routine with Shower Gel.",
+      howToUse:
+        "Apply to wet skin, gently cleanse the body and rinse thoroughly.",
+      why:
+        "Cleansing removes daily dirt, sweat and buildup from the skin.",
     },
   ],
 };
@@ -264,7 +227,7 @@ export default function RoutineBuilder({
   return (
     <div id="routine" className="scroll-mt-28">
 
-      {/* SELECT YOUR ROUTINE */}
+      {/* ROUTINE OPTIONS */}
       <section className="mb-14">
 
         <div className="text-[11px] uppercase tracking-[0.16em] text-[var(--warm-gold)] font-semibold mb-3">
@@ -276,7 +239,7 @@ export default function RoutineBuilder({
         </h2>
 
         <p className="text-[var(--muted)] max-w-2xl mb-7">
-          Choose what you want to focus on and we'll guide you through a
+          Choose what you want to focus on and we’ll guide you through a
           simple step-by-step routine.
         </p>
 
@@ -304,7 +267,7 @@ export default function RoutineBuilder({
       {selectedOption && steps.length > 0 && (
         <section>
 
-          {/* Routine Heading */}
+          {/* HEADER */}
           <div className="border-t border-[var(--line)] pt-10 mb-10">
 
             <div className="text-[11px] uppercase tracking-[0.16em] text-[var(--warm-gold)] font-semibold mb-3">
@@ -319,10 +282,11 @@ export default function RoutineBuilder({
               Follow these steps in order. Each product has a specific role
               in your daily beauty ritual.
             </p>
+
           </div>
 
-          {/* STEP-BY-STEP ROUTINE */}
-          <div className="space-y-8">
+          {/* STEP FLOW */}
+          <div className="space-y-10">
 
             {steps.map((step, index) => {
               const product = getProduct(step.productSlug);
@@ -336,7 +300,6 @@ export default function RoutineBuilder({
                   {/* LEFT SIDE */}
                   <div className="relative">
 
-                    {/* Step number */}
                     <div className="flex items-center gap-4 mb-5">
 
                       <div className="w-11 h-11 rounded-full bg-[var(--deep-wine)] text-white flex items-center justify-center text-xs font-medium shrink-0">
@@ -352,14 +315,14 @@ export default function RoutineBuilder({
                           {step.title}
                         </h3>
                       </div>
+
                     </div>
 
-                    {/* Connector */}
+                    {/* CONNECTOR */}
                     {index < steps.length - 1 && (
-                      <div className="hidden md:block absolute left-[21px] top-[56px] h-[calc(100%+32px)] w-px bg-[var(--line)]" />
+                      <div className="hidden md:block absolute left-[21px] top-[56px] h-[calc(100%+40px)] w-px bg-[var(--line)]" />
                     )}
 
-                    {/* Description */}
                     <div className="md:pl-[60px]">
 
                       <p className="text-sm text-[var(--muted)] leading-6 mb-7 max-w-xl">
@@ -368,7 +331,9 @@ export default function RoutineBuilder({
 
                       <div className="grid sm:grid-cols-2 gap-5">
 
+                        {/* HOW TO USE */}
                         <div className="rounded-xl bg-[var(--milk-sage)]/50 p-5">
+
                           <div className="text-[10px] uppercase tracking-[0.14em] text-[var(--deep-wine)] font-semibold mb-2">
                             How to use
                           </div>
@@ -376,9 +341,12 @@ export default function RoutineBuilder({
                           <p className="text-sm text-[var(--muted)] leading-6">
                             {step.howToUse}
                           </p>
+
                         </div>
 
+                        {/* WHY */}
                         <div className="rounded-xl border border-[var(--line)] p-5">
+
                           <div className="text-[10px] uppercase tracking-[0.14em] text-[var(--deep-wine)] font-semibold mb-2">
                             Why this step
                           </div>
@@ -386,6 +354,7 @@ export default function RoutineBuilder({
                           <p className="text-sm text-[var(--muted)] leading-6">
                             {step.why}
                           </p>
+
                         </div>
 
                       </div>
@@ -395,17 +364,19 @@ export default function RoutineBuilder({
                   {/* RIGHT SIDE PRODUCT */}
                   {product && (
                     <div className="md:pt-1">
+
                       <div className="rounded-2xl border border-[var(--line)] bg-white p-3 shadow-sm">
 
                         <div className="text-[10px] uppercase tracking-[0.14em] text-[var(--warm-gold)] font-semibold px-2 pt-1 pb-3">
                           Recommended Product
                         </div>
 
-                        <div className="max-w-[230px] mx-auto">
+                        <div className="max-w-[220px] mx-auto">
                           <ProductCard product={product} />
                         </div>
 
                       </div>
+
                     </div>
                   )}
 
@@ -428,8 +399,8 @@ export default function RoutineBuilder({
 
             <p className="text-white/75 max-w-2xl leading-7">
               Start with clean skin, follow with your targeted treatment,
-              and finish with protection. Keeping the routine simple and
-              consistent makes it easier to follow every day.
+              and finish with protection. A simple and consistent routine
+              makes it easier to build a daily beauty ritual.
             </p>
 
           </div>
@@ -456,7 +427,10 @@ export default function RoutineBuilder({
           </div>
 
           {/* PRODUCTS */}
-          <div id="routine-products" className="mt-12 scroll-mt-28">
+          <div
+            id="routine-products"
+            className="mt-12 scroll-mt-28"
+          >
 
             <h3 className="font-display text-2xl text-[var(--deep-wine)] mb-6">
               Products in your routine
@@ -478,10 +452,11 @@ export default function RoutineBuilder({
             </div>
 
           </div>
+
         </section>
       )}
 
-      {/* BEFORE SELECTION */}
+      {/* EMPTY STATE */}
       {!selected && (
         <div className="border border-dashed border-[var(--line)] rounded-2xl p-10 text-center">
 
