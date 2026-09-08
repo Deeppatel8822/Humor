@@ -37,13 +37,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Please provide valid shipping details." }, { status: 400 });
     }
 
-    const catalogIds = lines.map((line) => Number(line.productId));
-    if (catalogIds.some((id) => !Number.isInteger(id) || id < 1)) {
-      return NextResponse.json({ error: "Invalid product." }, { status: 400 });
+    const quantityByCatalogId = new Map<number, number>();
+    for (const line of lines) {
+      const catalogId = Number(line.productId);
+      if (!Number.isInteger(catalogId) || catalogId < 1 || !Number.isInteger(line.quantity) || line.quantity < 1) {
+        return NextResponse.json({ error: "Invalid product or quantity." }, { status: 400 });
+      }
+      quantityByCatalogId.set(catalogId, (quantityByCatalogId.get(catalogId) ?? 0) + line.quantity);
     }
 
-    const uniqueCatalogIds = [...new Set(catalogIds)];
-    const { data: products, error: productsError } = await supabaseAdmin()
+    const uniqueCatalogIds = [...quantityByCatalogId.keys()];
+    const supabase = supabaseAdmin();
+    const { data: products, error: productsError } = await supabase
       .from("products")
       .select("id, catalog_id, name, price_inr, stock_quantity, status")
       .in("catalog_id", uniqueCatalogIds);
@@ -53,28 +58,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "One or more products are unavailable." }, { status: 400 });
     }
 
-    const productMap = new Map(products.map((product) => [String(product.catalog_id), product]));
+    const productMap = new Map(products.map((product) => [Number(product.catalog_id), product]));
     let subtotalInr = 0;
 
-    for (const line of lines) {
-      if (!Number.isInteger(line.quantity) || line.quantity < 1) {
-        return NextResponse.json({ error: "Invalid product quantity." }, { status: 400 });
-      }
-
-      const product = productMap.get(String(Number(line.productId)));
+    for (const [catalogId, quantity] of quantityByCatalogId) {
+      const product = productMap.get(catalogId);
       if (!product || product.status !== "live") {
         return NextResponse.json({ error: "One or more products are unavailable." }, { status: 400 });
       }
-      if (line.quantity > product.stock_quantity) {
+      if (quantity > product.stock_quantity) {
         return NextResponse.json({ error: `${product.name} does not have enough stock.` }, { status: 400 });
       }
-      subtotalInr += product.price_inr * line.quantity;
+      subtotalInr += product.price_inr * quantity;
     }
 
     const shippingInr = 0;
     const totalInr = subtotalInr + shippingInr;
 
-    const { data: customer, error: customerError } = await supabaseAdmin()
+    const { data: customer, error: customerError } = await supabase
       .from("customers")
       .upsert(
         {
@@ -89,7 +90,7 @@ export async function POST(request: Request) {
 
     if (customerError || !customer) throw customerError ?? new Error("Could not save customer.");
 
-    const { data: address, error: addressError } = await supabaseAdmin()
+    const { data: address, error: addressError } = await supabase
       .from("addresses")
       .insert({
         customer_id: customer.id,
@@ -108,7 +109,7 @@ export async function POST(request: Request) {
 
     const orderNumber = `HL-${Date.now().toString().slice(-8)}${Math.floor(Math.random() * 10)}`;
 
-    const { data: order, error: orderError } = await supabaseAdmin()
+    const { data: order, error: orderError } = await supabase
       .from("orders")
       .insert({
         order_number: orderNumber,
@@ -126,18 +127,39 @@ export async function POST(request: Request) {
 
     if (orderError || !order) throw orderError ?? new Error("Could not create order.");
 
-    const orderItems = lines.map((line) => {
-      const product = productMap.get(String(Number(line.productId)))!;
+    const orderItems = [...quantityByCatalogId.entries()].map(([catalogId, quantity]) => {
+      const product = productMap.get(catalogId)!;
       return {
         order_id: order.id,
         product_id: product.id,
-        quantity: line.quantity,
+        quantity,
         unit_price_inr: product.price_inr,
       };
     });
 
-    const { error: itemsError } = await supabaseAdmin().from("order_items").insert(orderItems);
+    const { error: itemsError } = await supabase.from("order_items").insert(orderItems);
     if (itemsError) throw itemsError;
+
+    // Reduce stock after the order and its items have been saved.
+    // The stock condition prevents a quantity from being reduced below zero.
+    for (const [catalogId, quantity] of quantityByCatalogId) {
+      const product = productMap.get(catalogId)!;
+      const { data: updatedProduct, error: stockError } = await supabase
+        .from("products")
+        .update({
+          stock_quantity: product.stock_quantity - quantity,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", product.id)
+        .gte("stock_quantity", quantity)
+        .select("id")
+        .maybeSingle();
+
+      if (stockError) throw stockError;
+      if (!updatedProduct) {
+        throw new Error(`Stock changed while placing the order for ${product.name}.`);
+      }
+    }
 
     return NextResponse.json({
       success: true,
