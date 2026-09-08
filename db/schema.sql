@@ -6,27 +6,28 @@ create extension if not exists "uuid-ossp";
 -- ---------- Products ----------
 create table products (
   id uuid primary key default uuid_generate_v4(),
+  catalog_id integer unique,
   slug text unique not null,
   name text not null,
   tagline text,
   description text not null,
   key_benefits text[] not null default '{}',
-  key_ingredients jsonb not null default '[]',      -- [{ "name": "Niacinamide", "explanation": "..." }]
-  full_ingredient_list text,                          -- full INCI list
-  skin_hair_type text[] not null default '{}',        -- ["Dry", "Oily", "All Types"]
+  key_ingredients jsonb not null default '[]',
+  full_ingredient_list text,
+  skin_hair_type text[] not null default '{}',
   how_to_use text,
-  category text not null,                             -- 'skincare' | 'haircare'
-  concern_tags text[] not null default '{}',           -- ["Acne", "Pigmentation"]
-  routine_tags text[] not null default '{}',            -- ["Morning", "Night", "Hair Care"]
-  price_inr integer not null,                          -- store in paise/whole rupees, decide convention
+  category text not null,
+  concern_tags text[] not null default '{}',
+  routine_tags text[] not null default '{}',
+  price_inr integer not null,
   compare_at_price_inr integer,
   stock_quantity integer not null default 0,
   sku text unique not null,
   images text[] not null default '{}',
-  before_after_images jsonb default '[]',              -- [{ "before": "url", "after": "url", "caption": "..." }]
+  before_after_images jsonb default '[]',
   is_bestseller boolean default false,
   is_featured boolean default false,
-  status text not null default 'draft',                -- 'draft' | 'live'
+  status text not null default 'draft',
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
@@ -59,7 +60,7 @@ create table reviews (
   photo_urls text[] default '{}',
   video_url text,
   is_verified_purchase boolean default false,
-  is_approved boolean default false,                   -- moderation gate before it shows publicly
+  is_approved boolean default false,
   created_at timestamptz default now()
 );
 
@@ -90,9 +91,9 @@ create table addresses (
 -- ---------- Orders ----------
 create table orders (
   id uuid primary key default uuid_generate_v4(),
-  order_number text unique not null,                    -- human-readable, e.g. HL-10234
+  order_number text unique not null,
   customer_id uuid references customers(id),
-  status text not null default 'pending',                -- pending | paid | packed | shipped | delivered | cancelled | refunded
+  status text not null default 'pending',
   subtotal_inr integer not null,
   discount_inr integer default 0,
   shipping_inr integer default 0,
@@ -101,7 +102,7 @@ create table orders (
   shipping_address_id uuid references addresses(id),
   razorpay_order_id text,
   razorpay_payment_id text,
-  payment_status text default 'unpaid',                   -- unpaid | paid | failed
+  payment_status text default 'unpaid',
   tracking_number text,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
@@ -124,7 +125,7 @@ create table order_items (
 create table coupons (
   id uuid primary key default uuid_generate_v4(),
   code text unique not null,
-  discount_type text not null,                            -- 'percent' | 'flat'
+  discount_type text not null,
   discount_value integer not null,
   min_order_inr integer default 0,
   is_active boolean default true,
@@ -139,8 +140,7 @@ create table newsletter_signups (
   created_at timestamptz default now()
 );
 
--- Row Level Security: enable and restrict writes to server-side (service role) only.
--- Public reads allowed on products/reviews/bundles where status = 'live' / is_approved = true.
+-- Row Level Security
 alter table products enable row level security;
 create policy "public read live products" on products for select using (status = 'live');
 
@@ -149,3 +149,11 @@ create policy "public read approved reviews" on reviews for select using (is_app
 
 alter table bundles enable row level security;
 create policy "public read live bundles" on bundles for select using (status = 'live');
+
+-- Server-side order API uses the service_role database role.
+-- Explicit grants are required for inventory updates on products.
+grant select, insert, update, delete on public.products to service_role;
+grant select, insert, update, delete on public.customers to service_role;
+grant select, insert, update, delete on public.addresses to service_role;
+grant select, insert, update, delete on public.orders to service_role;
+grant select, insert, update, delete on public.order_items to service_role;
