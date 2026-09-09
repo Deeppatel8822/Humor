@@ -31,8 +31,10 @@ export function otpHash(identifier: string, otp: string, expiresAt: number) {
   return crypto.createHmac("sha256", adminOtpSecret()).update(`${normalizeIdentifier(identifier)}:${otp}:${expiresAt}`).digest("hex");
 }
 
-export function sessionToken(identifier: string) {
-  return crypto.createHmac("sha256", adminOtpSecret()).update(`session:${normalizeIdentifier(identifier)}`).digest("hex");
+// Keep the established admin session token format so all existing admin APIs
+// continue to accept the OTP-authenticated session.
+export function sessionToken(_identifier: string) {
+  return crypto.createHmac("sha256", adminOtpSecret()).update(adminEmail()).digest("hex");
 }
 
 export function generateOtp() {
