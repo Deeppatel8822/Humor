@@ -8,7 +8,7 @@ const COOKIE_NAME = "humor_admin";
 function validAdmin(value: string | undefined) {
   const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
   const secret = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
-  if (!email || !value) return false;
+  if (!email || !value || !secret) return false;
   const expected = crypto.createHmac("sha256", secret).update(email).digest("hex");
   return value === expected;
 }
@@ -30,19 +30,41 @@ export async function GET() {
 
 export async function PATCH(request: Request) {
   if (!(await authorized())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   try {
-    const { id, stock_quantity } = await request.json();
-    const stock = Number(stock_quantity);
-    if (!id || !Number.isInteger(stock) || stock < 0) {
+    const body = await request.json();
+    const id = String(body.id || "").trim();
+    const hasStock = body.stock_quantity !== undefined;
+    const hasPrice = body.price_inr !== undefined;
+    const stock = Number(body.stock_quantity);
+    const price = Number(body.price_inr);
+
+    if (!id || (!hasStock && !hasPrice)) {
+      return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
+    }
+    if (hasStock && (!Number.isInteger(stock) || stock < 0)) {
       return NextResponse.json({ error: "Invalid stock quantity." }, { status: 400 });
     }
+    if (hasPrice && (!Number.isInteger(price) || price <= 0)) {
+      return NextResponse.json({ error: "Invalid product price." }, { status: 400 });
+    }
+
+    const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
+    if (hasStock) updates.stock_quantity = stock;
+    if (hasPrice) updates.price_inr = price;
+
     const { data, error } = await supabaseAdmin()
       .from("products")
-      .update({ stock_quantity: stock, updated_at: new Date().toISOString() })
+      .update(updates)
       .eq("id", id)
-      .select("id, name, stock_quantity")
+      .select("id, name, price_inr, stock_quantity")
       .single();
-    if (error) return NextResponse.json({ error: "Could not update stock." }, { status: 500 });
+
+    if (error) {
+      console.error("Admin product update error:", error);
+      return NextResponse.json({ error: "Could not update product." }, { status: 500 });
+    }
+
     return NextResponse.json({ success: true, product: data });
   } catch {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
