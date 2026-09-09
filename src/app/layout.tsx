@@ -3,6 +3,7 @@ import "./globals.css";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import AdminProfileWidget from "@/components/AdminProfileWidget";
 import { CartProvider } from "@/context/CartContext";
 
 export const metadata: Metadata = {
@@ -24,6 +25,7 @@ export default function RootLayout({
           <main className="flex-1">{children}</main>
           <SiteFooter />
           <WhatsAppButton />
+          <AdminProfileWidget />
         </CartProvider>
       </body>
     </html>
