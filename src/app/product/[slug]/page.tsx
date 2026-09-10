@@ -29,6 +29,16 @@ const sunscreenImages = [
   { src: "/products/sunscreen-benefits.webp", alt: "Humor Luxury Sunscreen benefits" },
 ];
 
+function RatingStars({ rating }: { rating: number }) {
+  return (
+    <div className="flex items-center gap-0.5 text-star" aria-label={rating > 0 ? `${rating} out of 5 stars` : "No reviews yet"}>
+      {[1, 2, 3, 4, 5].map((i) => (
+        <span key={i} className={`text-lg leading-none ${rating > 0 && i <= Math.round(rating) ? "text-[var(--warm-gold)]" : "text-[var(--ink)]/20"}`}>★</span>
+      ))}
+    </div>
+  );
+}
+
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const product = await getProduct(slug);
@@ -47,7 +57,15 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         <div>
           {product.is_bestseller && <span className="inline-block text-xs uppercase tracking-wider text-[var(--warm-gold)] font-medium mb-2">Best Seller</span>}
           <h1 className="font-display text-3xl md:text-4xl text-[var(--deep-wine)] mb-2">{product.name}</h1>
-          {product.tagline && <p className="text-[var(--muted)] mb-4">{product.tagline}</p>}
+          {product.tagline && <p className="text-[var(--muted)] mb-3">{product.tagline}</p>}
+          <div className="flex items-center gap-2 mb-4">
+            <RatingStars rating={product.rating} />
+            {product.rating > 0 ? (
+              <span className="text-sm text-[var(--muted)]">{product.rating.toFixed(2)}{product.review_count > 0 ? ` · ${product.review_count} customer review${product.review_count === 1 ? "" : "s"}` : " · Rated by customers"}</span>
+            ) : (
+              <span className="text-sm text-[var(--muted)]">No reviews yet</span>
+            )}
+          </div>
           <div className="flex items-center gap-3 mb-6"><span className="text-2xl font-medium text-[var(--deep-wine)]">&#8377;{product.price_inr}</span>{onSale && <span className="text-base text-[var(--ink)]/40 line-through">&#8377;{product.compare_at_price_inr}</span>}</div>
           <p className="text-sm text-[var(--ink)]/85 mb-6 leading-relaxed">{product.description}</p>
           <AddToCartForm product={product} />
@@ -64,7 +82,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         <div><h2 className="font-display text-2xl text-[var(--deep-wine)] mb-5">Key ingredients</h2><div className="space-y-4">{product.key_ingredients.map((ing) => <div key={ing.name}><div className="text-sm font-medium text-[var(--deep-wine)]">{ing.name}</div><div className="text-xs text-[var(--muted)] mt-0.5">{ing.explanation}</div></div>)}</div>{product.full_ingredient_list && <details className="mt-6 text-xs text-[var(--muted)]"><summary className="cursor-pointer text-[var(--deep-wine)] font-medium">Full ingredient list</summary><p className="mt-2 leading-relaxed">{product.full_ingredient_list}</p></details>}</div>
       </div>
       {product.how_to_use && <div className="mb-20 bg-[var(--milk-sage)] border border-[var(--line)] rounded-3xl p-8 md:p-10"><h2 className="font-display text-2xl text-[var(--deep-wine)] mb-3">How to use</h2><p className="text-sm text-[var(--ink)]/85 leading-relaxed max-w-2xl">{product.how_to_use}</p></div>}
-      <div className="mb-20"><div className="flex items-baseline justify-between mb-6"><h2 className="font-display text-2xl text-[var(--deep-wine)]">Customer reviews</h2><span className="text-xs text-[var(--ink)]/50">* Live reviews pull from the `reviews` table once connected</span></div><div className="bg-[var(--milk-sage)] border border-[var(--line)] rounded-2xl p-8 text-center text-sm text-[var(--muted)]">No reviews yet for this product — be the first to leave one after your order arrives.</div></div>
+      <div className="mb-20"><div className="flex items-baseline justify-between mb-6"><h2 className="font-display text-2xl text-[var(--deep-wine)]">Customer reviews</h2><span className="text-xs text-[var(--ink)]/50">{product.review_count > 0 ? `${product.review_count} customer review${product.review_count === 1 ? "" : "s"}` : "No product reviews yet"}</span></div><div className="bg-[var(--milk-sage)] border border-[var(--line)] rounded-2xl p-8 text-center text-sm text-[var(--muted)]">{product.rating > 0 ? `Rated ${product.rating.toFixed(2)} out of 5 on the existing Humor Luxury store.` : "No product reviews yet — be the first to leave one after your order arrives."}</div></div>
       <div className="mb-20 max-w-3xl"><h2 className="font-display text-2xl text-[var(--deep-wine)] mb-6">Frequently asked questions</h2><div className="space-y-3">{genericFaqs.map((f) => <details key={f.q} className="bg-[var(--milk-sage)] border border-[var(--line)] rounded-xl p-5"><summary className="cursor-pointer text-sm font-medium text-[var(--deep-wine)]">{f.q}</summary><p className="mt-2 text-sm text-[var(--muted)] leading-relaxed">{f.a}</p></details>)}</div></div>
       {routinePartner && <div className="mb-20 bg-[var(--milk-sage)] border border-[var(--line)] rounded-3xl p-8 md:p-10"><h2 className="font-display text-2xl text-[var(--deep-wine)] mb-6">Complete your {product.subrange} routine</h2><div className="flex flex-wrap items-center gap-6"><div className="text-sm font-medium text-[var(--ink)]">{product.name}</div><span className="text-[var(--muted)] text-lg">+</span><div className="text-sm font-medium text-[var(--ink)]">{routinePartner.name}</div><CompleteRoutineButton products={[product, routinePartner]} label="Add Both to Cart" /></div></div>}
       {related.length > 0 && <div><h2 className="font-display text-2xl text-[var(--deep-wine)] mb-6">You may also like</h2><div className="grid grid-cols-2 md:grid-cols-4 gap-6">{related.map((p) => <ProductCard key={p.id} product={p} />)}</div></div>}
