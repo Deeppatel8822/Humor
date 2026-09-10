@@ -12,8 +12,34 @@ function isSupabaseConfigured() {
   return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
 }
 
-function fromDatabase(row: Record<string, unknown>): Product {
+// Main/cover images are kept as local public assets so the storefront uses
+// the same optimized product photo everywhere: shop cards, collections,
+// featured sections, routine cards and the product page.
+const mainImageOverrides: Record<string, string> = {
+  "blemish-block-face-wash": "/products/blemish-block-face-wash-main.webp",
+  "velvet-touch-face-wash": "/products/velvet-touch-face-wash-main.webp",
+  "fullmoon-face-wash": "/products/fullmoon-face-wash-main.webp",
+  "blemish-block-face-serum": "/products/blemish-block-face-serum-main.webp",
+  "velvet-touch-face-serum": "/products/velvet-touch-face-serum-main.webp",
+  "fullmoon-face-serum": "/products/fullmoon-face-serum-main.webp",
+  "repair-shampoo": "/products/protein-shake-shampoo-main.webp",
+  "repair-conditioner": "/products/conditioner-main.webp",
+  "repair-hair-mask": "/products/milk-shake-hair-mask-main.webp",
+  "sunscreen-spf-50": "/products/sunscreen-main.webp",
+  "shower-gel": "/products/shower-gel-main.webp",
+};
+
+function withMainImage(product: Product): Product {
+  const mainImage = mainImageOverrides[product.slug];
+  if (!mainImage) return product;
   return {
+    ...product,
+    images: [mainImage, ...product.images.filter((image) => image !== mainImage)],
+  };
+}
+
+function fromDatabase(row: Record<string, unknown>): Product {
+  const product: Product = {
     id: String(row.id),
     slug: String(row.slug),
     name: String(row.name),
@@ -42,6 +68,8 @@ function fromDatabase(row: Record<string, unknown>): Product {
     shopify_variant_id: null,
     status: String(row.status) as Product["status"],
   };
+
+  return withMainImage(product);
 }
 
 async function getDatabaseProducts(): Promise<Product[] | null> {
@@ -72,7 +100,7 @@ export async function getAllProducts(): Promise<Product[]> {
 
   const databaseProducts = await getDatabaseProducts();
   if (databaseProducts) return databaseProducts;
-  return local.getProducts();
+  return local.getProducts().map(withMainImage);
 }
 
 export async function getProduct(slug: string): Promise<Product | undefined> {
@@ -88,7 +116,8 @@ export async function getProduct(slug: string): Promise<Product | undefined> {
   const databaseProducts = await getDatabaseProducts();
   const databaseProduct = databaseProducts?.find((product) => product.slug === slug);
   if (databaseProduct) return databaseProduct;
-  return local.getProductBySlug(slug);
+  const localProduct = local.getProductBySlug(slug);
+  return localProduct ? withMainImage(localProduct) : undefined;
 }
 
 export async function getFeatured(): Promise<Product[]> {
