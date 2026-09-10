@@ -26,6 +26,7 @@ export default function ProductCard({ product }: { product: Product }) {
     ? Math.round(100 - (product.price_inr / product.compare_at_price_inr!) * 100)
     : 0;
   const outOfStock = product.stock_quantity <= 0;
+  const mainImage = product.images?.[0];
 
   function handleAddToCart() {
     if (outOfStock) return;
@@ -42,9 +43,18 @@ export default function ProductCard({ product }: { product: Product }) {
     <div className="group block">
       <Link href={`/product/${product.slug}`} className="block">
         <div className="relative aspect-[4/5] rounded-lg bg-[var(--milk-sage)] mb-3 flex items-center justify-center overflow-hidden border border-[var(--line)]">
-          <span className="font-display text-lg text-[var(--deep-wine)]/25 px-4 text-center">
-            {product.name}
-          </span>
+          {mainImage ? (
+            <img
+              src={mainImage}
+              alt={product.name}
+              className="w-full h-full object-contain p-3 transition-transform duration-300 group-hover:scale-[1.02]"
+              loading="lazy"
+            />
+          ) : (
+            <span className="font-display text-lg text-[var(--deep-wine)]/25 px-4 text-center">
+              {product.name}
+            </span>
+          )}
           <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5 items-start">
             {product.is_bestseller && (
               <span className="text-[10px] font-semibold uppercase tracking-wide bg-[var(--deep-wine)] text-white px-2 py-1 rounded">
