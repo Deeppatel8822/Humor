@@ -12,9 +12,6 @@ function isSupabaseConfigured() {
   return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
 }
 
-// Main/cover images are kept as local public assets so the storefront uses
-// the same optimized product photo everywhere: shop cards, collections,
-// featured sections, routine cards and the product page.
 const mainImageOverrides: Record<string, string> = {
   "blemish-block-face-wash": "/products/blemish-block-face-wash-main.webp",
   "velvet-touch-face-wash": "/products/velvet-touch-face-wash-main.webp",
@@ -29,12 +26,24 @@ const mainImageOverrides: Record<string, string> = {
   "shower-gel": "/products/shower-gel-main.webp",
 };
 
+// Ratings confirmed from the existing Humor Luxury website homepage.
+// Products not listed here are treated as unrated rather than inventing review data.
+const legacyRatings: Record<string, { rating: number; review_count: number }> = {
+  "protein-shake-shampoo": { rating: 5, review_count: 0 },
+  "blemish-block-face-serum": { rating: 5, review_count: 0 },
+  "sunscreen-spf-50": { rating: 5, review_count: 1 },
+  "velvet-touch-face-wash": { rating: 4, review_count: 1 },
+};
+
 function withMainImage(product: Product): Product {
   const mainImage = mainImageOverrides[product.slug];
-  if (!mainImage) return product;
+  const legacyRating = legacyRatings[product.slug];
   return {
     ...product,
-    images: [mainImage, ...product.images.filter((image) => image !== mainImage)],
+    ...(legacyRating ?? { rating: 0, review_count: 0 }),
+    images: mainImage
+      ? [mainImage, ...product.images.filter((image) => image !== mainImage)]
+      : product.images,
   };
 }
 
