@@ -43,21 +43,45 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Please provide valid shipping details." }, { status: 400 });
     }
 
-    for (const line of lines) {
-      const catalogId = Number(line.productId);
-      if (
-        !Number.isInteger(catalogId) ||
-        catalogId < 1 ||
-        !Number.isInteger(line.quantity) ||
-        line.quantity < 1
-      ) {
-        return NextResponse.json({ error: "Invalid product or quantity." }, { status: 400 });
-      }
+    // The frontend cart stores the product table UUID as productId.
+    // The atomic Supabase COD function intentionally uses the stable catalog_id.
+    // Resolve UUIDs to catalog IDs here before calling the RPC.
+    const productIds = lines.map((line) => line.productId);
+    if (productIds.some((id) => !id || typeof id !== "string")) {
+      return NextResponse.json({ error: "Invalid product or quantity." }, { status: 400 });
     }
 
     const supabase = supabaseAdmin();
+    const { data: products, error: productsError } = await supabase
+      .from("products")
+      .select("id,catalog_id,status")
+      .in("id", productIds);
+
+    if (productsError) throw productsError;
+
+    const productMap = new Map(
+      (products ?? []).map((product) => [String(product.id), product])
+    );
+
+    const rpcLines = lines.map((line) => {
+      const product = productMap.get(line.productId);
+      if (
+        !product ||
+        product.status !== "live" ||
+        !Number.isInteger(line.quantity) ||
+        line.quantity < 1 ||
+        !Number.isInteger(Number(product.catalog_id))
+      ) {
+        throw new Error("Invalid product or quantity.");
+      }
+      return {
+        productId: Number(product.catalog_id),
+        quantity: line.quantity,
+      };
+    });
+
     const { data, error } = await supabase.rpc("create_cod_order", {
-      p_lines: lines,
+      p_lines: rpcLines,
       p_shipping: shipping,
     });
 
@@ -75,6 +99,7 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("COD order error:", error);
-    return NextResponse.json({ error: "Could not place your order. Please try again." }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Could not place your order. Please try again.";
+    return NextResponse.json({ error: message }, { status: 400 });
   }
 }
