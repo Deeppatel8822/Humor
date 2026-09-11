@@ -15,8 +15,8 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
   const active = images[selected] ?? images[0];
 
   return (
-    <div className="grid grid-cols-[88px_1fr] gap-4">
-      <div className="flex md:flex-col gap-3 overflow-x-auto md:overflow-visible">
+    <div className="grid grid-cols-1 md:grid-cols-[88px_1fr] gap-4">
+      <div className="order-2 md:order-1 flex md:flex-col gap-3 overflow-x-auto md:overflow-visible">
         {images.map((image, index) => (
           <button
             key={image.src}
@@ -40,7 +40,7 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
         ))}
       </div>
 
-      <div className="aspect-square rounded-3xl overflow-hidden bg-[var(--milk-sage)] flex items-center justify-center">
+      <div className="order-1 md:order-2 aspect-square rounded-3xl overflow-hidden bg-[var(--milk-sage)] flex items-center justify-center">
         <img
           src={active.src}
           alt={active.alt}
