@@ -51,45 +51,39 @@ export default async function Home() {
   return (
     <>
       {/* Hero */}
-      <section className="relative overflow-hidden border-b border-[var(--line)] bg-[var(--milk-sage)]">
-        <div className="absolute -left-24 top-10 h-72 w-72 rounded-full bg-[var(--dusty-rose)]/15 blur-2xl" />
-        <div className="absolute -right-20 bottom-0 h-80 w-80 rounded-full bg-[var(--warm-gold)]/10 blur-2xl" />
-        <div className="relative mx-auto max-w-[1500px] px-5 md:px-10">
-          <div className="relative min-h-[560px] md:min-h-[590px]">
-            {[
-              { eyebrow: "Premium Everyday Beauty", title: "Beauty that feels like you.", copy: "Thoughtfully created skincare, haircare and bodycare for your everyday ritual.", image: "/products/sunscreen-lifestyle.webp", imageAlt: "Humor Luxury sunscreen lifestyle" },
-              { eyebrow: "Dermatologist Tested", title: "Your routine, beautifully simple.", copy: "Clean, considered formulas made in India for the rituals you actually keep.", image: "/products/protein-shake-shampoo-main.webp", imageAlt: "Humor Luxury Protein Shake Shampoo" },
-              { eyebrow: "Targeted Skincare", title: "Care made for your skin.", copy: "Build a routine around cleansing, treating and protecting your skin every day.", image: "/products/blemish-block-face-serum-main.webp", imageAlt: "Humor Luxury Blemish Block Face Serum" },
-            ].map((slide) => (
-              <div key={slide.title} className="humor-hero-slide absolute inset-0 flex items-center opacity-0">
-                <div className="grid w-full items-center gap-8 py-14 md:grid-cols-[1fr_0.9fr] md:gap-12 md:py-16">
-                  <div className="relative z-10 max-w-2xl">
-                    <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.28em] text-[var(--warm-gold)] md:text-xs">{slide.eyebrow}</p>
-                    <h1 className="font-display text-5xl leading-[0.98] text-[var(--deep-wine)] md:text-7xl lg:text-[82px]">{slide.title}</h1>
-                    <p className="mt-6 max-w-xl text-sm leading-7 text-[var(--ink)]/70 md:text-base">{slide.copy}</p>
-                    <div className="mt-8 flex flex-wrap gap-3">
-                      <Link href="/shop" className="rounded-full bg-[var(--deep-wine)] px-7 py-3.5 text-sm font-medium text-white transition-transform hover:scale-[1.03]">Shop Now</Link>
-                      <Link href="/build-your-routine" className="rounded-full border border-[var(--deep-wine)]/25 bg-white/60 px-7 py-3.5 text-sm font-medium text-[var(--deep-wine)] backdrop-blur transition-colors hover:bg-white">Build Your Routine</Link>
-                    </div>
-                    <div className="mt-9 flex flex-wrap gap-x-6 gap-y-2 text-[10px] uppercase tracking-[0.14em] text-[var(--muted)] md:text-xs">
-                      <span>Made in India</span><span>Dermatologist Tested</span><span>Cruelty Free</span>
-                    </div>
-                  </div>
-                  <div className="relative flex min-h-[330px] items-center justify-center md:min-h-[500px]">
-                    <div className="absolute h-[290px] w-[290px] rounded-full border border-[var(--warm-gold)]/25 bg-white/55 md:h-[420px] md:w-[420px]" />
-                    <div className="absolute h-[235px] w-[235px] rounded-full border border-[var(--dusty-rose)]/25 md:h-[350px] md:w-[350px]" />
-                    <span className="absolute right-[8%] top-[12%] h-3 w-3 rounded-full bg-[var(--warm-gold)]/60" />
-                    <span className="absolute bottom-[15%] left-[10%] h-2 w-2 rounded-full bg-[var(--dusty-rose)]/70" />
-                    <img src={slide.image} alt={slide.imageAlt} className="humor-hero-product relative z-10 max-h-[330px] w-auto max-w-[78%] object-contain drop-shadow-[0_24px_30px_rgba(74,31,43,0.16)] md:max-h-[460px] md:max-w-[82%]" />
-                    <div className="absolute bottom-2 left-1/2 z-20 -translate-x-1/2 rounded-full border border-white/80 bg-white/80 px-4 py-2 text-[10px] font-medium uppercase tracking-[0.15em] text-[var(--deep-wine)] shadow-sm backdrop-blur">Humor Luxury</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-            <div className="absolute bottom-7 left-0 flex items-center gap-2 md:bottom-10">
-              <span className="h-px w-10 bg-[var(--deep-wine)]" /><span className="text-[10px] uppercase tracking-[0.2em] text-[var(--muted)]">01 · 03</span>
+      <section className="relative overflow-hidden bg-white">
+        <div className="grid min-h-[620px] grid-cols-1 md:min-h-[720px] md:grid-cols-3">
+          <Link href="/collections/skin-care" className="group relative min-h-[430px] overflow-hidden bg-[#4b2428] md:min-h-0">
+            <img src="https://humorluxury.com/wp-content/uploads/2023/10/VHR02812-min-1-new.webp" alt="Humor Luxury skincare" className="absolute inset-0 h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105" />
+            <div className="absolute inset-0 bg-[var(--deep-wine)]/15 transition-colors duration-500 group-hover:bg-[var(--deep-wine)]/5" />
+            <div className="absolute bottom-10 left-8 z-10 text-white md:left-10">
+              <p className="mb-2 text-[9px] font-semibold uppercase tracking-[0.28em]">Skincare</p>
+              <h2 className="font-display text-3xl md:text-4xl">Blemish Block</h2>
+              <span className="mt-5 inline-flex bg-[#8f286f] px-7 py-3 text-[10px] font-semibold uppercase tracking-[0.18em] transition-transform duration-300 group-hover:translate-x-1">Shop Now</span>
+            </div>
+          </Link>
+
+          <div className="relative flex min-h-[360px] items-center justify-center overflow-hidden bg-[#ead7e2] px-8 text-center md:min-h-0">
+            <div className="absolute -left-8 top-4 h-20 w-28 rotate-12 rounded-full bg-white/30 blur-xl" />
+            <div className="absolute bottom-5 left-4 h-16 w-24 -rotate-12 rounded-full bg-[#e8a1b5]/40 blur-lg" />
+            <div className="absolute bottom-5 right-5 h-16 w-24 rotate-12 rounded-full bg-[#e8a1b5]/35 blur-lg" />
+            <div className="relative z-10">
+              <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.3em] text-[var(--deep-wine)]">Best Price</p>
+              <h1 className="font-display text-4xl leading-tight text-[var(--deep-wine)] md:text-5xl lg:text-[52px]">Premium Quality<br />Beauty Cosmetics</h1>
+              <Link href="/shop" className="mt-7 inline-flex bg-[#8f286f] px-8 py-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-white transition-transform duration-300 hover:scale-105">Explore More</Link>
             </div>
           </div>
+
+          <Link href="/product/fullmoon-face-wash" className="group relative min-h-[430px] overflow-hidden bg-[#dfe0ff] md:min-h-0">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.9),_rgba(220,222,255,0.7)_48%,_rgba(203,207,247,0.95))]" />
+            <div className="absolute inset-0 opacity-80">
+              <span className="absolute left-5 top-8 h-20 w-32 rotate-45 border-l border-t border-[#7f88ad]/30" />
+              <span className="absolute bottom-8 right-4 h-24 w-36 -rotate-45 border-r border-b border-[#7f88ad]/30" />
+            </div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <img src="/products/fullmoon-face-wash-main.webp" alt="Humor Luxury Fullmoon Face Wash" className="relative z-10 max-h-[72%] max-w-[68%] object-contain drop-shadow-[0_24px_28px_rgba(55,55,80,0.22)] transition-transform duration-700 group-hover:scale-105" />
+            </div>
+          </Link>
         </div>
       </section>
 
