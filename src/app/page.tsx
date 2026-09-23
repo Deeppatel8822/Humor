@@ -51,31 +51,45 @@ export default async function Home() {
   return (
     <>
       {/* Hero */}
-      <section className="max-w-7xl mx-auto px-5 md:px-8 pt-14 pb-20 grid md:grid-cols-2 gap-10 items-center">
-        <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-[var(--warm-gold)] mb-4">
-            Clean Beauty, Seriously Formulated
-          </p>
-          <h1 className="font-display text-4xl md:text-6xl leading-[1.05] text-[var(--deep-wine)]">
-            Beauty that feels like <em className="italic text-[var(--dusty-rose)]">you.</em>
-          </h1>
-          <p className="mt-6 text-base md:text-lg text-[var(--ink)]/75 max-w-md">
-            Thoughtfully created skincare, haircare and bodycare for your everyday beauty ritual, dermatologist tested, made in India.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-4">
-            <Link href="/shop" className="bg-[var(--deep-wine)] text-white px-7 py-3.5 rounded-full text-sm font-medium hover:bg-[var(--ink)] transition-colors">
-              Shop All
-            </Link>
-            <Link href="/build-your-routine" className="border border-[var(--line)] text-[var(--deep-wine)] px-7 py-3.5 rounded-full text-sm font-medium hover:bg-[var(--milk-sage)] transition-colors">
-              Build Your Routine
-            </Link>
+      <section className="relative overflow-hidden border-b border-[var(--line)] bg-[var(--milk-sage)]">
+        <div className="absolute -left-24 top-10 h-72 w-72 rounded-full bg-[var(--dusty-rose)]/15 blur-2xl" />
+        <div className="absolute -right-20 bottom-0 h-80 w-80 rounded-full bg-[var(--warm-gold)]/10 blur-2xl" />
+        <div className="relative mx-auto max-w-[1500px] px-5 md:px-10">
+          <div className="relative min-h-[560px] md:min-h-[590px]">
+            {[
+              { eyebrow: "Premium Everyday Beauty", title: "Beauty that feels like you.", copy: "Thoughtfully created skincare, haircare and bodycare for your everyday ritual.", image: "/products/sunscreen-lifestyle.webp", imageAlt: "Humor Luxury sunscreen lifestyle" },
+              { eyebrow: "Dermatologist Tested", title: "Your routine, beautifully simple.", copy: "Clean, considered formulas made in India for the rituals you actually keep.", image: "/products/protein-shake-shampoo-main.webp", imageAlt: "Humor Luxury Protein Shake Shampoo" },
+              { eyebrow: "Targeted Skincare", title: "Care made for your skin.", copy: "Build a routine around cleansing, treating and protecting your skin every day.", image: "/products/blemish-block-face-serum-main.webp", imageAlt: "Humor Luxury Blemish Block Face Serum" },
+            ].map((slide) => (
+              <div key={slide.title} className="humor-hero-slide absolute inset-0 flex items-center opacity-0">
+                <div className="grid w-full items-center gap-8 py-14 md:grid-cols-[1fr_0.9fr] md:gap-12 md:py-16">
+                  <div className="relative z-10 max-w-2xl">
+                    <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.28em] text-[var(--warm-gold)] md:text-xs">{slide.eyebrow}</p>
+                    <h1 className="font-display text-5xl leading-[0.98] text-[var(--deep-wine)] md:text-7xl lg:text-[82px]">{slide.title}</h1>
+                    <p className="mt-6 max-w-xl text-sm leading-7 text-[var(--ink)]/70 md:text-base">{slide.copy}</p>
+                    <div className="mt-8 flex flex-wrap gap-3">
+                      <Link href="/shop" className="rounded-full bg-[var(--deep-wine)] px-7 py-3.5 text-sm font-medium text-white transition-transform hover:scale-[1.03]">Shop Now</Link>
+                      <Link href="/build-your-routine" className="rounded-full border border-[var(--deep-wine)]/25 bg-white/60 px-7 py-3.5 text-sm font-medium text-[var(--deep-wine)] backdrop-blur transition-colors hover:bg-white">Build Your Routine</Link>
+                    </div>
+                    <div className="mt-9 flex flex-wrap gap-x-6 gap-y-2 text-[10px] uppercase tracking-[0.14em] text-[var(--muted)] md:text-xs">
+                      <span>Made in India</span><span>Dermatologist Tested</span><span>Cruelty Free</span>
+                    </div>
+                  </div>
+                  <div className="relative flex min-h-[330px] items-center justify-center md:min-h-[500px]">
+                    <div className="absolute h-[290px] w-[290px] rounded-full border border-[var(--warm-gold)]/25 bg-white/55 md:h-[420px] md:w-[420px]" />
+                    <div className="absolute h-[235px] w-[235px] rounded-full border border-[var(--dusty-rose)]/25 md:h-[350px] md:w-[350px]" />
+                    <span className="absolute right-[8%] top-[12%] h-3 w-3 rounded-full bg-[var(--warm-gold)]/60" />
+                    <span className="absolute bottom-[15%] left-[10%] h-2 w-2 rounded-full bg-[var(--dusty-rose)]/70" />
+                    <img src={slide.image} alt={slide.imageAlt} className="humor-hero-product relative z-10 max-h-[330px] w-auto max-w-[78%] object-contain drop-shadow-[0_24px_30px_rgba(74,31,43,0.16)] md:max-h-[460px] md:max-w-[82%]" />
+                    <div className="absolute bottom-2 left-1/2 z-20 -translate-x-1/2 rounded-full border border-white/80 bg-white/80 px-4 py-2 text-[10px] font-medium uppercase tracking-[0.15em] text-[var(--deep-wine)] shadow-sm backdrop-blur">Humor Luxury</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+            <div className="absolute bottom-7 left-0 flex items-center gap-2 md:bottom-10">
+              <span className="h-px w-10 bg-[var(--deep-wine)]" /><span className="text-[10px] uppercase tracking-[0.2em] text-[var(--muted)]">01 · 03</span>
+            </div>
           </div>
-        </div>
-
-        <div className="aspect-[4/5] rounded-3xl bg-gradient-to-br from-[var(--dusty-rose)]/25 via-[var(--milk-sage)] to-[var(--warm-gold)]/15 border border-[var(--line)] flex items-center justify-center">
-          <span className="font-display text-sm text-[var(--deep-wine)]/30 px-8 text-center">
-            Hero photography goes here — model or hero product shot
-          </span>
         </div>
       </section>
 
