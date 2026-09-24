@@ -50,7 +50,7 @@ export default function HeroSlider() {
     if (paused) return;
     const timer = window.setInterval(() => {
       setActive((current) => (current + 1) % slides.length);
-    }, 5000);
+    }, 2000);
     return () => window.clearInterval(timer);
   }, [paused]);
 
