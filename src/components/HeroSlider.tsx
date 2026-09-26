@@ -6,7 +6,7 @@ import Link from "next/link";
 const slides = [
   {
     leftImage: "/products/protein-shake-hero.webp",
-    rightImage: "/products/protein-shake-hero.webp",
+    rightImage: "/products/milk-shake-hair-mask-hero.webp",
     eyebrow: "Protein Shake Shampoo",
     title: <>Strong Hair<br />Beautifully Nourished</>,
     cta: "Shop Now",
@@ -14,11 +14,11 @@ const slides = [
     leftLabel: "Hair Care",
     leftTitle: "Protein Shake",
     leftHref: "/product/protein-shake-shampoo",
-    rightHref: "/product/protein-shake-shampoo",
+    rightHref: "/product/milk-shake-hair-mask",
   },
   {
     leftImage: "/products/facewash-hero.webp",
-    rightImage: "/products/fullmoon-face-wash-main.webp",
+    rightImage: "/products/fullmoon-face-wash-hero.webp",
     eyebrow: "Face Wash",
     title: <>Cleanse.<br />Refresh. Glow.</>,
     cta: "Shop Face Washes",
@@ -30,7 +30,7 @@ const slides = [
   },
   {
     leftImage: "/products/serum-hero.webp",
-    rightImage: "/products/blemish-block-face-serum-main.webp",
+    rightImage: "/products/velvet-touch-serum-hero.webp",
     eyebrow: "Face Serum",
     title: <>Targeted Care.<br />Visible Glow.</>,
     cta: "Shop Serums",
@@ -38,7 +38,7 @@ const slides = [
     leftLabel: "Skin Care",
     leftTitle: "Serum Care",
     leftHref: "/collections/skin-care",
-    rightHref: "/product/blemish-block-face-serum",
+    rightHref: "/product/velvet-touch-face-serum",
   },
 ];
 
