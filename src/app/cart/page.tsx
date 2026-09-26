@@ -36,7 +36,7 @@ export default function CartPage() {
 
   if (lines.length === 0) {
     return (
-      <div className="max-w-3xl mx-auto px-5 md:px-8 py-24 text-center">
+      <div className="max-w-3xl mx-auto px-5 md:px-8 py-24 text-center bg-white">
         <h1 className="font-display text-3xl text-[var(--deep-wine)] mb-3">Your cart is empty</h1>
         <p className="text-[var(--muted)] mb-8">Add a product to start building your routine.</p>
         <Link href="/shop" className="inline-block bg-[var(--deep-wine)] text-white px-7 py-3.5 rounded-full text-sm font-medium hover:bg-[var(--ink)] transition-colors">Shop all products</Link>
@@ -45,55 +45,57 @@ export default function CartPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-5 md:px-8 py-14">
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-8">
-        <div>
-          <p className="text-xs uppercase tracking-[0.18em] text-[var(--warm-gold)] mb-2">Your selection</p>
-          <h1 className="font-display text-3xl md:text-4xl text-[var(--deep-wine)]">Your cart</h1>
-        </div>
-        <p className="text-sm text-[var(--muted)]">Free shipping on every order</p>
-      </div>
-
-      <div className="bg-[var(--milk-sage)] border border-[var(--line)] rounded-xl px-5 py-3 text-sm text-[var(--deep-wine)] mb-8">
-        ✦ Complimentary shipping is included with your order.
-      </div>
-
-      <div className="grid md:grid-cols-3 gap-10">
-        <div className="md:col-span-2 space-y-4">
-          {lines.map((line) => {
-            const image = line.image ?? cartImageFallbacks[line.slug];
-            return (
-              <div key={line.productId} className="flex items-center gap-4 bg-white border border-[var(--line)] rounded-xl p-4">
-                <div className="w-20 h-20 rounded-lg bg-[var(--milk-sage)] flex-shrink-0 flex items-center justify-center overflow-hidden">
-                  {image ? (
-                    <img src={image} alt={line.name} className="w-full h-full object-contain p-2" />
-                  ) : (
-                    <span className="font-display text-[10px] text-[var(--deep-wine)]/40 text-center px-1">{line.name}</span>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <Link href={`/product/${line.slug}`} className="text-sm font-medium text-[var(--ink)] hover:text-[var(--deep-wine)]">{line.name}</Link>
-                  <div className="text-sm text-[var(--muted)] mt-1">&#8377;{line.price_inr}</div>
-                </div>
-                <div className="flex items-center border border-[var(--line)] rounded-full">
-                  <button type="button" onClick={() => updateQuantity(line.productId, line.quantity - 1)} className="w-8 h-8 flex items-center justify-center text-[var(--deep-wine)]" aria-label="Decrease quantity">&minus;</button>
-                  <span className="w-6 text-center text-sm">{line.quantity}</span>
-                  <button type="button" onClick={() => updateQuantity(line.productId, line.quantity + 1)} className="w-8 h-8 flex items-center justify-center text-[var(--deep-wine)]" aria-label="Increase quantity">+</button>
-                </div>
-                <div className="text-sm font-semibold text-[var(--ink)] w-16 text-right">&#8377;{line.price_inr * line.quantity}</div>
-                <button type="button" onClick={() => removeItem(line.productId)} aria-label="Remove item" className="text-[var(--muted)] hover:text-[var(--dusty-rose)] p-1">&#10005;</button>
-              </div>
-            );
-          })}
+    <div className="bg-white">
+      <div className="max-w-5xl mx-auto px-5 md:px-8 py-14">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-8">
+          <div>
+            <p className="text-xs uppercase tracking-[0.18em] text-[var(--warm-gold)] mb-2">Your selection</p>
+            <h1 className="font-display text-3xl md:text-4xl text-[var(--deep-wine)]">Your cart</h1>
+          </div>
+          <p className="text-sm text-[var(--muted)]">Free shipping on every order</p>
         </div>
 
-        <div className="bg-[var(--milk-sage)] border border-[var(--line)] rounded-xl p-6 h-fit">
-          <h2 className="font-display text-xl text-[var(--deep-wine)] mb-5">Order summary</h2>
-          <div className="flex justify-between text-sm text-[var(--muted)] mb-2"><span>Subtotal</span><span>&#8377;{subtotalInr}</span></div>
-          <div className="flex justify-between text-sm text-[var(--muted)] mb-4"><span>Shipping</span><span className="text-[var(--moss)]">Free</span></div>
-          <div className="border-t border-[var(--line)] pt-4 flex justify-between text-base font-semibold text-[var(--ink)] mb-6"><span>Total</span><span>&#8377;{subtotalInr}</span></div>
-          <button type="button" onClick={handleCheckout} disabled={checkingOut} className="w-full text-center bg-[var(--deep-wine)] text-white px-6 py-3.5 rounded-full text-sm font-medium hover:bg-[var(--ink)] transition-colors disabled:opacity-60">{checkingOut ? "Opening checkout..." : "Continue to checkout"}</button>
-          <p className="text-center text-xs text-[var(--muted)] mt-4">No account required · Guest checkout available</p>
+        <div className="bg-white border border-[var(--line)] rounded-xl px-5 py-3 text-sm text-[var(--deep-wine)] mb-8">
+          ✦ Complimentary shipping is included with your order.
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-10">
+          <div className="md:col-span-2 space-y-4">
+            {lines.map((line) => {
+              const image = line.image ?? cartImageFallbacks[line.slug];
+              return (
+                <div key={line.productId} className="flex items-center gap-4 bg-white border border-[var(--line)] rounded-xl p-4">
+                  <div className="w-20 h-20 rounded-lg bg-white border border-[var(--line)] flex-shrink-0 flex items-center justify-center overflow-hidden">
+                    {image ? (
+                      <img src={image} alt={line.name} className="w-full h-full object-contain p-2" />
+                    ) : (
+                      <span className="font-display text-[10px] text-[var(--deep-wine)]/40 text-center px-1">{line.name}</span>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <Link href={`/product/${line.slug}`} className="text-sm font-medium text-[var(--ink)] hover:text-[var(--deep-wine)]">{line.name}</Link>
+                    <div className="text-sm text-[var(--muted)] mt-1">&#8377;{line.price_inr}</div>
+                  </div>
+                  <div className="flex items-center border border-[var(--line)] rounded-full">
+                    <button type="button" onClick={() => updateQuantity(line.productId, line.quantity - 1)} className="w-8 h-8 flex items-center justify-center text-[var(--deep-wine)]" aria-label="Decrease quantity">&minus;</button>
+                    <span className="w-6 text-center text-sm">{line.quantity}</span>
+                    <button type="button" onClick={() => updateQuantity(line.productId, line.quantity + 1)} className="w-8 h-8 flex items-center justify-center text-[var(--deep-wine)]" aria-label="Increase quantity">+</button>
+                  </div>
+                  <div className="text-sm font-semibold text-[var(--ink)] w-16 text-right">&#8377;{line.price_inr * line.quantity}</div>
+                  <button type="button" onClick={() => removeItem(line.productId)} aria-label="Remove item" className="text-[var(--muted)] hover:text-[var(--dusty-rose)] p-1">&#10005;</button>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="bg-white border border-[var(--line)] rounded-xl p-6 h-fit">
+            <h2 className="font-display text-xl text-[var(--deep-wine)] mb-5">Order summary</h2>
+            <div className="flex justify-between text-sm text-[var(--muted)] mb-2"><span>Subtotal</span><span>&#8377;{subtotalInr}</span></div>
+            <div className="flex justify-between text-sm text-[var(--muted)] mb-4"><span>Shipping</span><span className="text-[var(--moss)]">Free</span></div>
+            <div className="border-t border-[var(--line)] pt-4 flex justify-between text-base font-semibold text-[var(--ink)] mb-6"><span>Total</span><span>&#8377;{subtotalInr}</span></div>
+            <button type="button" onClick={handleCheckout} disabled={checkingOut} className="w-full text-center bg-[var(--deep-wine)] text-white px-6 py-3.5 rounded-full text-sm font-medium hover:bg-[var(--ink)] transition-colors disabled:opacity-60">{checkingOut ? "Opening checkout..." : "Continue to checkout"}</button>
+            <p className="text-center text-xs text-[var(--muted)] mt-4">No account required · Guest checkout available</p>
+          </div>
         </div>
       </div>
     </div>
