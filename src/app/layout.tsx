@@ -10,6 +10,11 @@ export const metadata: Metadata = {
   title: "Humor Luxury — Clean Skincare & Haircare, Made in India",
   description:
     "Dermatologist-tested, paraben-free, cruelty-free skincare and haircare. Build your routine with Humor Luxury.",
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
 export default function RootLayout({
