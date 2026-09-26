@@ -5,6 +5,20 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 
+const cartImageFallbacks: Record<string, string> = {
+  "blemish-block-face-wash": "/products/blemish-block-face-wash-main.webp",
+  "velvet-touch-face-wash": "/products/velvet-touch-face-wash-main.webp",
+  "fullmoon-face-wash": "/products/fullmoon-face-wash-main.webp",
+  "blemish-block-face-serum": "/products/blemish-block-face-serum-main.webp",
+  "velvet-touch-face-serum": "/products/velvet-touch-face-serum-main.webp",
+  "fullmoon-face-serum": "/products/fullmoon-face-serum-main.webp",
+  "repair-shampoo": "/products/protein-shake-shampoo-main.webp",
+  "repair-conditioner": "/products/conditioner-main.webp",
+  "repair-hair-mask": "/products/milk-shake-hair-mask-main.webp",
+  "sunscreen-spf-50": "/products/sunscreen-main.webp",
+  "shower-gel": "/products/shower-gel-main.webp",
+};
+
 export default function CartPage() {
   const { lines, updateQuantity, removeItem, subtotalInr, startCheckout } = useCart();
   const router = useRouter();
@@ -46,24 +60,31 @@ export default function CartPage() {
 
       <div className="grid md:grid-cols-3 gap-10">
         <div className="md:col-span-2 space-y-4">
-          {lines.map((line) => (
-            <div key={line.productId} className="flex items-center gap-4 bg-white border border-[var(--line)] rounded-xl p-4">
-              <div className="w-20 h-20 rounded-lg bg-[var(--milk-sage)] flex-shrink-0 flex items-center justify-center">
-                <span className="font-display text-[10px] text-[var(--deep-wine)]/40 text-center px-1">{line.name}</span>
+          {lines.map((line) => {
+            const image = line.image ?? cartImageFallbacks[line.slug];
+            return (
+              <div key={line.productId} className="flex items-center gap-4 bg-white border border-[var(--line)] rounded-xl p-4">
+                <div className="w-20 h-20 rounded-lg bg-[var(--milk-sage)] flex-shrink-0 flex items-center justify-center overflow-hidden">
+                  {image ? (
+                    <img src={image} alt={line.name} className="w-full h-full object-contain p-2" />
+                  ) : (
+                    <span className="font-display text-[10px] text-[var(--deep-wine)]/40 text-center px-1">{line.name}</span>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <Link href={`/product/${line.slug}`} className="text-sm font-medium text-[var(--ink)] hover:text-[var(--deep-wine)]">{line.name}</Link>
+                  <div className="text-sm text-[var(--muted)] mt-1">&#8377;{line.price_inr}</div>
+                </div>
+                <div className="flex items-center border border-[var(--line)] rounded-full">
+                  <button type="button" onClick={() => updateQuantity(line.productId, line.quantity - 1)} className="w-8 h-8 flex items-center justify-center text-[var(--deep-wine)]" aria-label="Decrease quantity">&minus;</button>
+                  <span className="w-6 text-center text-sm">{line.quantity}</span>
+                  <button type="button" onClick={() => updateQuantity(line.productId, line.quantity + 1)} className="w-8 h-8 flex items-center justify-center text-[var(--deep-wine)]" aria-label="Increase quantity">+</button>
+                </div>
+                <div className="text-sm font-semibold text-[var(--ink)] w-16 text-right">&#8377;{line.price_inr * line.quantity}</div>
+                <button type="button" onClick={() => removeItem(line.productId)} aria-label="Remove item" className="text-[var(--muted)] hover:text-[var(--dusty-rose)] p-1">&#10005;</button>
               </div>
-              <div className="flex-1 min-w-0">
-                <Link href={`/product/${line.slug}`} className="text-sm font-medium text-[var(--ink)] hover:text-[var(--deep-wine)]">{line.name}</Link>
-                <div className="text-sm text-[var(--muted)] mt-1">&#8377;{line.price_inr}</div>
-              </div>
-              <div className="flex items-center border border-[var(--line)] rounded-full">
-                <button type="button" onClick={() => updateQuantity(line.productId, line.quantity - 1)} className="w-8 h-8 flex items-center justify-center text-[var(--deep-wine)]" aria-label="Decrease quantity">&minus;</button>
-                <span className="w-6 text-center text-sm">{line.quantity}</span>
-                <button type="button" onClick={() => updateQuantity(line.productId, line.quantity + 1)} className="w-8 h-8 flex items-center justify-center text-[var(--deep-wine)]" aria-label="Increase quantity">+</button>
-              </div>
-              <div className="text-sm font-semibold text-[var(--ink)] w-16 text-right">&#8377;{line.price_inr * line.quantity}</div>
-              <button type="button" onClick={() => removeItem(line.productId)} aria-label="Remove item" className="text-[var(--muted)] hover:text-[var(--dusty-rose)] p-1">&#10005;</button>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="bg-[var(--milk-sage)] border border-[var(--line)] rounded-xl p-6 h-fit">
