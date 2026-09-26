@@ -10,6 +10,7 @@ export interface CartLine {
   price_inr: number;
   quantity: number;
   shopifyVariantId: string | null;
+  image: string | null;
 }
 
 interface CartContextValue {
@@ -30,11 +31,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>([]);
   const [hydrated, setHydrated] = useState(false);
 
-  // Load from localStorage once, client-side only.
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) setLines(JSON.parse(raw));
+      if (raw) {
+        const stored = JSON.parse(raw) as Partial<CartLine>[];
+        setLines(
+          stored.map((line) => ({
+            productId: line.productId ?? "",
+            slug: line.slug ?? "",
+            name: line.name ?? "",
+            price_inr: Number(line.price_inr ?? 0),
+            quantity: Number(line.quantity ?? 1),
+            shopifyVariantId: line.shopifyVariantId ?? null,
+            image: line.image ?? null,
+          }))
+        );
+      }
     } catch {
       // Corrupt or unavailable storage — start with an empty cart.
     }
@@ -63,6 +76,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           price_inr: product.price_inr,
           quantity,
           shopifyVariantId: product.shopify_variant_id,
+          image: product.images?.[0] ?? null,
         },
       ];
     });
@@ -100,7 +114,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         }
       }
     } catch {
-      // Shopify not reachable/configured — fall through to the local demo checkout.
+      // Shopify not reachable/configured — fall through to local checkout.
     }
     return { mode: "local" };
   }
