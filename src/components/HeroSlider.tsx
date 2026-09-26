@@ -14,7 +14,7 @@ const slides = [
     leftLabel: "Hair Care",
     leftTitle: "Protein Shake",
     leftHref: "/product/protein-shake-shampoo",
-    rightHref: "/product/milk-shake-hair-mask",
+    rightHref: "/product/repair-hair-mask",
   },
   {
     leftImage: "/products/facewash-hero.webp",
