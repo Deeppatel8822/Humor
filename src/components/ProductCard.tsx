@@ -39,7 +39,7 @@ export default function ProductCard({ product }: { product: Product }) {
   return (
     <div className="group block">
       <Link href={`/product/${product.slug}`} className="block">
-        <div className="relative aspect-[4/5] rounded-lg bg-[var(--milk-sage)] mb-3 flex items-center justify-center overflow-hidden border border-[var(--line)]">
+        <div className="relative aspect-[4/5] rounded-lg bg-white mb-3 flex items-center justify-center overflow-hidden border border-[var(--line)]">
           {mainImage ? (
             <img src={mainImage} alt={product.name} className="w-full h-full object-contain p-3 transition-transform duration-300 group-hover:scale-[1.02]" loading="lazy" />
           ) : (
