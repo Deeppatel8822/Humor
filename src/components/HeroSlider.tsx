@@ -65,7 +65,7 @@ export default function HeroSlider() {
     >
       <div className="relative grid min-h-[560px] grid-cols-1 md:min-h-[680px] md:grid-cols-3">
         <Link href={slide.leftHref} className="group relative min-h-[430px] overflow-hidden md:min-h-0">
-          <img src={slide.leftImage} alt={slide.leftTitle} className="absolute inset-0 h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105" />
+          <img src={slide.leftImage} alt={slide.leftTitle} className="absolute inset-0 h-full w-full object-contain transition-transform duration-1000 group-hover:scale-105" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#38171c]/80 via-[#38171c]/15 to-transparent" />
           <div className="absolute bottom-10 left-7 z-10 text-white md:left-10 md:bottom-12">
             <p className="mb-2 text-[9px] font-semibold uppercase tracking-[0.28em]">{slide.leftLabel}</p>
@@ -92,7 +92,7 @@ export default function HeroSlider() {
         </div>
 
         <Link href={slide.rightHref} className="group relative min-h-[430px] overflow-hidden bg-[#dfe0ff] md:min-h-0">
-          <img src={slide.rightImage} alt="Humor Luxury product collection" className="absolute inset-0 h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105" />
+          <img src={slide.rightImage} alt="Humor Luxury product collection" className="absolute inset-0 h-full w-full object-contain transition-transform duration-1000 group-hover:scale-105" />
           <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-[#7d80ad]/15" />
           <span className="absolute bottom-9 left-1/2 -translate-x-1/2 bg-[#8f286f] px-7 py-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-white opacity-0 shadow-lg transition-all duration-500 group-hover:opacity-100">
             Explore Product
