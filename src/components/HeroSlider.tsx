@@ -5,16 +5,16 @@ import Link from "next/link";
 
 const slides = [
   {
-    leftImage: "https://humorluxury.com/wp-content/uploads/2023/10/VHR02812-min-1-new.webp",
-    rightImage: "https://humorluxury.com/wp-content/uploads/2023/10/3-new.webp",
-    eyebrow: "Best Price",
-    title: <>Premium Quality<br />Makeup Cosmetics</>,
-    cta: "Explore More",
-    href: "/shop",
-    leftLabel: "Premium Beauty",
-    leftTitle: "Blemish Block",
-    leftHref: "/collections/skin-care",
-    rightHref: "/product/fullmoon-face-wash",
+    leftImage: "/products/protein-shake-hero.webp",
+    rightImage: "/products/protein-shake-hero.webp",
+    eyebrow: "Protein Shake Shampoo",
+    title: <>Strong Hair<br />Beautifully Nourished</>,
+    cta: "Shop Now",
+    href: "/product/protein-shake-shampoo",
+    leftLabel: "Hair Care",
+    leftTitle: "Protein Shake",
+    leftHref: "/product/protein-shake-shampoo",
+    rightHref: "/product/protein-shake-shampoo",
   },
   {
     leftImage: "https://humorluxury.com/wp-content/uploads/2023/10/VHR01781_11zon-new.webp",
@@ -50,7 +50,7 @@ export default function HeroSlider() {
     if (paused) return;
     const timer = window.setInterval(() => {
       setActive((current) => (current + 1) % slides.length);
-    }, 2000);
+    }, 5000);
     return () => window.clearInterval(timer);
   }, [paused]);
 
