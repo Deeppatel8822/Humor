@@ -4,7 +4,7 @@ const reels = [
   "DVtIYYjkbG5",
   "DVQZ2d-EhG9",
   "DWoS8yik-J8",
-  "DW9VQcagR3H",
+  "DVfu3gJkczd",
 ];
 
 export default function SocialReels() {
