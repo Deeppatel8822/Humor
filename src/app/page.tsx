@@ -2,6 +2,7 @@ import Link from "next/link";
 import RoutineThread from "@/components/RoutineThread";
 import ProductCard from "@/components/ProductCard";
 import HeroSlider from "@/components/HeroSlider";
+import SocialReels from "@/components/SocialReels";
 import { getAllProducts } from "@/lib/catalog";
 
 const usps = [
@@ -119,6 +120,9 @@ export default async function Home() {
           {haircare.map((p) => <ProductCard key={p.id} product={p} />)}
         </div>
       </section>
+
+      {/* Social media reviews */}
+      <SocialReels />
 
       {/* Trust facts */}
       <section className="bg-[var(--milk-sage)] border-y border-[var(--line)] py-16">
