@@ -26,7 +26,7 @@ const supportLinks = [
 
 export default function SiteFooter() {
   return (
-    <footer className="bg-[var(--milk-sage)] text-[var(--ink)] mt-24 border-t border-[var(--line)]">
+    <footer className="bg-[var(--velvet-gradient-soft)] text-[var(--ink)] mt-24 border-t border-[var(--line)]">
       <div className="max-w-7xl mx-auto px-5 md:px-8 py-14 md:py-16">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-10 md:gap-16">
           <div className="col-span-2 md:col-span-1">
