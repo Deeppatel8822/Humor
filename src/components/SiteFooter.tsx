@@ -26,23 +26,23 @@ const supportLinks = [
 
 export default function SiteFooter() {
   return (
-    <footer className="bg-[var(--deep-wine)] text-[var(--milk-sage)] mt-24">
+    <footer className="bg-[var(--milk-sage)] text-[var(--ink)] mt-24 border-t border-[var(--line)]">
       <div className="max-w-7xl mx-auto px-5 md:px-8 py-14 md:py-16">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-10 md:gap-16">
           <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="font-display text-2xl text-white inline-block mb-4">
+            <Link href="/" className="font-display text-2xl text-[var(--ink)] inline-block mb-4">
               Humor <span className="text-[var(--warm-gold)] italic">Luxury</span>
             </Link>
-            <p className="text-sm text-[var(--milk-sage)]/70 leading-7 max-w-xs">
+            <p className="text-sm text-[var(--muted)] leading-7 max-w-xs">
               Dermatologist-tested, cruelty-free skincare, haircare and bodycare,
               thoughtfully made in India.
             </p>
-            <div className="flex gap-5 mt-6 text-sm text-[var(--milk-sage)]/80">
+            <div className="flex gap-5 mt-6 text-sm text-[var(--wine-soft)]">
               <a
                 href="https://www.instagram.com/humor_cosmetics/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-white transition-colors"
+                className="hover:text-[var(--deep-wine)] transition-colors"
               >
                 Instagram
               </a>
@@ -50,10 +50,10 @@ export default function SiteFooter() {
           </div>
 
           <div>
-            <div className="text-[11px] uppercase tracking-[0.18em] text-[var(--warm-gold)] mb-5">
+            <div className="text-[11px] uppercase tracking-[0.18em] text-[var(--wine-soft)] font-semibold mb-5">
               Shop
             </div>
-            <ul className="space-y-3 text-sm text-[var(--milk-sage)]/80">
+            <ul className="space-y-3 text-sm text-[var(--muted)]">
               {shopLinks.map(([label, href]) => (
                 <li key={href}>
                   <Link href={href} className="hover:text-white transition-colors">
@@ -95,11 +95,11 @@ export default function SiteFooter() {
           </div>
         </div>
 
-        <div className="mt-14 pt-8 border-t border-[var(--milk-sage)]/15">
+        <div className="mt-14 pt-8 border-t border-[var(--line)]">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
-              <p className="font-display text-xl text-white">Join the Humor Luxury community</p>
-              <p className="text-sm text-[var(--milk-sage)]/60 mt-1">
+              <p className="font-display text-xl text-[var(--ink)]">Join the Humor Luxury community</p>
+              <p className="text-sm text-[var(--muted)] mt-1">
                 Get skincare tips, new launches and exclusive updates.
               </p>
             </div>
@@ -109,11 +109,11 @@ export default function SiteFooter() {
                 type="email"
                 placeholder="Enter your email"
                 aria-label="Email address"
-                className="min-w-0 flex-1 px-5 py-3 rounded-full text-sm text-[var(--ink)] bg-white/95 outline-none focus:ring-2 focus:ring-[var(--warm-gold)]"
+                className="min-w-0 flex-1 px-5 py-3 rounded-full text-sm text-[var(--ink)] bg-white/95 outline-none focus:ring-2 focus:ring-[var(--deep-wine)]"
               />
               <button
                 type="submit"
-                className="px-6 py-3 rounded-full text-sm font-medium bg-[var(--warm-gold)] text-[var(--deep-wine)] hover:opacity-90 transition-opacity"
+                className="px-6 py-3 rounded-full text-sm font-medium bg-[var(--deep-wine)] text-white hover:bg-[var(--wine-soft)] transition-colors"
               >
                 Subscribe
               </button>
@@ -121,7 +121,7 @@ export default function SiteFooter() {
           </div>
         </div>
 
-        <div className="mt-8 pt-5 border-t border-[var(--milk-sage)]/15 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-[var(--milk-sage)]/55">
+        <div className="mt-8 pt-5 border-t border-[var(--line)] flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-[var(--muted)]">
           <p>© {new Date().getFullYear()} Humor Luxury. All rights reserved.</p>
           <p>Made in India · Dermatologist Tested · Cruelty Free</p>
         </div>
