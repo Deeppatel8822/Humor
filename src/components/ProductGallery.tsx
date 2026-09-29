@@ -25,7 +25,7 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
             onFocus={() => setSelected(index)}
             onClick={() => setSelected(index)}
             aria-label={`View ${image.alt}`}
-            className={`block shrink-0 aspect-square overflow-hidden rounded-xl border bg-white transition-all ${
+            className={`block shrink-0 aspect-square overflow-hidden rounded-2xl border bg-white transition-all ${
               index === selected
                 ? "border-[var(--warm-gold)] ring-1 ring-[var(--warm-gold)]/30"
                 : "border-[var(--line)] hover:border-[var(--warm-gold)]/60"
@@ -40,7 +40,7 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
         ))}
       </div>
 
-      <div className="order-1 md:order-2 aspect-square rounded-3xl overflow-hidden bg-white flex items-center justify-center">
+      <div className="order-1 md:order-2 aspect-square rounded-[28px] overflow-hidden bg-white flex items-center justify-center">
         <img
           src={active.src}
           alt={active.alt}
