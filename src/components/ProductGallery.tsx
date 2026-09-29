@@ -34,7 +34,7 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
             <img
               src={image.src}
               alt={image.alt}
-              className="w-full h-full object-contain p-1"
+              className="w-full h-full object-contain p-1 rounded-2xl"
             />
           </button>
         ))}
@@ -44,7 +44,7 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
         <img
           src={active.src}
           alt={active.alt}
-          className="w-full h-full object-contain p-5 transition-opacity duration-200"
+          className="w-full h-full object-contain p-5 rounded-[28px] transition-opacity duration-200"
         />
       </div>
     </div>
