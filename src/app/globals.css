@@ -3,15 +3,15 @@
 
 :root {
   --paper: #FFFFFF;
-  --milk-sage: #EEF8FD;      /* icy blue-tinted section background */
-  --deep-wine: #4F94BB;      /* primary sky-blue brand accent */
-  --wine-soft: #2F6F96;      /* deeper blue for hover/contrast */
-  --warm-gold: #D28B55;      /* warm peach cosmetic accent */
-  --dusty-rose: #D97FA5;     /* soft blush accent */
-  --moss: #67A9A3;           /* fresh aqua/teal accent */
-  --ink: #183445;            /* deep blue-grey text */
-  --line: #D5EAF4;            /* soft blue borders */
-  --muted: #607887;           /* cool secondary text */
+  --milk-sage: #F6F1FA;       /* soft lavender-white */
+  --deep-wine: #8B63B7;       /* velvet violet */
+  --wine-soft: #6E4A9A;       /* deeper violet */
+  --warm-gold: #D49A6A;       /* soft champagne-peach */
+  --dusty-rose: #D58CB2;      /* blush accent */
+  --moss: #74A9A3;             /* muted aqua accent */
+  --ink: #30233B;             /* deep plum text */
+  --line: #E5DDF0;             /* lavender borders */
+  --muted: #756B80;            /* soft plum-grey */
 }
 
 body {
@@ -50,3 +50,11 @@ body {
 .humor-hero-slide:nth-child(2) { animation-delay: 5s; }
 .humor-hero-slide:nth-child(3) { animation-delay: 10s; }
 .humor-hero-product { animation: humorHeroFloat 4s ease-in-out infinite; }
+
+
+/* Soft velvet cosmetic gradient system */
+:root {
+  --velvet-gradient: linear-gradient(135deg, #7C5AA6 0%, #9B6FC2 48%, #C58AC2 100%);
+  --velvet-gradient-soft: linear-gradient(135deg, #F0E8F7 0%, #F8EEF8 50%, #FDEFF5 100%);
+  --velvet-gradient-blue: linear-gradient(135deg, #765BA8 0%, #7E86C5 52%, #7DB4C5 100%);
+}
