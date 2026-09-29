@@ -35,6 +35,8 @@ const galleryImageOverrides: Record<string, string[]> = {
   "blemish-block-face-wash": ["/products/blemish-block-face-wash-model-1.webp"],
   "velvet-touch-face-wash": ["/products/velvet-touch-face-wash-model-1.webp"],
   "fullmoon-face-wash": ["/products/fullmoon-face-wash-model-1.webp"],
+  "shower-gel": ["/products/shower-gel-model-1.webp"],
+  "sunscreen-spf-50": ["/products/sunscreen-model-1.webp"],
 };
 
 // Ratings confirmed from the existing Humor Luxury website homepage.
