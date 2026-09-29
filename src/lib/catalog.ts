@@ -26,6 +26,11 @@ const mainImageOverrides: Record<string, string> = {
   "shower-gel": "/products/shower-gel-main.webp",
 };
 
+const galleryImageOverrides: Record<string, string[]> = {
+  "repair-shampoo": ["/products/protein-shake-shampoo-model-1.webp"],
+  "repair-hair-mask": ["/products/milk-shake-hair-mask-model-1.webp"],
+};
+
 // Ratings confirmed from the existing Humor Luxury website homepage.
 // Products not listed here are treated as unrated rather than inventing review data.
 const legacyRatings: Record<string, { rating: number; review_count: number }> = {
@@ -37,13 +42,21 @@ const legacyRatings: Record<string, { rating: number; review_count: number }> = 
 
 function withMainImage(product: Product): Product {
   const mainImage = mainImageOverrides[product.slug];
+  const galleryImages = galleryImageOverrides[product.slug] ?? [];
   const legacyRating = legacyRatings[product.slug];
+
+  const images = [
+    ...(mainImage ? [mainImage] : []),
+    ...galleryImages,
+    ...product.images.filter(
+      (image) => image !== mainImage && !galleryImages.includes(image)
+    ),
+  ];
+
   return {
     ...product,
     ...(legacyRating ?? { rating: 0, review_count: 0 }),
-    images: mainImage
-      ? [mainImage, ...product.images.filter((image) => image !== mainImage)]
-      : product.images,
+    images,
   };
 }
 
