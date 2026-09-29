@@ -26,23 +26,23 @@ const supportLinks = [
 
 export default function SiteFooter() {
   return (
-    <footer className="bg-[var(--velvet-gradient-soft)] text-[var(--ink)] mt-24 border-t border-[var(--line)]">
+    <footer className="bg-[var(--velvet-gradient)] text-white mt-24 border-t border-white/10">
       <div className="max-w-7xl mx-auto px-5 md:px-8 py-14 md:py-16">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-10 md:gap-16">
           <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="font-display text-2xl text-[var(--ink)] inline-block mb-4">
+            <Link href="/" className="font-display text-2xl text-white inline-block mb-4">
               Humor <span className="text-[var(--warm-gold)] italic">Luxury</span>
             </Link>
-            <p className="text-sm text-[var(--muted)] leading-7 max-w-xs">
+            <p className="text-sm text-white/80 leading-7 max-w-xs">
               Dermatologist-tested, cruelty-free skincare, haircare and bodycare,
               thoughtfully made in India.
             </p>
-            <div className="flex gap-5 mt-6 text-sm text-[var(--wine-soft)]">
+            <div className="flex gap-5 mt-6 text-sm text-white/90">
               <a
                 href="https://www.instagram.com/humor_cosmetics/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-[var(--deep-wine)] transition-colors"
+                className="hover:text-white transition-colors"
               >
                 Instagram
               </a>
@@ -50,10 +50,10 @@ export default function SiteFooter() {
           </div>
 
           <div>
-            <div className="text-[11px] uppercase tracking-[0.18em] text-[var(--wine-soft)] font-semibold mb-5">
+            <div className="text-[11px] uppercase tracking-[0.18em] text-white/90 font-semibold mb-5">
               Shop
             </div>
-            <ul className="space-y-3 text-sm text-[var(--muted)]">
+            <ul className="space-y-3 text-sm text-white/80">
               {shopLinks.map(([label, href]) => (
                 <li key={href}>
                   <Link href={href} className="hover:text-white transition-colors">
@@ -95,11 +95,11 @@ export default function SiteFooter() {
           </div>
         </div>
 
-        <div className="mt-14 pt-8 border-t border-[var(--line)]">
+        <div className="mt-14 pt-8 border-t border-white/15">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
-              <p className="font-display text-xl text-[var(--ink)]">Join the Humor Luxury community</p>
-              <p className="text-sm text-[var(--muted)] mt-1">
+              <p className="font-display text-xl text-white">Join the Humor Luxury community</p>
+              <p className="text-sm text-white/70 mt-1">
                 Get skincare tips, new launches and exclusive updates.
               </p>
             </div>
@@ -113,7 +113,7 @@ export default function SiteFooter() {
               />
               <button
                 type="submit"
-                className="px-6 py-3 rounded-full text-sm font-medium bg-[var(--deep-wine)] text-white hover:bg-[var(--wine-soft)] transition-colors"
+                className="px-6 py-3 rounded-full text-sm font-medium bg-white text-[var(--wine-soft)] hover:bg-white/90 transition-colors"
               >
                 Subscribe
               </button>
@@ -121,7 +121,7 @@ export default function SiteFooter() {
           </div>
         </div>
 
-        <div className="mt-8 pt-5 border-t border-[var(--line)] flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-[var(--muted)]">
+        <div className="mt-8 pt-5 border-t border-white/15 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-white/65">
           <p>© {new Date().getFullYear()} Humor Luxury. All rights reserved.</p>
           <p>Made in India · Dermatologist Tested · Cruelty Free</p>
         </div>
