@@ -29,6 +29,12 @@ const mainImageOverrides: Record<string, string> = {
 const galleryImageOverrides: Record<string, string[]> = {
   "repair-shampoo": ["/products/protein-shake-shampoo-model-1.webp"],
   "repair-hair-mask": ["/products/milk-shake-hair-mask-model-1.webp"],
+  "blemish-block-face-serum": ["/products/blemish-block-face-serum-model-1.webp"],
+  "velvet-touch-face-serum": ["/products/velvet-touch-face-serum-model-1.webp"],
+  "fullmoon-face-serum": ["/products/fullmoon-face-serum-model-1.webp"],
+  "blemish-block-face-wash": ["/products/blemish-block-face-wash-model-1.webp"],
+  "velvet-touch-face-wash": ["/products/velvet-touch-face-wash-model-1.webp"],
+  "fullmoon-face-wash": ["/products/fullmoon-face-wash-model-1.webp"],
 };
 
 // Ratings confirmed from the existing Humor Luxury website homepage.
