@@ -23,7 +23,7 @@ const genericFaqs = [
 
 const sunscreenImages = [
   { src: "/products/sunscreen-main.webp", alt: "Humor Luxury Sunscreen SPF 50+" },
-  { src: "/products/sunscreen-features.webp", alt: "Humor Luxury Sunscreen features" },
+  { src: "/products/sunscreen-model-1.webp", alt: "Humor Luxury Sunscreen model" },
   { src: "/products/sunscreen-uva-uvb.webp", alt: "Humor Luxury Sunscreen UVA and UVB protection" },
   { src: "/products/sunscreen-lifestyle.webp", alt: "Humor Luxury Sunscreen lifestyle" },
   { src: "/products/sunscreen-benefits.webp", alt: "Humor Luxury Sunscreen benefits" },
