@@ -3,15 +3,15 @@
 
 :root {
   --paper: #FFFFFF;
-  --milk-sage: #F7F5F1;      /* soft section background, not the default field */
-  --deep-wine: #4A1F2B;      /* primary brand accent */
-  --wine-soft: #6B2E3D;
-  --warm-gold: #B8863B;
-  --dusty-rose: #C97B78;
-  --moss: #5C7A5A;
-  --ink: #201A1C;
-  --line: #E7E2DA;           /* hairline borders */
-  --muted: #6F6660;          /* secondary text on white */
+  --milk-sage: #F4FAFD;      /* airy blue-tinted section background */
+  --deep-wine: #5B9FC4;      /* primary light-blue brand accent */
+  --wine-soft: #3F7FA5;      /* deeper blue for hover/contrast */
+  --warm-gold: #C58B55;      /* warm cosmetic accent */
+  --dusty-rose: #D98BA8;     /* soft blush accent */
+  --moss: #69A9A1;            /* fresh aqua/teal accent */
+  --ink: #243746;             /* cool dark text */
+  --line: #D9EAF2;            /* soft blue hairline borders */
+  --muted: #647B88;           /* cool secondary text on white */
 }
 
 body {
