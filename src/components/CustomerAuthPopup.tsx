@@ -8,7 +8,6 @@ type Mode = "signup" | "login";
 type Method = "email" | "phone";
 
 export default function CustomerAuthPopup() {
-  const supabase = getSupabase();
   const pathname = usePathname();
   const [open, setOpen] = useState(true);
   const [mode, setMode] = useState<Mode>("signup");
@@ -33,6 +32,10 @@ export default function CustomerAuthPopup() {
       if (mounted) setOpen(true);
     };
 
+    const openEvent = () => setOpen(true);
+    window.addEventListener("humor-open-customer-auth", openEvent);
+
+    const supabase = getSupabase();
     supabase.auth.getSession().then(({ data }) => {
       if (!mounted) return;
       if (data.session) {
@@ -51,6 +54,7 @@ export default function CustomerAuthPopup() {
     return () => {
       mounted = false;
       listener.subscription.unsubscribe();
+      window.removeEventListener("humor-open-customer-auth", openEvent);
     };
   }, [pathname]);
 
@@ -71,7 +75,7 @@ export default function CustomerAuthPopup() {
       ? { email: identifier.trim().toLowerCase(), options: { shouldCreateUser: true, data: mode === "signup" ? { full_name: name.trim() } : undefined } }
       : { phone: identifier.replace(/[\s-]/g, ""), options: { shouldCreateUser: true, data: mode === "signup" ? { full_name: name.trim() } : undefined } };
 
-    const { error: otpError } = await supabase.auth.signInWithOtp(payload as never);
+    const { error: otpError } = await getSupabase().auth.signInWithOtp(payload as never);
     if (otpError) setError(otpError.message);
     else {
       setStep("otp");
@@ -86,7 +90,7 @@ export default function CustomerAuthPopup() {
     const tokenPayload = method === "email"
       ? { email: identifier.trim().toLowerCase(), token: otp.trim(), type: "email" as const }
       : { phone: identifier.replace(/[\s-]/g, ""), token: otp.trim(), type: "sms" as const };
-    const { data, error: verifyError } = await supabase.auth.verifyOtp(tokenPayload);
+    const { data, error: verifyError } = await getSupabase().auth.verifyOtp(tokenPayload);
     if (verifyError || !data.session) {
       setError(verifyError?.message || "Could not verify OTP.");
       setLoading(false);
