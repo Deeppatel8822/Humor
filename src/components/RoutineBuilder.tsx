@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Product } from "@/types/product";
+import ProductCard from "@/components/ProductCard";
 import { useCart } from "@/context/CartContext";
 
 const options = [
