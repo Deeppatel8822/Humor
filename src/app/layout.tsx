@@ -5,6 +5,7 @@ import SiteFooter from "@/components/SiteFooter";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import AdminProfileWidget from "@/components/AdminProfileWidget";
 import MetaPixel from "@/components/MetaPixel";
+import CustomerAuthPopup from "@/components/CustomerAuthPopup";
 import { CartProvider } from "@/context/CartContext";
 
 export const metadata: Metadata = {
@@ -27,6 +28,7 @@ export default function RootLayout({
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full flex flex-col">
         <MetaPixel />
+        <CustomerAuthPopup />
         <CartProvider>
           <SiteHeader />
           <main className="flex-1">{children}</main>
