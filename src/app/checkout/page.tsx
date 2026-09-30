@@ -68,10 +68,12 @@ export default function CheckoutPage() {
     return null;
   }
 
-  async function authHeaders() {
+  async function authHeaders(): Promise<Record<string, string>> {
     const { getSupabase } = await import("@/lib/supabase");
     const { data } = await getSupabase().auth.getSession();
-    return data.session ? { Authorization: "Bearer " + data.session.access_token } : {};
+    return data.session
+      ? { Authorization: "Bearer " + data.session.access_token }
+      : {};
   }
 
   async function handleCodOrder() {
