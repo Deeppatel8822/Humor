@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import Link from "next/link";
 import { Product } from "@/types/product";
-import ProductCard from "@/components/ProductCard";
+import { useCart } from "@/context/CartContext";
 
 const options = [
   { key: "acne", label: "Acne / Blemishes" },
@@ -215,6 +216,8 @@ export default function RoutineBuilder({
   initialRoutine?: string | null;
 }) {
   const [selected, setSelected] = useState<string | null>(initialRoutine);
+  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
+  const { addItem } = useCart();
 
   const steps = selected ? routineSteps[selected] ?? [] : [];
   const selectedOption = options.find((o) => o.key === selected);
@@ -223,6 +226,28 @@ export default function RoutineBuilder({
     if (!slug) return null;
     return products.find((p) => p.slug === slug) ?? null;
   };
+
+  const routineProducts = useMemo(
+    () => steps.map((step) => getProduct(step.productSlug)).filter(Boolean) as Product[],
+    [steps, products]
+  );
+  const selectedProducts = routineProducts.filter((product) => selectedProductIds.includes(product.id));
+  const selectedTotal = selectedProducts.reduce((sum, product) => sum + product.price_inr, 0);
+
+  function toggleProduct(productId: string) {
+    setSelectedProductIds((current) =>
+      current.includes(productId) ? current.filter((id) => id !== productId) : [...current, productId]
+    );
+  }
+
+  function addSelectedToCart() {
+    selectedProducts.forEach((product) => addItem(product, 1));
+  }
+
+  function chooseRoutine(key: string) {
+    setSelected(key);
+    setSelectedProductIds([]);
+  }
 
   return (
     <div id="routine" className="scroll-mt-28">
@@ -248,7 +273,7 @@ export default function RoutineBuilder({
             <button
               key={option.key}
               type="button"
-              onClick={() => setSelected(option.key)}
+              onClick={() => chooseRoutine(option.key)}
               className={`text-left px-5 py-4 rounded-xl border transition-all ${
                 selected === option.key
                   ? "border-[var(--deep-wine)] bg-[var(--milk-sage)] text-[var(--deep-wine)] shadow-sm"
@@ -364,19 +389,30 @@ export default function RoutineBuilder({
                   {/* RIGHT SIDE PRODUCT */}
                   {product && (
                     <div className="md:pt-1">
-
-                      <div className="rounded-2xl border border-[var(--line)] bg-white p-3 shadow-sm">
-
-                        <div className="text-[10px] uppercase tracking-[0.14em] text-[var(--warm-gold)] font-semibold px-2 pt-1 pb-3">
+                      <div className={"rounded-2xl border bg-white p-3 shadow-sm transition-all " + (selectedProductIds.includes(product.id) ? "border-[var(--deep-wine)] ring-1 ring-[var(--deep-wine)]/20" : "border-[var(--line)]")}>
+                        <div className="text-[10px] uppercase tracking-[0.14em] text-[var(--warm-gold)] font-semibold px-2 pt-1 pb-2">
                           Recommended Product
                         </div>
-
-                        <div className="max-w-[220px] mx-auto">
-                          <ProductCard product={product} />
-                        </div>
-
+                        <Link href={"/product/" + product.slug} className="block">
+                          <div className="relative aspect-square rounded-xl bg-white overflow-hidden">
+                            {product.images?.[0] ? (
+                              <img src={product.images[0]} alt={product.name} className="w-full h-full object-contain p-3" loading="lazy" />
+                            ) : (
+                              <div className="h-full flex items-center justify-center text-sm text-[var(--muted)]">{product.name}</div>
+                            )}
+                          </div>
+                          <div className="px-2 pt-2">
+                            <div className="text-sm font-medium text-[var(--ink)]">{product.name}</div>
+                            <div className="text-sm font-semibold text-[var(--ink)] mt-1">₹{product.price_inr}</div>
+                          </div>
+                        </Link>
+                        <label className="mt-3 flex cursor-pointer items-center gap-3 rounded-xl border border-[var(--line)] px-3 py-2.5 hover:bg-[var(--milk-sage)]">
+                          <input type="checkbox" checked={selectedProductIds.includes(product.id)} onChange={() => toggleProduct(product.id)} disabled={product.stock_quantity <= 0} className="h-4 w-4 accent-[var(--deep-wine)]" />
+                          <span className="text-xs font-medium text-[var(--deep-wine)]">
+                            {product.stock_quantity <= 0 ? "Out of stock" : "Select this product"}
+                          </span>
+                        </label>
                       </div>
-
                     </div>
                   )}
 
@@ -384,6 +420,35 @@ export default function RoutineBuilder({
               );
             })}
 
+          </div>
+
+          {/* SELECTED PRODUCTS SUMMARY */}
+          <div className="mt-10 rounded-2xl border border-[var(--line)] bg-[var(--milk-sage)] p-5 md:p-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.16em] text-[var(--warm-gold)] font-semibold mb-2">Your Selection</div>
+                <h3 className="font-display text-2xl text-[var(--deep-wine)]">
+                  {selectedProducts.length ? selectedProducts.length + " product" + (selectedProducts.length > 1 ? "s" : "") + " selected" : "Select the products you want"}
+                </h3>
+                <p className="text-sm text-[var(--muted)] mt-1">Choose the products from the steps above. Your total updates instantly.</p>
+              </div>
+              <div className="md:text-right shrink-0">
+                <div className="text-xs text-[var(--muted)]">Routine total</div>
+                <div className="text-2xl font-semibold text-[var(--deep-wine)]">₹{selectedTotal}</div>
+                <button type="button" onClick={addSelectedToCart} disabled={!selectedProducts.length} className="mt-3 rounded-full bg-[var(--deep-wine)] px-6 py-3 text-sm font-medium text-white hover:bg-[var(--ink)] disabled:opacity-40 disabled:cursor-not-allowed">
+                  Add selected to cart
+                </button>
+              </div>
+            </div>
+            {selectedProducts.length > 0 && (
+              <div className="mt-5 flex flex-wrap gap-2">
+                {selectedProducts.map((product) => (
+                  <button key={product.id} type="button" onClick={() => toggleProduct(product.id)} className="rounded-full bg-white border border-[var(--line)] px-3 py-2 text-xs text-[var(--deep-wine)]">
+                    {product.name} ×
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* WHY THIS ORDER */}
