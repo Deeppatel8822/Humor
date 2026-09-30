@@ -43,6 +43,18 @@ export default function SiteHeader() {
             </nav>
 
             <div className="flex items-center gap-1">
+              <button
+                type="button"
+                aria-label="Login or sign up"
+                onClick={() => window.dispatchEvent(new CustomEvent("humor-open-customer-auth"))}
+                className="p-2 text-[var(--ink)] hover:text-[var(--deep-wine)] transition-colors"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                  <circle cx="12" cy="8" r="3.5" />
+                  <path d="M5 20c.8-3.3 3.1-5 7-5s6.2 1.7 7 5" />
+                </svg>
+              </button>
+
               <Link href="/search" aria-label="Search" className="p-2 text-[var(--ink)] hover:text-[var(--deep-wine)] transition-colors">
                 <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                   <circle cx="11" cy="11" r="7" />
