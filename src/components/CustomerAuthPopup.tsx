@@ -1,13 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
 
 type Mode = "signup" | "login";
 type Method = "email" | "phone";
 
 export default function CustomerAuthPopup() {
-  const pathname = usePathname();
   const [open, setOpen] = useState(true);
   const [mode, setMode] = useState<Mode>("signup");
   const [method, setMethod] = useState<Method>("email");
@@ -20,7 +18,7 @@ export default function CustomerAuthPopup() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (pathname.startsWith("/admin")) {
+    if (window.location.pathname.startsWith("/admin")) {
       setOpen(false);
       return;
     }
@@ -61,7 +59,7 @@ export default function CustomerAuthPopup() {
       unsubscribe?.();
       window.removeEventListener("humor-open-customer-auth", openEvent);
     };
-  }, [pathname]);
+  }, []);
 
   function close() {
     setOpen(false);
