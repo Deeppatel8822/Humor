@@ -24,6 +24,7 @@ export default function CheckoutPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isFirstOrder, setIsFirstOrder] = useState(false);
   const [showFreeShippingCelebration, setShowFreeShippingCelebration] = useState(false);
+  const [checkoutMode, setCheckoutMode] = useState<"account" | "guest" | null>(null);
   const [form, setForm] = useState({
     fullName: "", email: "", phone: "", line1: "", line2: "", city: "", state: "", pincode: "",
   });
@@ -32,7 +33,7 @@ export default function CheckoutPage() {
   const shippingInr = subtotalInr >= freeShippingThresholdInr ? 0 : 50;
   const amountToFreeShippingInr = Math.max(0, freeShippingThresholdInr - subtotalInr);
   const qualifiesForFreeShipping = subtotalInr >= freeShippingThresholdInr;
-  const firstOrderDiscountInr = isLoggedIn && isFirstOrder ? Math.round(subtotalInr * 0.10) : 0;
+  const firstOrderDiscountInr = checkoutMode === "account" && isLoggedIn && isFirstOrder ? Math.round(subtotalInr * 0.10) : 0;
   const prepaidDiscountRate = subtotalInr >= 1000 ? 0.04 : 0.03;
   const prepaidDiscountInr = paymentMethod === "online" ? Math.round(subtotalInr * prepaidDiscountRate) : 0;
   const prepaidSavingsPreviewInr = Math.round(subtotalInr * prepaidDiscountRate);
@@ -157,13 +158,17 @@ export default function CheckoutPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const { getSupabase } = await import("@/lib/supabase");
-    const { data: sessionData } = await getSupabase().auth.getSession();
-    if (!sessionData.session) {
-      window.dispatchEvent(new CustomEvent("humor-open-customer-auth"));
-      setError("Please login or create your account before placing an order.");
+    setError(null);
+
+    if (!checkoutMode) {
       return;
     }
+
+    if (checkoutMode === "account" && !isLoggedIn) {
+      window.dispatchEvent(new CustomEvent("humor-open-customer-auth"));
+      return;
+    }
+
     const validationError = validate();
     if (validationError) return setError(validationError);
     setError(null);
@@ -217,6 +222,21 @@ export default function CheckoutPage() {
             </div>
 
             <div>
+              <h2 className="font-display text-xl text-[var(--deep-wine)] mb-4">How would you like to buy?</h2>
+              <div className="space-y-3 mb-7">
+                <button type="button" onClick={() => {
+                  if (isLoggedIn) setCheckoutMode("account");
+                  else window.dispatchEvent(new CustomEvent("humor-open-customer-auth"));
+                }} className={"w-full text-left border rounded-xl px-4 py-3.5 " + (checkoutMode === "account" ? "border-[var(--deep-wine)] bg-[var(--milk-sage)]" : "border-[var(--line)] bg-white")}>
+                  <div className="text-sm font-medium text-[var(--ink)]">Login & buy</div>
+                  <div className="text-xs text-[var(--muted)]">Use your account and get your eligible customer offers.</div>
+                </button>
+                <button type="button" onClick={() => setCheckoutMode("guest")} className={"w-full text-left border rounded-xl px-4 py-3.5 " + (checkoutMode === "guest" ? "border-[var(--deep-wine)] bg-[var(--milk-sage)]" : "border-[var(--line)] bg-white")}>
+                  <div className="text-sm font-medium text-[var(--ink)]">Continue as guest</div>
+                  <div className="text-xs text-[var(--muted)]">No account needed. Enter your delivery details below.</div>
+                </button>
+              </div>
+
               <h2 className="font-display text-xl text-[var(--deep-wine)] mb-4">Payment method</h2>
               <div className="space-y-3">
                 <label className="flex items-center gap-3 border border-[var(--line)] rounded-xl px-4 py-3.5 cursor-pointer has-[:checked]:border-[var(--deep-wine)] has-[:checked]:bg-[var(--milk-sage)]">
