@@ -10,7 +10,7 @@ type Method = "email" | "phone";
 export default function CustomerAuthPopup() {
   const supabase = getSupabase();
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const [mode, setMode] = useState<Mode>("signup");
   const [method, setMethod] = useState<Method>("email");
   const [name, setName] = useState("");
