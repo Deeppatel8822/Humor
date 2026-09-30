@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getSupabase } from "@/lib/supabase";
 import { usePathname } from "next/navigation";
 
 type Mode = "signup" | "login";
@@ -35,8 +34,7 @@ export default function CustomerAuthPopup() {
     const openEvent = () => setOpen(true);
     window.addEventListener("humor-open-customer-auth", openEvent);
 
-    const supabase = getSupabase();
-    supabase.auth.getSession().then(({ data }) => {
+    import("@/lib/supabase").then(({ getSupabase }) => {\n      const supabase = getSupabase();\n      return supabase.auth.getSession();\n    }).then(({ data }) => {
       if (!mounted) return;
       if (data.session) {
         setOpen(false);
@@ -75,6 +73,7 @@ export default function CustomerAuthPopup() {
       ? { email: identifier.trim().toLowerCase(), options: { shouldCreateUser: true, data: mode === "signup" ? { full_name: name.trim() } : undefined } }
       : { phone: identifier.replace(/[\s-]/g, ""), options: { shouldCreateUser: true, data: mode === "signup" ? { full_name: name.trim() } : undefined } };
 
+    const { getSupabase } = await import("@/lib/supabase");
     const { error: otpError } = await getSupabase().auth.signInWithOtp(payload as never);
     if (otpError) setError(otpError.message);
     else {
@@ -90,6 +89,7 @@ export default function CustomerAuthPopup() {
     const tokenPayload = method === "email"
       ? { email: identifier.trim().toLowerCase(), token: otp.trim(), type: "email" as const }
       : { phone: identifier.replace(/[\s-]/g, ""), token: otp.trim(), type: "sms" as const };
+    const { getSupabase } = await import("@/lib/supabase");
     const { data, error: verifyError } = await getSupabase().auth.verifyOtp(tokenPayload);
     if (verifyError || !data.session) {
       setError(verifyError?.message || "Could not verify OTP.");
