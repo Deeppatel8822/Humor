@@ -1,105 +1,85 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 
-interface CodLine {
-  productId: string;
-  quantity: number;
-}
-
+interface CodLine { productId: string; quantity: number; }
 interface ShippingDetails {
-  fullName: string;
-  email: string;
-  phone: string;
-  line1: string;
-  line2?: string;
-  city: string;
-  state: string;
-  pincode: string;
+  fullName: string; email: string; phone: string; line1: string; line2?: string;
+  city: string; state: string; pincode: string;
 }
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as {
-      lines?: CodLine[];
-      shipping?: ShippingDetails;
-    };
-
+    const body = await request.json() as { lines?: CodLine[]; shipping?: ShippingDetails };
     const lines = body.lines ?? [];
     const shipping = body.shipping;
+    if (!lines.length || !shipping) return NextResponse.json({ error: "Order details are incomplete." }, { status: 400 });
 
-    if (!lines.length || !shipping) {
-      return NextResponse.json({ error: "Order details are incomplete." }, { status: 400 });
-    }
-
-    if (
-      !shipping.fullName?.trim() ||
-      !shipping.email?.trim() ||
-      !shipping.phone?.trim() ||
-      !shipping.line1?.trim() ||
-      !shipping.city?.trim() ||
-      !shipping.state?.trim() ||
-      !/^\d{6}$/.test(shipping.pincode)
-    ) {
+    if (!shipping.fullName?.trim() || !shipping.email?.trim() || !shipping.phone?.trim() ||
+        !shipping.line1?.trim() || !shipping.city?.trim() || !shipping.state?.trim() ||
+        !/^\d{6}$/.test(shipping.pincode)) {
       return NextResponse.json({ error: "Please provide valid shipping details." }, { status: 400 });
     }
 
-    // The frontend cart stores the product table UUID as productId.
-    // The atomic Supabase COD function intentionally uses the stable catalog_id.
-    // Resolve UUIDs to catalog IDs here before calling the RPC.
+    const supabase = supabaseAdmin();
+    const authHeader = request.headers.get("authorization") || "";
+    const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
+
+    let firstOrderDiscountInr = 0;
+    if (token) {
+      const { data: authData } = await supabase.auth.getUser(token);
+      const user = authData.user;
+      if (user) {
+        const identity = user.email || user.phone || "";
+        const field = user.email ? "email" : "phone";
+        const { data: customer } = await supabase.from("customers").select("id").eq(field, identity).maybeSingle();
+        if (customer) {
+          const { count } = await supabase.from("orders").select("id", { count: "exact", head: true }).eq("customer_id", customer.id);
+          if ((count ?? 0) === 0) firstOrderDiscountInr = 1;
+        }
+      }
+    }
+
     const productIds = lines.map((line) => line.productId);
     if (productIds.some((id) => !id || typeof id !== "string")) {
       return NextResponse.json({ error: "Invalid product or quantity." }, { status: 400 });
     }
 
-    const supabase = supabaseAdmin();
     const { data: products, error: productsError } = await supabase
-      .from("products")
-      .select("id,catalog_id,status")
-      .in("id", productIds);
-
+      .from("products").select("id,catalog_id,status,price_inr,stock_quantity,name").in("id", productIds);
     if (productsError) throw productsError;
 
-    const productMap = new Map(
-      (products ?? []).map((product) => [String(product.id), product])
-    );
-
+    const productMap = new Map((products ?? []).map((product) => [String(product.id), product]));
+    let subtotalInr = 0;
     const rpcLines = lines.map((line) => {
       const product = productMap.get(line.productId);
-      if (
-        !product ||
-        product.status !== "live" ||
-        !Number.isInteger(line.quantity) ||
-        line.quantity < 1 ||
-        !Number.isInteger(Number(product.catalog_id))
-      ) {
+      if (!product || product.status !== "live" || !Number.isInteger(line.quantity) || line.quantity < 1 ||
+          !Number.isInteger(Number(product.catalog_id)) || product.stock_quantity < line.quantity) {
         throw new Error("Invalid product or quantity.");
       }
-      return {
-        productId: Number(product.catalog_id),
-        quantity: line.quantity,
-      };
+      subtotalInr += Number(product.price_inr) * line.quantity;
+      return { productId: Number(product.catalog_id), quantity: line.quantity };
     });
 
+    const firstOrderDiscount = firstOrderDiscountInr ? Math.round(subtotalInr * 0.10) : 0;
     const { data, error } = await supabase.rpc("create_cod_order", {
       p_lines: rpcLines,
       p_shipping: shipping,
+      p_discount: firstOrderDiscount,
     });
-
     if (error) throw error;
 
     const result = Array.isArray(data) ? data[0] : data;
-    if (!result?.order_number) {
-      throw new Error("Could not create the COD order.");
-    }
+    if (!result?.order_number) throw new Error("Could not create the COD order.");
 
     return NextResponse.json({
       success: true,
       orderNumber: result.order_number,
       totalInr: Number(result.total_inr),
+      discountInr: firstOrderDiscount,
+      codChargeInr: 25,
     });
   } catch (error) {
     console.error("COD order error:", error);
-    const message = error instanceof Error ? error.message : "Could not place your order. Please try again.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Could not place your order." }, { status: 400 });
   }
 }
