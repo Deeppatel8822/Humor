@@ -17,15 +17,26 @@ export async function POST(request: Request) {
     const phone = user.phone || null;
     const fullName = String(body.fullName || user.user_metadata?.full_name || "").trim() || null;
 
-    const { data, error } = await admin
-      .from("customers")
-      .upsert(
-        { email, phone, full_name: fullName },
-        email ? { onConflict: "email" } : { onConflict: "phone" }
-      )
-      .select("id,email,phone,full_name")
-      .single();
+    if (!email && !phone) return NextResponse.json({ error: "No email or mobile found in the account." }, { status: 400 });
 
+    let existing = null;
+    if (email) {
+      const result = await admin.from("customers").select("id").eq("email", email).maybeSingle();
+      if (result.error) throw result.error;
+      existing = result.data;
+    }
+    if (!existing && phone) {
+      const result = await admin.from("customers").select("id").eq("phone", phone).maybeSingle();
+      if (result.error) throw result.error;
+      existing = result.data;
+    }
+
+    const payload = { email, phone, full_name: fullName };
+    const query = existing
+      ? admin.from("customers").update(payload).eq("id", existing.id)
+      : admin.from("customers").insert(payload);
+
+    const { data, error } = await query.select("id,email,phone,full_name").single();
     if (error) {
       console.error("Customer profile sync error:", error);
       return NextResponse.json({ error: "Could not save customer profile. Please try again." }, { status: 500 });
