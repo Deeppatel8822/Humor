@@ -9,18 +9,18 @@ const facts = [
   { value: 0, suffix: "", label: "Proudly Made In", text: "India", icon: "✿" },
 ];
 
-function CountUp({ value, suffix }: { value: number; suffix: string }) {
+function CountUp({ value, suffix, start }: { value: number; suffix: string; start: boolean }) {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
-    if (value === 0) return;
+    if (!start || value === 0) return;
 
     let frame = 0;
     const duration = 900;
-    const start = performance.now();
+    const startedAt = performance.now();
 
     const tick = (now: number) => {
-      const progress = Math.min((now - start) / duration, 1);
+      const progress = Math.min((now - startedAt) / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 3);
       setCount(Math.round(value * eased));
 
@@ -31,14 +31,34 @@ function CountUp({ value, suffix }: { value: number; suffix: string }) {
 
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [value]);
+  }, [start, value]);
 
   return <>{count}{suffix}</>;
 }
 
 export default function TrustFacts() {
+  const [started, setStarted] = useState(false);
+
+  useEffect(() => {
+    const section = document.getElementById("trust-facts");
+    if (!section) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setStarted(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <section className="bg-[var(--milk-sage)] border-y border-[var(--line)] py-14 md:py-16">
+    <section id="trust-facts" className="bg-[var(--milk-sage)] border-y border-[var(--line)] py-14 md:py-16">
       <div className="max-w-7xl mx-auto px-5 md:px-8 grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-6 text-center">
         {facts.map((fact) => (
           <div key={fact.label} className="group">
@@ -49,7 +69,7 @@ export default function TrustFacts() {
               {fact.icon}
             </div>
             <div className="font-display text-2xl md:text-3xl text-[var(--deep-wine)] mb-1 tabular-nums">
-              {fact.text ? fact.text : <CountUp value={fact.value} suffix={fact.suffix} />}
+              {fact.text ? fact.text : <CountUp value={fact.value} suffix={fact.suffix} start={started} />}
             </div>
             <div className="text-xs text-[var(--muted)] uppercase tracking-wide">{fact.label}</div>
           </div>
