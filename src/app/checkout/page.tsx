@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Script from "next/script";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
@@ -21,13 +21,38 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState<"online" | "cod">("online");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isFirstOrder, setIsFirstOrder] = useState(false);
   const [form, setForm] = useState({
     fullName: "", email: "", phone: "", line1: "", line2: "", city: "", state: "", pincode: "",
   });
 
   const shippingInr = 0;
+  const firstOrderDiscountInr = isLoggedIn && isFirstOrder ? Math.round(subtotalInr * 0.10) : 0;
+  const prepaidDiscountRate = paymentMethod === "online" ? (subtotalInr >= 1000 ? 0.04 : 0.03) : 0;
+  const prepaidDiscountInr = Math.round(subtotalInr * prepaidDiscountRate);
   const codChargeInr = paymentMethod === "cod" ? 25 : 0;
-  const totalInr = subtotalInr + shippingInr + codChargeInr;
+  const totalDiscountInr = firstOrderDiscountInr + prepaidDiscountInr;
+  const totalInr = Math.max(0, subtotalInr - totalDiscountInr + shippingInr + codChargeInr);
+
+  useEffect(() => {
+    let active = true;
+    import("@/lib/supabase").then(async ({ getSupabase }) => {
+      const { data } = await getSupabase().auth.getSession();
+      if (!active) return;
+      const session = data.session;
+      setIsLoggedIn(Boolean(session));
+      if (!session) return;
+      const res = await fetch("/api/customer/offer", {
+        headers: { Authorization: "Bearer " + session.access_token },
+      });
+      if (res.ok) {
+        const offer = await res.json();
+        if (active) setIsFirstOrder(Boolean(offer.firstOrder));
+      }
+    }).catch(() => {});
+    return () => { active = false; };
+  }, []);
 
   function updateField(field: keyof typeof form, value: string) {
     setForm((f) => ({ ...f, [field]: value }));
@@ -65,7 +90,7 @@ export default function CheckoutPage() {
     const createRes = await fetch("/api/razorpay/create-order", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ lines: lines.map((l) => ({ productId: l.productId, quantity: l.quantity })) }),
+      body: JSON.stringify({ lines: lines.map((l) => ({ productId: l.productId, quantity: l.quantity })), paymentMethod: "online" }),
     });
     const createData = await createRes.json();
     if (!createRes.ok) throw new Error(createData.error ?? "Could not start payment.");
@@ -89,7 +114,7 @@ export default function CheckoutPage() {
               body: JSON.stringify({
                 ...r,
                 lines: lines.map((l) => ({ productId: l.productId, quantity: l.quantity })),
-                shipping: form, subtotalInr, shippingInr,
+                shipping: form, subtotalInr, shippingInr, firstOrderDiscountInr, prepaidDiscountInr,
               }),
             });
             const verifyData = await verifyRes.json();
@@ -188,8 +213,8 @@ export default function CheckoutPage() {
             </div>
             <div className="border-t border-[var(--line)] pt-4 space-y-2">
               <div className="flex justify-between text-sm text-[var(--muted)]"><span>Subtotal</span><span>&#8377;{subtotalInr}</span></div>
-              <div className="flex justify-between text-sm text-[var(--muted)]"><span>Shipping</span><span>Free</span></div>
-              {paymentMethod === "cod" && <div className="flex justify-between text-sm text-[var(--muted)]"><span>COD charge</span><span>&#8377;25</span></div>}
+              {firstOrderDiscountInr > 0 && <div className="flex justify-between text-sm text-[var(--muted)]"><span>First order 10% OFF</span><span className="text-green-700">−₹{firstOrderDiscountInr}</span></div>}\n              {prepaidDiscountInr > 0 && <div className="flex justify-between text-sm text-[var(--muted)]"><span>Prepaid savings ({Math.round(prepaidDiscountRate * 100)}%)</span><span className="text-green-700">−₹{prepaidDiscountInr}</span></div>}\n              <div className="flex justify-between text-sm text-[var(--muted)]"><span>Shipping</span><span>Free</span></div>
+              {paymentMethod === "cod" && <div className="flex justify-between text-sm text-[var(--muted)]"><span>COD charge</span><span>+&#8377;25</span></div>}\n              {totalDiscountInr > 0 && <div className="mt-2 rounded-lg bg-white/70 px-3 py-2 text-xs font-medium text-green-700">You save &#8377;{totalDiscountInr} on this order</div>}
               <div className="flex justify-between text-base font-semibold text-[var(--ink)] pt-2"><span>Total</span><span>&#8377;{totalInr}</span></div>
             </div>
             <button type="submit" disabled={submitting} className="w-full mt-6 bg-[var(--deep-wine)] text-white px-6 py-3.5 rounded-full text-sm font-medium hover:bg-[var(--ink)] transition-colors disabled:opacity-50">
