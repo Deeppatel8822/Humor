@@ -28,6 +28,12 @@ export default function CartPage() {
   const amountToFreeShippingInr = Math.max(0, freeShippingThresholdInr - subtotalInr);
 
   async function handleCheckout() {
+    const { getSupabase } = await import("@/lib/supabase");
+    const { data } = await getSupabase().auth.getSession();
+    if (!data.session) {
+      window.dispatchEvent(new CustomEvent("humor-open-customer-auth"));
+      return;
+    }
     setCheckingOut(true);
     const result = await startCheckout();
     if (result.mode === "shopify" && result.url) {
