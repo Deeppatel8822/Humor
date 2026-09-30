@@ -11,15 +11,9 @@ export default function CustomerAuthPopup() {
   const [open, setOpen] = useState(true);
   const [mode, setMode] = useState<Mode>("signup");
   const [loginMethod, setLoginMethod] = useState<LoginMethod>("email");
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-  const [line1, setLine1] = useState("");
-  const [line2, setLine2] = useState("");
-  const [city, setCity] = useState("");
-  const [state, setState] = useState("");
-  const [pincode, setPincode] = useState("");
   const [identifier, setIdentifier] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -106,11 +100,9 @@ export default function CustomerAuthPopup() {
 
   async function signup() {
     setError("");
-    if (!name.trim()) return setError("Please enter your name.");
     if (!/^\S+@\S+\.\S+$/.test(email.trim())) return setError("Enter a valid email address.");
     if (!/^\+?[1-9]\d{9,14}$/.test(phone.replace(/[\s-]/g, ""))) return setError("Enter a valid mobile number with country code, e.g. +919586233163.");
     if (password.length < 6) return setError("Password must be at least 6 characters.");
-    if (!line1.trim() || !city.trim() || !state.trim() || !/^\d{6}$/.test(pincode)) return setError("Please complete your address and 6-digit pincode.");
 
     setLoading(true);
     try {
@@ -119,11 +111,9 @@ export default function CustomerAuthPopup() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          fullName: name.trim(),
           email: email.trim().toLowerCase(),
           phone: cleanPhone,
           password,
-          address: { line1: line1.trim(), line2: line2.trim(), city: city.trim(), state: state.trim(), pincode },
         }),
       });
       const data = await response.json();
@@ -162,7 +152,7 @@ export default function CustomerAuthPopup() {
         <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--warm-gold)]">Humor Luxury</p>
         <h2 className="mt-2 font-display text-2xl text-[var(--deep-wine)]">{mode === "signup" ? "Get 10% OFF your first order" : "Welcome back"}</h2>
         <p className="mt-2 text-sm leading-5 text-[var(--muted)]">
-          {mode === "signup" ? "Create your account with your mobile, email, password and delivery address." : "Login with your email or mobile number and password."}
+          {mode === "signup" ? "Create your account with your mobile number, email and password." : "Login with your email or mobile number and password."}
         </p>
 
         <div className="mt-5 grid grid-cols-2 rounded-full bg-[var(--milk-sage)] p-1">
@@ -184,22 +174,16 @@ export default function CustomerAuthPopup() {
         ) : (
           <>
             <div className="grid sm:grid-cols-2 gap-3 mt-4">
-              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" className="w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm outline-none sm:col-span-2" />
               <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Mobile number with +91" type="tel" className="w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm outline-none" />
               <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email address" type="email" className="w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm outline-none" />
               <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Create password" type="password" className="w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm outline-none sm:col-span-2" />
-              <input value={line1} onChange={(e) => setLine1(e.target.value)} placeholder="Address line 1" className="w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm outline-none sm:col-span-2" />
-              <input value={line2} onChange={(e) => setLine2(e.target.value)} placeholder="Address line 2 (optional)" className="w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm outline-none sm:col-span-2" />
-              <input value={city} onChange={(e) => setCity(e.target.value)} placeholder="City" className="w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm outline-none" />
-              <input value={state} onChange={(e) => setState(e.target.value)} placeholder="State" className="w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm outline-none" />
-              <input value={pincode} onChange={(e) => setPincode(e.target.value)} placeholder="Pincode (6 digits)" inputMode="numeric" className="w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm outline-none" />
             </div>
             {error && <p className="mt-3 text-xs text-red-600">{error}</p>}
             <button onClick={signup} disabled={loading} className="mt-4 w-full rounded-full bg-[var(--deep-wine)] px-5 py-3.5 text-sm font-medium text-white disabled:opacity-50">{loading ? "Creating account…" : "Create account & get 10% OFF"}</button>
           </>
         )}
 
-        <p className="mt-4 text-center text-[10px] leading-4 text-[var(--muted)]">Your account, contact details and delivery address are stored securely for orders and offers.</p>
+        <p className="mt-4 text-center text-[10px] leading-4 text-[var(--muted)]">Your account details are saved securely. Add your delivery address at checkout.</p>
       </div>
     </div>
   );
