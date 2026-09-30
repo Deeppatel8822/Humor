@@ -57,7 +57,8 @@ export async function POST(req: NextRequest) {
   }
   const prepaidDiscountInr = Math.round(subtotalInr * (subtotalInr >= 1000 ? 0.04 : 0.03));
   const totalDiscountInr = firstOrderDiscountInr + prepaidDiscountInr;
-  const totalInr = Math.max(0, subtotalInr - totalDiscountInr + shippingInr);
+  const calculatedShippingInr = subtotalInr >= 299 ? 0 : 50;
+  const totalInr = Math.max(0, subtotalInr - totalDiscountInr + calculatedShippingInr);
   const orderNumber = `HL-${Math.floor(10000 + Math.random() * 90000)}`;
 
   // 2. Persist the order. If Supabase isn't configured yet (local dev before
@@ -103,7 +104,7 @@ export async function POST(req: NextRequest) {
         status: "paid",
         subtotal_inr: subtotalInr,
         discount_inr: totalDiscountInr,
-        shipping_inr: shippingInr,
+        shipping_inr: calculatedShippingInr,
         total_inr: totalInr,
         shipping_address_id: address.id,
         razorpay_order_id,
