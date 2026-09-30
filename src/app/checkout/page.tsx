@@ -157,6 +157,13 @@ export default function CheckoutPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const { getSupabase } = await import("@/lib/supabase");
+    const { data: sessionData } = await getSupabase().auth.getSession();
+    if (!sessionData.session) {
+      window.dispatchEvent(new CustomEvent("humor-open-customer-auth"));
+      setError("Please login or create your account before placing an order.");
+      return;
+    }
     const validationError = validate();
     if (validationError) return setError(validationError);
     setError(null);
