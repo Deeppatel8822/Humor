@@ -68,7 +68,13 @@ export default function CheckoutPage() {
     return null;
   }
 
-  async function authHeaders() {\n    const { getSupabase } = await import("@/lib/supabase");\n    const { data } = await getSupabase().auth.getSession();\n    return data.session ? { Authorization: "Bearer " + data.session.access_token } : {};\n  }\n\n  async function handleCodOrder() {
+  async function authHeaders() {
+    const { getSupabase } = await import("@/lib/supabase");
+    const { data } = await getSupabase().auth.getSession();
+    return data.session ? { Authorization: "Bearer " + data.session.access_token } : {};
+  }
+
+  async function handleCodOrder() {
     const response = await fetch("/api/orders/cod", {
       method: "POST",
       headers: { "Content-Type": "application/json", ...(await authHeaders()) },
@@ -214,8 +220,11 @@ export default function CheckoutPage() {
             </div>
             <div className="border-t border-[var(--line)] pt-4 space-y-2">
               <div className="flex justify-between text-sm text-[var(--muted)]"><span>Subtotal</span><span>&#8377;{subtotalInr}</span></div>
-              {firstOrderDiscountInr > 0 && <div className="flex justify-between text-sm text-[var(--muted)]"><span>First order 10% OFF</span><span className="text-green-700">−₹{firstOrderDiscountInr}</span></div>}\n              {prepaidDiscountInr > 0 && <div className="flex justify-between text-sm text-[var(--muted)]"><span>Prepaid savings ({Math.round(prepaidDiscountRate * 100)}%)</span><span className="text-green-700">−₹{prepaidDiscountInr}</span></div>}\n              <div className="flex justify-between text-sm text-[var(--muted)]"><span>Shipping</span><span>Free</span></div>
-              {paymentMethod === "cod" && <div className="flex justify-between text-sm text-[var(--muted)]"><span>COD charge</span><span>+&#8377;25</span></div>}\n              {totalDiscountInr > 0 && <div className="mt-2 rounded-lg bg-white/70 px-3 py-2 text-xs font-medium text-green-700">You save &#8377;{totalDiscountInr} on this order</div>}
+              {firstOrderDiscountInr > 0 && <div className="flex justify-between text-sm text-[var(--muted)]"><span>First order 10% OFF</span><span className="text-green-700">−₹{firstOrderDiscountInr}</span></div>}
+              {prepaidDiscountInr > 0 && <div className="flex justify-between text-sm text-[var(--muted)]"><span>Prepaid savings ({Math.round(prepaidDiscountRate * 100)}%)</span><span className="text-green-700">−₹{prepaidDiscountInr}</span></div>}
+              <div className="flex justify-between text-sm text-[var(--muted)]"><span>Shipping</span><span>Free</span></div>
+              {paymentMethod === "cod" && <div className="flex justify-between text-sm text-[var(--muted)]"><span>COD charge</span><span>+&#8377;25</span></div>}
+              {totalDiscountInr > 0 && <div className="mt-2 rounded-lg bg-white/70 px-3 py-2 text-xs font-medium text-green-700">You save &#8377;{totalDiscountInr} on this order</div>}
               <div className="flex justify-between text-base font-semibold text-[var(--ink)] pt-2"><span>Total</span><span>&#8377;{totalInr}</span></div>
             </div>
             <button type="submit" disabled={submitting} className="w-full mt-6 bg-[var(--deep-wine)] text-white px-6 py-3.5 rounded-full text-sm font-medium hover:bg-[var(--ink)] transition-colors disabled:opacity-50">
