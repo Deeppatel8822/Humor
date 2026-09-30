@@ -106,7 +106,7 @@ export default function CustomerAuthPopup() {
     const profileRes = await fetch("/api/customer/profile", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: "Bearer " + accessToken },
-      body: JSON.stringify({ fullName: name.trim() || data.user.user_metadata?.full_name || "" }),
+      body: JSON.stringify({ fullName: name.trim() || data.session.user.user_metadata?.full_name || "" }),
     });
     const profileData = await profileRes.json();
     if (!profileRes.ok) {
