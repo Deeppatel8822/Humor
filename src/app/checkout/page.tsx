@@ -23,11 +23,15 @@ export default function CheckoutPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isFirstOrder, setIsFirstOrder] = useState(false);
+  const [showFreeShippingCelebration, setShowFreeShippingCelebration] = useState(false);
   const [form, setForm] = useState({
     fullName: "", email: "", phone: "", line1: "", line2: "", city: "", state: "", pincode: "",
   });
 
-  const shippingInr = 0;
+  const freeShippingThresholdInr = 299;
+  const shippingInr = subtotalInr >= freeShippingThresholdInr ? 0 : 50;
+  const amountToFreeShippingInr = Math.max(0, freeShippingThresholdInr - subtotalInr);
+  const qualifiesForFreeShipping = subtotalInr >= freeShippingThresholdInr;
   const firstOrderDiscountInr = isLoggedIn && isFirstOrder ? Math.round(subtotalInr * 0.10) : 0;
   const prepaidDiscountRate = subtotalInr >= 1000 ? 0.04 : 0.03;
   const prepaidDiscountInr = paymentMethod === "online" ? Math.round(subtotalInr * prepaidDiscountRate) : 0;
@@ -35,6 +39,15 @@ export default function CheckoutPage() {
   const codChargeInr = paymentMethod === "cod" ? 25 : 0;
   const totalDiscountInr = firstOrderDiscountInr + prepaidDiscountInr;
   const totalInr = Math.max(0, subtotalInr - totalDiscountInr + shippingInr + codChargeInr);
+
+  useEffect(() => {
+    if (qualifiesForFreeShipping) {
+      setShowFreeShippingCelebration(true);
+      const timer = window.setTimeout(() => setShowFreeShippingCelebration(false), 3200);
+      return () => window.clearTimeout(timer);
+    }
+    setShowFreeShippingCelebration(false);
+  }, [qualifiesForFreeShipping]);
 
   useEffect(() => {
     let active = true;
@@ -170,6 +183,13 @@ export default function CheckoutPage() {
   return (
     <>
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
+      {showFreeShippingCelebration && (
+        <div className="fixed inset-x-0 top-5 z-[90] flex justify-center px-4 pointer-events-none">
+          <div className="rounded-full bg-green-600 px-5 py-3 text-sm font-semibold text-white shadow-xl">
+            🎉 Free shipping unlocked!
+          </div>
+        </div>
+      )}
       <div className="max-w-5xl mx-auto px-5 md:px-8 py-14">
         <h1 className="font-display text-3xl md:text-4xl text-[var(--deep-wine)] mb-8">Checkout</h1>
 
@@ -225,7 +245,21 @@ export default function CheckoutPage() {
               <div className="flex justify-between text-sm text-[var(--muted)]"><span>Subtotal</span><span>&#8377;{subtotalInr}</span></div>
               {firstOrderDiscountInr > 0 && <div className="flex justify-between text-sm text-[var(--muted)]"><span>First order 10% OFF</span><span className="text-green-700">−₹{firstOrderDiscountInr}</span></div>}
               {prepaidDiscountInr > 0 && <div className="flex justify-between text-sm text-[var(--muted)]"><span>Prepaid savings ({Math.round(prepaidDiscountRate * 100)}%)</span><span className="text-green-700">−₹{prepaidDiscountInr}</span></div>}
-              <div className="flex justify-between text-sm text-[var(--muted)]"><span>Shipping</span><span>Free</span></div>
+              <div className="flex justify-between text-sm text-[var(--muted)]">
+                <span>Shipping</span>
+                <span className={qualifiesForFreeShipping ? "font-medium text-green-700" : "text-[var(--ink)]"}>
+                  {qualifiesForFreeShipping ? "Free" : "₹50"}
+                </span>
+              </div>
+              {qualifiesForFreeShipping ? (
+                <div className="rounded-lg bg-green-50 px-3 py-2 text-xs font-medium text-green-700">
+                  🎉 You’re eligible for FREE shipping!
+                </div>
+              ) : (
+                <div className="rounded-lg bg-white/70 px-3 py-2 text-xs text-[var(--muted)]">
+                  Add ₹{amountToFreeShippingInr} more to get FREE shipping.
+                </div>
+              )}
               {paymentMethod === "cod" && <div className="flex justify-between text-sm text-[var(--muted)]"><span>COD charge</span><span>+&#8377;25</span></div>}
               {totalDiscountInr > 0 && <div className="mt-2 rounded-lg bg-white/70 px-3 py-2 text-xs font-medium text-green-700">You save &#8377;{totalDiscountInr} on this order</div>}
               <div className="flex justify-between text-base font-semibold text-[var(--ink)] pt-2"><span>Total</span><span>&#8377;{totalInr}</span></div>
