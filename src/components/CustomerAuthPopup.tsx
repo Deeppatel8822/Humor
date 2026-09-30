@@ -26,24 +26,33 @@ export default function CustomerAuthPopup() {
       setOpen(false);
       return;
     }
+
     let mounted = true;
+
+    const openPopup = () => {
+      if (mounted) setOpen(true);
+    };
+
     supabase.auth.getSession().then(({ data }) => {
-      if (!mounted || data.session) {
-        if (mounted) setOpen(false);
+      if (!mounted) return;
+      if (data.session) {
+        setOpen(false);
         return;
       }
-      window.setTimeout(() => {
-        if (mounted) setOpen(true);
-      }, 700);
+      window.setTimeout(openPopup, 500);
+    }).catch(() => {
+      window.setTimeout(openPopup, 500);
     });
+
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) setOpen(false);
+      if (mounted && session) setOpen(false);
     });
+
     return () => {
       mounted = false;
       listener.subscription.unsubscribe();
     };
-  }, [pathname, supabase]);
+  }, [pathname]);
 
   function close() {
     setOpen(false);
