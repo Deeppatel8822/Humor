@@ -68,15 +68,16 @@ export default function CheckoutPage() {
     return null;
   }
 
-  async function handleCodOrder() {
+  async function authHeaders() {\n    const { getSupabase } = await import("@/lib/supabase");\n    const { data } = await getSupabase().auth.getSession();\n    return data.session ? { Authorization: "Bearer " + data.session.access_token } : {};\n  }\n\n  async function handleCodOrder() {
     const response = await fetch("/api/orders/cod", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...(await authHeaders()) },
       body: JSON.stringify({
         lines: lines.map((l) => ({ productId: l.productId, quantity: l.quantity })),
         shipping: form,
         subtotalInr,
         shippingInr,
+        firstOrderDiscountInr,
       }),
     });
     const data = await response.json();
@@ -89,8 +90,8 @@ export default function CheckoutPage() {
   async function handleOnlinePayment() {
     const createRes = await fetch("/api/razorpay/create-order", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ lines: lines.map((l) => ({ productId: l.productId, quantity: l.quantity })), paymentMethod: "online" }),
+      headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+      body: JSON.stringify({ lines: lines.map((l) => ({ productId: l.productId, quantity: l.quantity })), paymentMethod: "online", firstOrderDiscountInr, prepaidDiscountInr }),
     });
     const createData = await createRes.json();
     if (!createRes.ok) throw new Error(createData.error ?? "Could not start payment.");
@@ -110,7 +111,7 @@ export default function CheckoutPage() {
             const r = response as { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string; };
             const verifyRes = await fetch("/api/razorpay/verify", {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
+              headers: { "Content-Type": "application/json", ...(await authHeaders()) },
               body: JSON.stringify({
                 ...r,
                 lines: lines.map((l) => ({ productId: l.productId, quantity: l.quantity })),
