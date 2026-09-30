@@ -19,6 +19,7 @@ declare
   v_order_number text;
   v_subtotal integer := 0;
   v_shipping integer := 0;
+  v_cod_charge integer := 25;
   v_total integer := 0;
   v_line jsonb;
   v_product record;
@@ -67,7 +68,7 @@ begin
     v_subtotal := v_subtotal + (v_product.price_inr * v_quantity);
   end loop;
 
-  v_total := v_subtotal + v_shipping;
+  v_total := v_subtotal + v_shipping + v_cod_charge;
 
   insert into public.customers (email, phone, full_name)
   values (
