@@ -5,7 +5,8 @@
 
 create or replace function public.create_cod_order(
   p_lines jsonb,
-  p_shipping jsonb
+  p_shipping jsonb,
+  p_discount integer default 0
 )
 returns table(order_number text, total_inr integer)
 language plpgsql
@@ -68,7 +69,7 @@ begin
     v_subtotal := v_subtotal + (v_product.price_inr * v_quantity);
   end loop;
 
-  v_total := v_subtotal + v_shipping + v_cod_charge;
+  v_total := greatest(v_subtotal - greatest(coalesce(p_discount, 0), 0), 0) + v_shipping + v_cod_charge;
 
   insert into public.customers (email, phone, full_name)
   values (
@@ -103,7 +104,7 @@ begin
     shipping_inr, total_inr, shipping_address_id, payment_status
   )
   values (
-    v_order_number, v_customer_id, 'pending', v_subtotal, 0,
+    v_order_number, v_customer_id, 'pending', v_subtotal, greatest(coalesce(p_discount, 0), 0),
     v_shipping, v_total, v_address_id, 'unpaid'
   )
   returning id into v_order_id;
@@ -133,5 +134,5 @@ begin
 end;
 $$;
 
-revoke all on function public.create_cod_order(jsonb, jsonb) from public;
-grant execute on function public.create_cod_order(jsonb, jsonb) to service_role;
+revoke all on function public.create_cod_order(jsonb, jsonb, integer) from public;
+grant execute on function public.create_cod_order(jsonb, jsonb, integer) to service_role;
