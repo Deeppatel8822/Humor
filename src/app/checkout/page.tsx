@@ -26,7 +26,8 @@ export default function CheckoutPage() {
   });
 
   const shippingInr = 0;
-  const totalInr = subtotalInr + shippingInr;
+  const codChargeInr = paymentMethod === "cod" ? 25 : 0;
+  const totalInr = subtotalInr + shippingInr + codChargeInr;
 
   function updateField(field: keyof typeof form, value: string) {
     setForm((f) => ({ ...f, [field]: value }));
@@ -188,6 +189,7 @@ export default function CheckoutPage() {
             <div className="border-t border-[var(--line)] pt-4 space-y-2">
               <div className="flex justify-between text-sm text-[var(--muted)]"><span>Subtotal</span><span>&#8377;{subtotalInr}</span></div>
               <div className="flex justify-between text-sm text-[var(--muted)]"><span>Shipping</span><span>Free</span></div>
+              {paymentMethod === "cod" && <div className="flex justify-between text-sm text-[var(--muted)]"><span>COD charge</span><span>&#8377;25</span></div>}
               <div className="flex justify-between text-base font-semibold text-[var(--ink)] pt-2"><span>Total</span><span>&#8377;{totalInr}</span></div>
             </div>
             <button type="submit" disabled={submitting} className="w-full mt-6 bg-[var(--deep-wine)] text-white px-6 py-3.5 rounded-full text-sm font-medium hover:bg-[var(--ink)] transition-colors disabled:opacity-50">
