@@ -37,14 +37,34 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Payment verification failed." }, { status: 400 });
   }
 
-  const totalInr = subtotalInr + shippingInr;
+  const authHeader = req.headers.get("authorization") || "";
+  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
+  let firstOrderDiscountInr = 0;
+  if (token) {
+    const { data: authData } = await supabaseAdmin().auth.getUser(token);
+    if (authData.user) {
+      const admin = supabaseAdmin();
+      const identity = authData.user.email || authData.user.phone || "";
+      const field = authData.user.email ? "email" : "phone";
+      const { data: customer } = await admin.from("customers").select("id").eq(field, identity).maybeSingle();
+      if (customer) {
+        const { count } = await admin.from("orders").select("id", { count: "exact", head: true }).eq("customer_id", customer.id);
+        if ((count ?? 0) === 0) firstOrderDiscountInr = Math.round(subtotalInr * 0.10);
+      } else {
+        firstOrderDiscountInr = Math.round(subtotalInr * 0.10);
+      }
+    }
+  }
+  const prepaidDiscountInr = Math.round(subtotalInr * (subtotalInr >= 1000 ? 0.04 : 0.03));
+  const totalDiscountInr = firstOrderDiscountInr + prepaidDiscountInr;
+  const totalInr = Math.max(0, subtotalInr - totalDiscountInr + shippingInr);
   const orderNumber = `HL-${Math.floor(10000 + Math.random() * 90000)}`;
 
   // 2. Persist the order. If Supabase isn't configured yet (local dev before
   // the project is set up), skip persistence but still confirm the payment —
   // the money has moved either way, so the customer should see success.
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    return NextResponse.json({ orderNumber, persisted: false });
+    return NextResponse.json({ orderNumber, persisted: false, totalInr, discountInr: totalDiscountInr });
   }
 
   try {
@@ -82,6 +102,7 @@ export async function POST(req: NextRequest) {
         customer_id: customer.id,
         status: "paid",
         subtotal_inr: subtotalInr,
+        discount_inr: totalDiscountInr,
         shipping_inr: shippingInr,
         total_inr: totalInr,
         shipping_address_id: address.id,
@@ -105,9 +126,9 @@ export async function POST(req: NextRequest) {
     const { error: itemsErr } = await admin.from("order_items").insert(orderItems);
     if (itemsErr) throw itemsErr;
 
-    return NextResponse.json({ orderNumber, orderId: order.id, persisted: true });
+    return NextResponse.json({ orderNumber, orderId: order.id, persisted: true, totalInr, discountInr: totalDiscountInr });
   } catch (err) {
     console.error("Order persistence failed after successful payment:", err);
-    return NextResponse.json({ orderNumber, persisted: false, warning: "Order recorded, but confirmation email may be delayed." });
+    return NextResponse.json({ orderNumber, persisted: false, totalInr, discountInr: totalDiscountInr, warning: "Order recorded, but confirmation email may be delayed." });
   }
 }
