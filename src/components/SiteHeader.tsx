@@ -19,7 +19,7 @@ export default function SiteHeader() {
   return (
     <div className="sticky top-0 z-50">
       <div className="bg-[var(--deep-wine)] text-white text-center text-xs py-2 px-4">
-        Free shipping on all orders &nbsp;&middot;&nbsp; Dermatologist tested, made in India
+        Free shipping on orders ₹299+ &nbsp;&middot;&nbsp; Dermatologist tested, made in India
       </div>
 
       <header className="bg-white/95 backdrop-blur border-b border-[var(--line)]">
