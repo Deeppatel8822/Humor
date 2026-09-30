@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { getSupabase } from "@/lib/supabase";
+import { usePathname } from "next/navigation";
 
 type Mode = "signup" | "login";
 type Method = "email" | "phone";
 
 export default function CustomerAuthPopup() {
   const supabase = getSupabase();
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<Mode>("signup");
   const [method, setMethod] = useState<Method>("email");
@@ -20,21 +22,30 @@ export default function CustomerAuthPopup() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    if (pathname.startsWith("/admin")) {
+      setOpen(false);
+      return;
+    }
     let mounted = true;
     supabase.auth.getSession().then(({ data }) => {
-      if (!mounted || data.session) return;
-      const key = "humor_customer_popup_seen";
-      if (!sessionStorage.getItem(key)) {
-        window.setTimeout(() => {
-          if (mounted) setOpen(true);
-        }, 900);
+      if (!mounted || data.session) {
+        if (mounted) setOpen(false);
+        return;
       }
+      window.setTimeout(() => {
+        if (mounted) setOpen(true);
+      }, 700);
     });
-    return () => { mounted = false; };
-  }, [supabase]);
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) setOpen(false);
+    });
+    return () => {
+      mounted = false;
+      listener.subscription.unsubscribe();
+    };
+  }, [pathname, supabase]);
 
   function close() {
-    sessionStorage.setItem("humor_customer_popup_seen", "1");
     setOpen(false);
     setError("");
   }
