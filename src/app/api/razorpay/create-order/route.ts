@@ -36,8 +36,7 @@ export async function POST(req: NextRequest) {
       subtotalInr += product.price_inr * line.quantity;
     }
 
-    const freeShippingThreshold = 599;
-    const shippingInr = subtotalInr >= freeShippingThreshold ? 0 : 60;
+    const shippingInr = 0;
     let firstOrderDiscountInr = 0;
     if (token) {
       const admin = (await import("@/lib/supabase")).supabaseAdmin();
