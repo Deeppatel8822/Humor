@@ -4,6 +4,7 @@ import ProductCard from "@/components/ProductCard";
 import HeroSlider from "@/components/HeroSlider";
 import SocialReels from "@/components/SocialReels";
 import { getAllProducts } from "@/lib/catalog";
+import TrustFacts from "@/components/TrustFacts";
 
 const usps = [
   "Dermatologist Tested",
@@ -125,14 +126,7 @@ export default async function Home() {
       <SocialReels />
 
       {/* Trust facts */}
-      <section className="bg-[var(--milk-sage)] border-y border-[var(--line)] py-16">
-        <div className="max-w-7xl mx-auto px-5 md:px-8 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-          <div><div className="font-display text-2xl text-[var(--deep-wine)] mb-1">11</div><div className="text-xs text-[var(--muted)] uppercase tracking-wide">Products, 3 Categories</div></div>
-          <div><div className="font-display text-2xl text-[var(--deep-wine)] mb-1">100%</div><div className="text-xs text-[var(--muted)] uppercase tracking-wide">Cruelty Free</div></div>
-          <div><div className="font-display text-2xl text-[var(--deep-wine)] mb-1">0</div><div className="text-xs text-[var(--muted)] uppercase tracking-wide">Parabens / Sulphates</div></div>
-          <div><div className="font-display text-2xl text-[var(--deep-wine)] mb-1">India</div><div className="text-xs text-[var(--muted)] uppercase tracking-wide">Proudly Made In</div></div>
-        </div>
-      </section>
+      <TrustFacts />
     </>
   );
 }
