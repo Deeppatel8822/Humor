@@ -29,8 +29,9 @@ export default function CheckoutPage() {
 
   const shippingInr = 0;
   const firstOrderDiscountInr = isLoggedIn && isFirstOrder ? Math.round(subtotalInr * 0.10) : 0;
-  const prepaidDiscountRate = paymentMethod === "online" ? (subtotalInr >= 1000 ? 0.04 : 0.03) : 0;
-  const prepaidDiscountInr = Math.round(subtotalInr * prepaidDiscountRate);
+  const prepaidDiscountRate = subtotalInr >= 1000 ? 0.04 : 0.03;
+  const prepaidDiscountInr = paymentMethod === "online" ? Math.round(subtotalInr * prepaidDiscountRate) : 0;
+  const prepaidSavingsPreviewInr = Math.round(subtotalInr * prepaidDiscountRate);
   const codChargeInr = paymentMethod === "cod" ? 25 : 0;
   const totalDiscountInr = firstOrderDiscountInr + prepaidDiscountInr;
   const totalInr = Math.max(0, subtotalInr - totalDiscountInr + shippingInr + codChargeInr);
@@ -195,14 +196,14 @@ export default function CheckoutPage() {
                   <input type="radio" name="payment" checked={paymentMethod === "online"} onChange={() => setPaymentMethod("online")} />
                   <div>
                     <div className="text-sm font-medium text-[var(--ink)]">Pay online — UPI, Cards, Netbanking</div>
-                    <div className="text-xs text-[var(--muted)]">Secured by Razorpay</div>
+                    <div className="text-xs text-[var(--muted)]">Secured by Razorpay · Save ₹{prepaidSavingsPreviewInr} ({Math.round(prepaidDiscountRate * 100)}% prepaid)</div>
                   </div>
                 </label>
                 <label className="flex items-center gap-3 border border-[var(--line)] rounded-xl px-4 py-3.5 cursor-pointer has-[:checked]:border-[var(--deep-wine)] has-[:checked]:bg-[var(--milk-sage)]">
                   <input type="radio" name="payment" checked={paymentMethod === "cod"} onChange={() => setPaymentMethod("cod")} />
                   <div>
                     <div className="text-sm font-medium text-[var(--ink)]">Cash on delivery</div>
-                    <div className="text-xs text-[var(--muted)]">Pay when your order arrives</div>
+                    <div className="text-xs text-[var(--muted)]">Pay when your order arrives · +₹25 COD charge</div>
                   </div>
                 </label>
               </div>
