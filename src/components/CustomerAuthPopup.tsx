@@ -26,32 +26,39 @@ export default function CustomerAuthPopup() {
     }
 
     let mounted = true;
-
-    const openPopup = () => {
-      if (mounted) setOpen(true);
-    };
+    let unsubscribe: (() => void) | undefined;
 
     const openEvent = () => setOpen(true);
     window.addEventListener("humor-open-customer-auth", openEvent);
 
-    import("@/lib/supabase").then(({ getSupabase }) => {\n      const supabase = getSupabase();\n      return supabase.auth.getSession();\n    }).then(({ data }) => {
-      if (!mounted) return;
-      if (data.session) {
-        setOpen(false);
-        return;
-      }
-      window.setTimeout(openPopup, 500);
-    }).catch(() => {
-      window.setTimeout(openPopup, 500);
-    });
+    import("@/lib/supabase")
+      .then(({ getSupabase }) => {
+        if (!mounted) return;
+        const supabase = getSupabase();
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (mounted && session) setOpen(false);
-    });
+        supabase.auth.getSession().then(({ data }) => {
+          if (!mounted) return;
+          if (data.session) {
+            setOpen(false);
+          } else {
+            window.setTimeout(() => mounted && setOpen(true), 500);
+          }
+        }).catch(() => {
+          if (mounted) window.setTimeout(() => setOpen(true), 500);
+        });
+
+        const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+          if (mounted && session) setOpen(false);
+        });
+        unsubscribe = () => listener.subscription.unsubscribe();
+      })
+      .catch(() => {
+        if (mounted) window.setTimeout(() => setOpen(true), 500);
+      });
 
     return () => {
       mounted = false;
-      listener.subscription.unsubscribe();
+      unsubscribe?.();
       window.removeEventListener("humor-open-customer-auth", openEvent);
     };
   }, [pathname]);
