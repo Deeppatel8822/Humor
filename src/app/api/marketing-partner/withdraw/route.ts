@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     };
 
     const { error } = await admin.auth.admin.updateUserById(authData.user.id, {
-      app_metadata: { marketing_partner: next },
+      app_metadata: { ...authData.user.app_metadata, marketing_partner: next },
     });
     if (error) throw error;
 
