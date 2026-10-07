@@ -145,7 +145,11 @@ export async function POST(req: NextRequest) {
 
     if (partnerMatch) {
       const billedProductAmount = Math.max(0, subtotalInr - firstOrderDiscountInr - partnerDiscountInr);
-      await creditPartnerReward(partnerMatch.user.id, partnerMatch.partner, billedProductAmount, orderNumber);
+      try {
+        await creditPartnerReward(partnerMatch.user.id, partnerMatch.partner, billedProductAmount, orderNumber);
+      } catch (rewardError) {
+        console.error("Marketing Partner reward credit failed after paid order:", rewardError);
+      }
     }
 
     return NextResponse.json({ orderNumber, orderId: order.id, persisted: true, totalInr, discountInr: totalDiscountInr });
