@@ -69,7 +69,7 @@ export async function POST(request: Request) {
       gstPan: application.gstPan,
       address: application.address,
       mobile: application.mobile,
-      photoNames: application.photoNames || [],
+      photoPaths: application.photoPaths || [],
       appliedAt: application.appliedAt,
     };
 
