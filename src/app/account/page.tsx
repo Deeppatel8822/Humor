@@ -73,6 +73,18 @@ export default function AccountPage() {
         <p className="text-xs uppercase tracking-[0.2em] text-[var(--warm-gold)]">Humor Luxury</p>
         <h1 className="font-display text-3xl md:text-4xl text-[var(--deep-wine)] mt-2">My Account</h1>
 
+        <button
+          type="button"
+          onClick={async () => {
+            const { getSupabase } = await import("@/lib/supabase");
+            await getSupabase().auth.signOut();
+            window.location.href = "/";
+          }}
+          className="mt-5 rounded-full border border-[var(--deep-wine)] px-6 py-2.5 text-sm font-medium text-[var(--deep-wine)] hover:bg-[var(--deep-wine)] hover:text-white transition"
+        >
+          Logout
+        </button>
+
         <div className="grid md:grid-cols-3 gap-4 mt-8">
           <Link href="/track-order" className="rounded-2xl bg-white border border-[var(--line)] p-5 hover:border-[var(--deep-wine)]">
             <p className="text-xs text-[var(--muted)]">Orders</p><p className="mt-2 font-medium text-[var(--ink)]">Track your orders →</p>
