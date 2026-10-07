@@ -44,9 +44,9 @@ export default function CheckoutPage() {
   const totalDiscountInr = firstOrderDiscountInr + prepaidDiscountInr + vendorDiscountInr;
   const totalInr = Math.max(0, subtotalInr - totalDiscountInr + shippingInr + codChargeInr);
 
-  async function applyVendorCode() {
+  async function applyVendorCode(): Promise<number> {
     const code = vendorCode.trim();
-    if (!code) { setVendorDiscountInr(0); setVendorCodeMessage(""); return; }
+    if (!code) { setVendorDiscountInr(0); setVendorCodeMessage(""); return 0; }
     setVendorCodeLoading(true); setVendorCodeMessage("");
     try {
       const response = await fetch("/api/marketing-partner/validate", {
@@ -54,9 +54,9 @@ export default function CheckoutPage() {
         body: JSON.stringify({ code, lines: lines.map((l) => ({ productId: l.productId, quantity: l.quantity })) }),
       });
       const data = await response.json();
-      if (!response.ok || !data.valid) { setVendorDiscountInr(0); setVendorCodeMessage(data.error || "Invalid vendor code."); }
-      else { setVendorDiscountInr(Number(data.discountInr) || 0); setVendorCodeMessage("✓ Partner code applied"); }
-    } catch { setVendorDiscountInr(0); setVendorCodeMessage("Could not validate the partner code."); }
+      if (!response.ok || !data.valid) { setVendorDiscountInr(0); setVendorCodeMessage(data.error || "Invalid vendor code."); return 0; }
+      else { const discount = Number(data.discountInr) || 0; setVendorDiscountInr(discount); setVendorCodeMessage("✓ Partner code applied"); return discount; }
+    } catch { setVendorDiscountInr(0); setVendorCodeMessage("Could not validate the partner code."); return 0; }
     finally { setVendorCodeLoading(false); }
   }
 
@@ -164,7 +164,7 @@ export default function CheckoutPage() {
             const verifyData = await verifyRes.json();
             if (!verifyRes.ok) throw new Error(verifyData.error ?? "Payment verification failed.");
             clearCart();
-            router.push(`/order-confirmed?method=online&order=${verifyData.orderNumber}&total=${totalInr}`);
+            router.push(`/order-confirmed?method=online&order=${verifyData.orderNumber}&total=${verifyData.totalInr}`);
             resolve();
           } catch (e) {
             reject(e);
@@ -186,8 +186,8 @@ export default function CheckoutPage() {
       return;
     }
     if (vendorCode.trim() && vendorDiscountInr === 0) {
-      await applyVendorCode();
-      if (vendorDiscountInr === 0) return setError("Please apply a valid vendor code before placing your order.");
+      const appliedDiscount = await applyVendorCode();
+      if (appliedDiscount === 0) return setError("Please apply a valid vendor code before placing your order.");
     }
     const validationError = validate();
     if (validationError) return setError(validationError);
