@@ -21,7 +21,7 @@ export interface MarketingPartner {
   gstPan?: string;
   address?: string;
   mobile?: string;
-  photoNames?: string[];
+  photoPaths?: string[];
   appliedAt?: string;
   withdrawalRequests?: { amount: number; status: string; requestedAt: string }[];
 }
