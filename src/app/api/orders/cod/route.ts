@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { calculatePartnerDiscount, creditPartnerReward, findPartnerByCode } from "@/lib/marketingPartner";
 
 interface CodLine { productId: string; quantity: number; }
 interface ShippingDetails {
@@ -9,9 +10,10 @@ interface ShippingDetails {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json() as { lines?: CodLine[]; shipping?: ShippingDetails };
+    const body = await request.json() as { lines?: CodLine[]; shipping?: ShippingDetails; vendorCode?: string };
     const lines = body.lines ?? [];
     const shipping = body.shipping;
+    const vendorCode = String(body.vendorCode || "").trim();
     if (!lines.length || !shipping) return NextResponse.json({ error: "Order details are incomplete." }, { status: 400 });
 
     if (!shipping.fullName?.trim() || !shipping.email?.trim() || !shipping.phone?.trim() ||
@@ -25,6 +27,8 @@ export async function POST(request: Request) {
     const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
 
     let firstOrderDiscountInr = 0;
+    let partnerDiscountInr = 0;
+    let partnerMatch: Awaited<ReturnType<typeof findPartnerByCode>> = null;
     if (token) {
       const { data: authData } = await supabase.auth.getUser(token);
       const user = authData.user;
@@ -49,6 +53,14 @@ export async function POST(request: Request) {
     if (productsError) throw productsError;
 
     const productMap = new Map((products ?? []).map((product) => [String(product.id), product]));
+    if (vendorCode) {
+      partnerMatch = await findPartnerByCode(vendorCode);
+      if (!partnerMatch) return NextResponse.json({ error: "Invalid or expired vendor code." }, { status: 400 });
+      if (token) {
+        const { data: currentAuth } = await supabase.auth.getUser(token);
+        if (currentAuth.user?.id === partnerMatch.user.id) return NextResponse.json({ error: "You cannot use your own partner code." }, { status: 400 });
+      }
+    }
     let subtotalInr = 0;
     const rpcLines = lines.map((line) => {
       const product = productMap.get(line.productId);
@@ -60,11 +72,17 @@ export async function POST(request: Request) {
       return { productId: Number(product.catalog_id), quantity: line.quantity };
     });
 
+    const pricedLines = lines.map((line) => {
+      const product = productMap.get(line.productId);
+      return { priceInr: Number(product?.price_inr ?? 0), quantity: line.quantity };
+    });
+    if (partnerMatch) partnerDiscountInr = calculatePartnerDiscount(pricedLines);
     const firstOrderDiscount = firstOrderDiscountInr ? Math.round(subtotalInr * 0.10) : 0;
+    const combinedDiscount = firstOrderDiscount + partnerDiscountInr;
     const { data, error } = await supabase.rpc("create_cod_order", {
       p_lines: rpcLines,
       p_shipping: shipping,
-      p_discount: firstOrderDiscount,
+      p_discount: combinedDiscount,
     });
     if (error) throw error;
 
@@ -75,7 +93,7 @@ export async function POST(request: Request) {
       success: true,
       orderNumber: result.order_number,
       totalInr: Number(result.total_inr),
-      discountInr: firstOrderDiscount,
+      discountInr: combinedDiscount,
       codChargeInr: 25,
     });
   } catch (error) {
