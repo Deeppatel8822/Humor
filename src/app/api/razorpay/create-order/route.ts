@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { razorpayClient } from "@/lib/razorpay";
 import { products } from "@/lib/products";
+import { calculatePartnerDiscount, findPartnerByCode } from "@/lib/marketingPartner";
 
 interface CartLineInput {
   productId: string;
@@ -11,6 +12,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const lines: CartLineInput[] = body.lines ?? [];
+    const vendorCode = String(body.vendorCode || "").trim();
     const authHeader = req.headers.get("authorization") || "";
     const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
 
@@ -37,6 +39,21 @@ export async function POST(req: NextRequest) {
     }
 
     const shippingInr = subtotalInr >= 299 ? 0 : 50;
+    let partnerDiscountInr = 0;
+    let partnerMatch: Awaited<ReturnType<typeof findPartnerByCode>> = null;
+    if (vendorCode) {
+      partnerMatch = await findPartnerByCode(vendorCode);
+      if (!partnerMatch) return NextResponse.json({ error: "Invalid or expired vendor code." }, { status: 400 });
+      if (token) {
+        const admin = (await import("@/lib/supabase")).supabaseAdmin();
+        const { data: current } = await admin.auth.getUser(token);
+        if (current.user?.id === partnerMatch.user.id) return NextResponse.json({ error: "You cannot use your own partner code." }, { status: 400 });
+      }
+      partnerDiscountInr = calculatePartnerDiscount(lines.map((line) => ({
+        priceInr: products.find((p) => p.id === line.productId)?.price_inr ?? 0,
+        quantity: line.quantity,
+      })));
+    }
     let firstOrderDiscountInr = 0;
     if (token) {
       const admin = (await import("@/lib/supabase")).supabaseAdmin();
@@ -54,13 +71,14 @@ export async function POST(req: NextRequest) {
       }
     }
     const prepaidDiscountInr = Math.round(subtotalInr * (subtotalInr >= 1000 ? 0.04 : 0.03));
-    const totalInr = Math.max(0, subtotalInr - firstOrderDiscountInr - prepaidDiscountInr + shippingInr);
+    const totalDiscountInr = firstOrderDiscountInr + partnerDiscountInr + prepaidDiscountInr;
+    const totalInr = Math.max(0, subtotalInr - totalDiscountInr + shippingInr);
 
     const order = await razorpayClient().orders.create({
       amount: totalInr * 100, // Razorpay expects paise
       currency: "INR",
       receipt: `hl_${Date.now()}`,
-      notes: { lines: JSON.stringify(lines) },
+      notes: { lines: JSON.stringify(lines), vendorCode: vendorCode || "" },
     });
 
     return NextResponse.json({
@@ -69,7 +87,8 @@ export async function POST(req: NextRequest) {
       subtotalInr,
       shippingInr,
       keyId: process.env.RAZORPAY_KEY_ID,
-      discountInr: firstOrderDiscountInr + prepaidDiscountInr,
+      discountInr: totalDiscountInr,
+      vendorDiscountInr: partnerDiscountInr,
     });
   } catch (err) {
     console.error("Razorpay order creation failed:", err);
