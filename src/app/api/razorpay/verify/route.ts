@@ -2,6 +2,7 @@ import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { products } from "@/lib/products";
+import { calculatePartnerDiscount, creditPartnerReward, findPartnerByCode } from "@/lib/marketingPartner";
 
 interface VerifyBody {
   razorpay_order_id: string;
@@ -20,11 +21,12 @@ interface VerifyBody {
   };
   subtotalInr: number;
   shippingInr: number;
+  vendorCode?: string;
 }
 
 export async function POST(req: NextRequest) {
   const body: VerifyBody = await req.json();
-  const { razorpay_order_id, razorpay_payment_id, razorpay_signature, lines, shipping, subtotalInr, shippingInr } = body;
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature, lines, shipping, subtotalInr, shippingInr, vendorCode } = body;
 
   // 1. Verify the payment signature — this is the step that actually confirms
   // Razorpay processed the payment, rather than trusting the client's word for it.
@@ -55,8 +57,22 @@ export async function POST(req: NextRequest) {
       }
     }
   }
+  let partnerDiscountInr = 0;
+  let partnerMatch: Awaited<ReturnType<typeof findPartnerByCode>> = null;
+  if (vendorCode) {
+    partnerMatch = await findPartnerByCode(vendorCode);
+    if (!partnerMatch) return NextResponse.json({ error: "Invalid or expired vendor code." }, { status: 400 });
+    if (token) {
+      const current = await supabaseAdmin().auth.getUser(token);
+      if (current.data.user?.id === partnerMatch.user.id) return NextResponse.json({ error: "You cannot use your own partner code." }, { status: 400 });
+    }
+    partnerDiscountInr = calculatePartnerDiscount(lines.map((line) => ({
+      priceInr: products.find((p) => p.id === line.productId)?.price_inr ?? 0,
+      quantity: line.quantity,
+    })));
+  }
   const prepaidDiscountInr = Math.round(subtotalInr * (subtotalInr >= 1000 ? 0.04 : 0.03));
-  const totalDiscountInr = firstOrderDiscountInr + prepaidDiscountInr;
+  const totalDiscountInr = firstOrderDiscountInr + partnerDiscountInr + prepaidDiscountInr;
   const calculatedShippingInr = subtotalInr >= 299 ? 0 : 50;
   const totalInr = Math.max(0, subtotalInr - totalDiscountInr + calculatedShippingInr);
   const orderNumber = `HL-${Math.floor(10000 + Math.random() * 90000)}`;
@@ -126,6 +142,11 @@ export async function POST(req: NextRequest) {
     });
     const { error: itemsErr } = await admin.from("order_items").insert(orderItems);
     if (itemsErr) throw itemsErr;
+
+    if (partnerMatch) {
+      const billedProductAmount = Math.max(0, subtotalInr - firstOrderDiscountInr - partnerDiscountInr);
+      await creditPartnerReward(partnerMatch.user.id, partnerMatch.partner, billedProductAmount, orderNumber);
+    }
 
     return NextResponse.json({ orderNumber, orderId: order.id, persisted: true, totalInr, discountInr: totalDiscountInr });
   } catch (err) {
