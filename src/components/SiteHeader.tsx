@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import CartBadge from "@/components/CartBadge";
 
 const mobileLinks = [
@@ -15,6 +16,18 @@ const mobileLinks = [
 
 export default function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const router = useRouter();
+
+  async function openAccount() {
+    try {
+      const { getSupabase } = await import("@/lib/supabase");
+      const { data } = await getSupabase().auth.getSession();
+      if (data.session) router.push("/account");
+      else window.dispatchEvent(new CustomEvent("humor-open-customer-auth"));
+    } catch {
+      window.dispatchEvent(new CustomEvent("humor-open-customer-auth"));
+    }
+  }
 
   return (
     <div className="sticky top-0 z-50">
@@ -46,7 +59,7 @@ export default function SiteHeader() {
               <button
                 type="button"
                 aria-label="Login or sign up"
-                onClick={() => window.dispatchEvent(new CustomEvent("humor-open-customer-auth"))}
+                onClick={openAccount}
                 className="p-2 text-[var(--ink)] hover:text-[var(--deep-wine)] transition-colors"
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
