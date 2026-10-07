@@ -35,7 +35,7 @@ const trustPoints = [
   },
   {
     title: "Free Shipping",
-    text: "Free shipping on every order, with no minimum.",
+    text: "Free shipping on orders ₹299+.",
   },
   {
     title: "COD Available",
