@@ -89,6 +89,11 @@ export async function POST(request: Request) {
     const result = Array.isArray(data) ? data[0] : data;
     if (!result?.order_number) throw new Error("Could not create the COD order.");
 
+    if (partnerMatch) {
+      const billedProductAmount = Math.max(0, subtotalInr - combinedDiscount);
+      await creditPartnerReward(partnerMatch.user.id, partnerMatch.partner, billedProductAmount, String(result.order_number));
+    }
+
     return NextResponse.json({
       success: true,
       orderNumber: result.order_number,
