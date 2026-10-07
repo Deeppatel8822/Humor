@@ -18,9 +18,14 @@ export async function GET() {
   const admin = supabaseAdmin();
   const { data, error } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
   if (error) return NextResponse.json({ error: "Could not load applications." }, { status: 500 });
-  const applications = data.users
-    .map((user) => ({ userId: user.id, email: user.email, phone: user.phone, application: user.user_metadata?.marketing_partner_application, partner: user.app_metadata?.marketing_partner }))
-    .filter((item) => item.application?.status === "pending");
+  const applications = [];
+  for (const user of data.users) {
+    const application = user.user_metadata?.marketing_partner_application;
+    if (application?.status !== "pending") continue;
+    const photoPaths = Array.isArray(application.photoPaths) ? application.photoPaths : [];
+    const signed = photoPaths.length ? await admin.storage.from("vendor-business-photos").createSignedUrls(photoPaths, 3600) : { data: [] };
+    applications.push({ userId: user.id, email: user.email, phone: user.phone, application: { ...application, photoUrls: (signed.data || []).map((item) => item.signedUrl).filter(Boolean) }, partner: user.app_metadata?.marketing_partner });
+  }
   return NextResponse.json({ applications });
 }
 
