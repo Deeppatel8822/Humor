@@ -13,7 +13,7 @@ interface Product {
   category: string;
 }
 interface OrderItem { quantity: number; unit_price_inr: number; product?: { name?: string; sku?: string } | null; }
-interface Customer { id: string; full_name: string | null; email: string | null; phone: string | null; created_at: string; }
+interface Customer { id: string; full_name: string | null; email: string | null; phone: string | null; created_at: string; marketingPartner?: { status: string; code?: string; businessName?: string } | null; }
 interface Coupon { id: string; code: string; discount_type: string; discount_value: number; min_order_inr: number; is_active: boolean; expires_at: string | null; }
 interface Order {
   id: string; order_number: string; status: string; subtotal_inr: number; discount_inr: number; shipping_inr: number; total_inr: number;
@@ -108,7 +108,7 @@ function MarketingPartnersSection({ applications, loading, saving, onRefresh, on
 function CustomersSection({ customers }: { customers: Customer[] }) {
   return <div className="bg-white rounded-2xl border border-[var(--line)] overflow-hidden">
     <div className="p-5 border-b border-[var(--line)]"><h2 className="font-display text-2xl text-[var(--deep-wine)]">Customer Accounts</h2><p className="text-sm text-[var(--muted)] mt-1">Signup data and contact details from customer authentication.</p></div>
-    <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b border-[var(--line)] text-left text-xs uppercase tracking-wide text-[var(--muted)]"><th className="p-4">Name</th><th className="p-4">Email</th><th className="p-4">Mobile</th><th className="p-4">Joined</th></tr></thead><tbody>{customers.map((c) => <tr key={c.id} className="border-b border-[var(--line)] last:border-0"><td className="p-4 font-medium">{c.full_name || "—"}</td><td className="p-4">{c.email || "—"}</td><td className="p-4">{c.phone || "—"}</td><td className="p-4 text-[var(--muted)]">{formatDate(c.created_at)}</td></tr>)}{!customers.length && <tr><td colSpan={4} className="p-10 text-center text-[var(--muted)]">No customer accounts yet.</td></tr>}</tbody></table></div>
+    <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b border-[var(--line)] text-left text-xs uppercase tracking-wide text-[var(--muted)]"><th className="p-4">Name</th><th className="p-4">Email</th><th className="p-4">Mobile</th><th className="p-4">Joined</th></tr></thead><tbody>{customers.map((c) => <tr key={c.id} className="border-b border-[var(--line)] last:border-0"><td className="p-4"><div className="flex items-center gap-2 flex-wrap"><span className="font-medium">{c.full_name || "—"}</span>{c.marketingPartner?.status === "approved" && <span className="inline-flex items-center rounded-full bg-purple-100 text-purple-700 border border-purple-200 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide">Marketing Partner</span>}</div>{c.marketingPartner?.businessName && <p className="text-[11px] text-[var(--muted)] mt-1">{c.marketingPartner.businessName}</p>}</td><td className="p-4">{c.email || "—"}</td><td className="p-4">{c.phone || "—"}</td><td className="p-4 text-[var(--muted)]">{formatDate(c.created_at)}</td></tr>)}{!customers.length && <tr><td colSpan={4} className="p-10 text-center text-[var(--muted)]">No customer accounts yet.</td></tr>}</tbody></table></div>
   </div>;
 }
 
