@@ -191,10 +191,12 @@ export default function CustomerAuthPopup() {
 
         {mode === "login" ? (
           <>
-            {!forgotPassword && <div className="mt-4 grid grid-cols-2 rounded-full border border-[var(--line)] p-1">
-              <button onClick={() => setLoginMethod("email")} className={"rounded-full py-2 text-xs " + (loginMethod === "email" ? "bg-[var(--deep-wine)] text-white" : "text-[var(--muted)]")}>Email</button>
-              <button onClick={() => setLoginMethod("phone")} className={"rounded-full py-2 text-xs " + (loginMethod === "phone" ? "bg-[var(--deep-wine)] text-white" : "text-[var(--muted)]")}>Mobile</button>
-            </div>
+            {!forgotPassword && (
+              <div className="mt-4 grid grid-cols-2 rounded-full border border-[var(--line)] p-1">
+                <button onClick={() => setLoginMethod("email")} className={"rounded-full py-2 text-xs " + (loginMethod === "email" ? "bg-[var(--deep-wine)] text-white" : "text-[var(--muted)]")}>Email</button>
+                <button onClick={() => setLoginMethod("phone")} className={"rounded-full py-2 text-xs " + (loginMethod === "phone" ? "bg-[var(--deep-wine)] text-white" : "text-[var(--muted)]")}>Mobile</button>
+              </div>
+            )}
             {!forgotPassword && <input value={identifier} onChange={(e) => setIdentifier(e.target.value)} placeholder={loginMethod === "email" ? "Email address" : "Mobile number with +91"} type={loginMethod === "email" ? "email" : "tel"} className="mt-4 w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm outline-none" />}
             {!forgotPassword ? (
               <>
