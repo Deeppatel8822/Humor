@@ -106,7 +106,7 @@ export default function CustomerAuthPopup() {
     setError("");
     setResetSent(false);
     const resetEmail = email.trim().toLowerCase() || identifier.trim().toLowerCase();
-    if (!/^\\S+@\\S+\\.\\S+$/.test(resetEmail)) {
+    if (!/^\S+@\S+\.\S+$/.test(resetEmail)) {
       return setError("Enter the email address linked to your account.");
     }
 
