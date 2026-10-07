@@ -91,7 +91,11 @@ export async function POST(request: Request) {
 
     if (partnerMatch) {
       const billedProductAmount = Math.max(0, subtotalInr - combinedDiscount);
-      await creditPartnerReward(partnerMatch.user.id, partnerMatch.partner, billedProductAmount, String(result.order_number));
+      try {
+        await creditPartnerReward(partnerMatch.user.id, partnerMatch.partner, billedProductAmount, String(result.order_number));
+      } catch (rewardError) {
+        console.error("Marketing Partner reward credit failed after COD order:", rewardError);
+      }
     }
 
     return NextResponse.json({
