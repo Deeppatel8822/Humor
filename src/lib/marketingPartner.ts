@@ -83,8 +83,10 @@ export async function creditPartnerReward(
     ].slice(0, 100),
   };
 
+  const { data: currentData, error: currentError } = await admin.auth.admin.getUserById(userId);
+  if (currentError || !currentData.user) throw currentError || new Error("Partner account not found.");
   const { error } = await admin.auth.admin.updateUserById(userId, {
-    app_metadata: { marketing_partner: next },
+    app_metadata: { ...currentData.user.app_metadata, marketing_partner: next },
   });
   if (error) throw error;
   return next;
