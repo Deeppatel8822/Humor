@@ -19,7 +19,7 @@ export default function CustomerAuthPopup() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (window.location.pathname.startsWith("/admin") || window.location.pathname === "/cart" || window.location.pathname === "/checkout") {
+    if (window.location.pathname.startsWith("/admin") || window.location.pathname === "/cart" || window.location.pathname === "/checkout" || window.location.pathname === "/account" || window.location.pathname === "/marketing-partner" || window.location.pathname.startsWith("/admin/marketing-partners")) {
       setOpen(false);
       return;
     }
