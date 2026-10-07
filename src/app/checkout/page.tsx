@@ -24,6 +24,10 @@ export default function CheckoutPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isFirstOrder, setIsFirstOrder] = useState(false);
   const [showFreeShippingCelebration, setShowFreeShippingCelebration] = useState(false);
+  const [vendorCode, setVendorCode] = useState("");
+  const [vendorDiscountInr, setVendorDiscountInr] = useState(0);
+  const [vendorCodeMessage, setVendorCodeMessage] = useState("");
+  const [vendorCodeLoading, setVendorCodeLoading] = useState(false);
   const [form, setForm] = useState({
     fullName: "", email: "", phone: "", line1: "", line2: "", city: "", state: "", pincode: "",
   });
@@ -37,8 +41,24 @@ export default function CheckoutPage() {
   const prepaidDiscountInr = paymentMethod === "online" ? Math.round(subtotalInr * prepaidDiscountRate) : 0;
   const prepaidSavingsPreviewInr = Math.round(subtotalInr * prepaidDiscountRate);
   const codChargeInr = paymentMethod === "cod" ? 25 : 0;
-  const totalDiscountInr = firstOrderDiscountInr + prepaidDiscountInr;
+  const totalDiscountInr = firstOrderDiscountInr + prepaidDiscountInr + vendorDiscountInr;
   const totalInr = Math.max(0, subtotalInr - totalDiscountInr + shippingInr + codChargeInr);
+
+  async function applyVendorCode() {
+    const code = vendorCode.trim();
+    if (!code) { setVendorDiscountInr(0); setVendorCodeMessage(""); return; }
+    setVendorCodeLoading(true); setVendorCodeMessage("");
+    try {
+      const response = await fetch("/api/marketing-partner/validate", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, lines: lines.map((l) => ({ productId: l.productId, quantity: l.quantity })) }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.valid) { setVendorDiscountInr(0); setVendorCodeMessage(data.error || "Invalid vendor code."); }
+      else { setVendorDiscountInr(Number(data.discountInr) || 0); setVendorCodeMessage("✓ Partner code applied"); }
+    } catch { setVendorDiscountInr(0); setVendorCodeMessage("Could not validate the partner code."); }
+    finally { setVendorCodeLoading(false); }
+  }
 
   useEffect(() => {
     if (qualifiesForFreeShipping) {
@@ -100,6 +120,7 @@ export default function CheckoutPage() {
         subtotalInr,
         shippingInr,
         firstOrderDiscountInr,
+        vendorCode,
       }),
     });
     const data = await response.json();
@@ -113,7 +134,7 @@ export default function CheckoutPage() {
     const createRes = await fetch("/api/razorpay/create-order", {
       method: "POST",
       headers: { "Content-Type": "application/json", ...(await authHeaders()) },
-      body: JSON.stringify({ lines: lines.map((l) => ({ productId: l.productId, quantity: l.quantity })), paymentMethod: "online", firstOrderDiscountInr, prepaidDiscountInr }),
+      body: JSON.stringify({ lines: lines.map((l) => ({ productId: l.productId, quantity: l.quantity })), paymentMethod: "online", firstOrderDiscountInr, prepaidDiscountInr, vendorCode }),
     });
     const createData = await createRes.json();
     if (!createRes.ok) throw new Error(createData.error ?? "Could not start payment.");
@@ -137,7 +158,7 @@ export default function CheckoutPage() {
               body: JSON.stringify({
                 ...r,
                 lines: lines.map((l) => ({ productId: l.productId, quantity: l.quantity })),
-                shipping: form, subtotalInr, shippingInr, firstOrderDiscountInr, prepaidDiscountInr,
+                shipping: form, subtotalInr, shippingInr, firstOrderDiscountInr, prepaidDiscountInr, vendorCode,
               }),
             });
             const verifyData = await verifyRes.json();
@@ -163,6 +184,10 @@ export default function CheckoutPage() {
       window.dispatchEvent(new CustomEvent("humor-open-customer-auth"));
       setError("Please login or create your account before placing an order.");
       return;
+    }
+    if (vendorCode.trim() && vendorDiscountInr === 0) {
+      await applyVendorCode();
+      if (vendorDiscountInr === 0) return setError("Please apply a valid vendor code before placing your order.");
     }
     const validationError = validate();
     if (validationError) return setError(validationError);
