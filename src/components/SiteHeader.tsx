@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import CartBadge from "@/components/CartBadge";
 
@@ -16,7 +16,46 @@ const mobileLinks = [
 
 export default function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [customerName, setCustomerName] = useState<string | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    let mounted = true;
+    let unsubscribe: (() => void) | undefined;
+
+    import("@/lib/supabase").then(({ getSupabase }) => {
+      if (!mounted) return;
+      const supabase = getSupabase();
+
+      const applyUser = (user: { user_metadata?: Record<string, unknown>; email?: string | null } | null) => {
+        if (!mounted) return;
+        if (!user) {
+          setCustomerName(null);
+          return;
+        }
+        const fullName = String(user.user_metadata?.full_name || user.user_metadata?.name || "").trim();
+        if (fullName) {
+          setCustomerName(fullName.split(/\s+/)[0]);
+          return;
+        }
+        const emailName = String(user.email || "").split("@")[0].replace(/[._-]+/g, " ").trim();
+        const firstName = emailName.split(/\s+/)[0];
+        setCustomerName(firstName ? firstName.charAt(0).toUpperCase() + firstName.slice(1) : "");
+      };
+
+      supabase.auth.getUser().then(({ data }) => applyUser(data.user)).catch(() => applyUser(null));
+      const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => applyUser(session?.user || null));
+      unsubscribe = () => listener.subscription.unsubscribe();
+    }).catch(() => {
+      if (mounted) setCustomerName(null);
+    });
+
+    return () => {
+      mounted = false;
+      unsubscribe?.();
+    };
+  }, []);
+
 
   async function openAccount() {
     try {
@@ -56,6 +95,17 @@ export default function SiteHeader() {
             </nav>
 
             <div className="flex items-center gap-1">
+              {customerName && (
+                <button
+                  type="button"
+                  onClick={openAccount}
+                  aria-label={"Open " + customerName + "'s account"}
+                  className="hidden sm:inline-flex items-center mr-1 px-2 py-2 text-xs font-medium text-[var(--deep-wine)] hover:text-[var(--warm-gold)] transition-colors"
+                >
+                  Hi {customerName}
+                </button>
+              )}
+
               <button
                 type="button"
                 aria-label="Login or sign up"
