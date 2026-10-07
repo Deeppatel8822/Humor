@@ -19,6 +19,7 @@ export default function CustomerAuthPopup() {
   const [error, setError] = useState("");
   const [forgotPassword, setForgotPassword] = useState(false);
   const [resetSent, setResetSent] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
 
   useEffect(() => {
     if (window.location.pathname.startsWith("/admin") || window.location.pathname === "/cart" || window.location.pathname === "/checkout" || window.location.pathname === "/account" || window.location.pathname === "/marketing-partner" || window.location.pathname.startsWith("/admin/marketing-partners")) {
@@ -64,6 +65,7 @@ export default function CustomerAuthPopup() {
     setPassword("");
     setForgotPassword(false);
     setResetSent(false);
+    setResetEmail("");
   }
 
   function close() {
@@ -105,15 +107,15 @@ export default function CustomerAuthPopup() {
   async function sendPasswordReset() {
     setError("");
     setResetSent(false);
-    const resetEmail = email.trim().toLowerCase() || identifier.trim().toLowerCase();
-    if (!/^\S+@\S+\.\S+$/.test(resetEmail)) {
+    const targetEmail = resetEmail.trim().toLowerCase();
+    if (!/^\S+@\S+\.\S+$/.test(targetEmail)) {
       return setError("Enter the email address linked to your account.");
     }
 
     setLoading(true);
     try {
       const { getSupabase } = await import("@/lib/supabase");
-      const { error: resetError } = await getSupabase().auth.resetPasswordForEmail(resetEmail, {
+      const { error: resetError } = await getSupabase().auth.resetPasswordForEmail(targetEmail, {
         redirectTo: window.location.origin + "/reset-password",
       });
       if (resetError) throw resetError;
@@ -189,26 +191,26 @@ export default function CustomerAuthPopup() {
 
         {mode === "login" ? (
           <>
-            <div className="mt-4 grid grid-cols-2 rounded-full border border-[var(--line)] p-1">
+            {!forgotPassword && <div className="mt-4 grid grid-cols-2 rounded-full border border-[var(--line)] p-1">
               <button onClick={() => setLoginMethod("email")} className={"rounded-full py-2 text-xs " + (loginMethod === "email" ? "bg-[var(--deep-wine)] text-white" : "text-[var(--muted)]")}>Email</button>
               <button onClick={() => setLoginMethod("phone")} className={"rounded-full py-2 text-xs " + (loginMethod === "phone" ? "bg-[var(--deep-wine)] text-white" : "text-[var(--muted)]")}>Mobile</button>
             </div>
-            <input value={identifier} onChange={(e) => setIdentifier(e.target.value)} placeholder={loginMethod === "email" ? "Email address" : "Mobile number with +91"} type={loginMethod === "email" ? "email" : "tel"} className="mt-4 w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm outline-none" />
+            {!forgotPassword && <input value={identifier} onChange={(e) => setIdentifier(e.target.value)} placeholder={loginMethod === "email" ? "Email address" : "Mobile number with +91"} type={loginMethod === "email" ? "email" : "tel"} className="mt-4 w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm outline-none" />}
             {!forgotPassword ? (
               <>
                 <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" type="password" className="mt-3 w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm outline-none" />
-                <button type="button" onClick={() => { setForgotPassword(true); setError(""); setResetSent(false); }} className="mt-2 text-left text-xs text-[var(--deep-wine)] underline underline-offset-2">Forgot password?</button>
+                <button type="button" onClick={() => { setForgotPassword(true); setError(""); setResetSent(false); setResetEmail(""); }} className="mt-2 text-left text-xs text-[var(--deep-wine)] underline underline-offset-2">Forgot password?</button>
                 {error && <p className="mt-3 text-xs text-red-600">{error}</p>}
                 <button onClick={login} disabled={loading} className="mt-4 w-full rounded-full bg-[var(--deep-wine)] px-5 py-3.5 text-sm font-medium text-white disabled:opacity-50">{loading ? "Logging in…" : "Login"}</button>
               </>
             ) : (
               <>
                 <p className="mt-4 text-sm leading-5 text-[var(--muted)]">Enter your registered email and we’ll send you a secure password reset link.</p>
-                <input value={identifier} onChange={(e) => setIdentifier(e.target.value)} placeholder="Registered email address" type="email" className="mt-4 w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm outline-none" />
+                <input value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} placeholder="Registered email address" type="email" className="mt-4 w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm outline-none" />
                 {resetSent && <p className="mt-3 text-xs text-green-700">Reset link sent. Please check your email, including Spam/Junk.</p>}
                 {error && <p className="mt-3 text-xs text-red-600">{error}</p>}
                 <button onClick={sendPasswordReset} disabled={loading || resetSent} className="mt-4 w-full rounded-full bg-[var(--deep-wine)] px-5 py-3.5 text-sm font-medium text-white disabled:opacity-50">{loading ? "Sending…" : resetSent ? "Reset link sent" : "Send reset link"}</button>
-                <button type="button" onClick={() => { setForgotPassword(false); setError(""); setResetSent(false); }} className="mt-3 w-full text-xs text-[var(--muted)] underline underline-offset-2">Back to login</button>
+                <button type="button" onClick={() => { setForgotPassword(false); setError(""); setResetSent(false); setResetEmail(""); }} className="mt-3 w-full text-xs text-[var(--muted)] underline underline-offset-2">Back to login</button>
               </>
             )}
           </>
