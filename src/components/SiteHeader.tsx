@@ -12,6 +12,7 @@ const mobileLinks = [
   { href: "/shop?sort=bestselling", label: "Best Sellers" },
   { href: "/bundles", label: "Bundles" },
   { href: "/about", label: "About" },
+  { href: "/your-business", label: "Start Your Business · ₹9", featured: true },
 ];
 
 export default function SiteHeader() {
@@ -82,7 +83,15 @@ export default function SiteHeader() {
 
             <nav className="hidden lg:flex items-center gap-8 text-[13px] font-medium text-[var(--ink)]">
               {mobileLinks.map((link) => (
-                <Link key={link.href} href={link.href} className="hover:text-[var(--deep-wine)] transition-colors">{link.label}</Link>
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={link.featured
+                    ? "rounded-full bg-[var(--deep-wine)] px-4 py-2 text-[11px] font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-[var(--wine-soft)]"
+                    : "hover:text-[var(--deep-wine)] transition-colors"}
+                >
+                  {link.label}
+                </Link>
               ))}
             </nav>
 
@@ -120,7 +129,14 @@ export default function SiteHeader() {
                 {menuOpen && (
                   <div className="absolute right-0 top-12 w-56 rounded-2xl border border-[var(--line)] bg-white p-2 shadow-xl">
                     {mobileLinks.map((link) => (
-                      <Link key={link.href} href={link.href} onClick={() => setMenuOpen(false)} className="block rounded-xl px-4 py-3 text-sm font-medium text-[var(--ink)] hover:bg-[var(--milk-sage)] hover:text-[var(--deep-wine)]">
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        onClick={() => setMenuOpen(false)}
+                        className={link.featured
+                          ? "block rounded-xl bg-[var(--deep-wine)] px-4 py-3 text-sm font-semibold text-white"
+                          : "block rounded-xl px-4 py-3 text-sm font-medium text-[var(--ink)] hover:bg-[var(--milk-sage)] hover:text-[var(--deep-wine)]"}
+                      >
                         {link.label}
                       </Link>
                     ))}
