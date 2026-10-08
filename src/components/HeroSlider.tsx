@@ -25,17 +25,14 @@ const slides = [
     productHref: "/collections/hair-care",
   },
   {
-    fullWidth: false,
-    leftImage: "/products/facewash-hero.webp",
-    rightImage: "/products/fullmoon-face-wash-hero.webp",
-    eyebrow: "Face Wash",
-    title: <>Cleanse.<br />Refresh. Glow.</>,
-    cta: "Shop Face Washes",
+    fullWidth: true,
+    heroImage: "https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/d589c439-1e72-45ff-ae10-ef044626314d.png",
+    eyebrow: "Daily Skin Care Ritual",
+    title: <>Healthy Skin<br />Looks Good On You</>,
+    cta: "Shop Now",
     href: "/collections/skin-care",
-    leftLabel: "Skin Care",
-    leftTitle: "Daily Cleansing",
-    leftHref: "/collections/skin-care",
-    rightHref: "/product/fullmoon-face-wash",
+    productCta: "",
+    productHref: "/collections/skin-care",
   },
   {
     fullWidth: false,
@@ -84,13 +81,15 @@ export default function HeroSlider() {
           <Link
             href={slide.href}
             aria-label="Shop Now"
-            className="absolute left-[40.2%] top-[68.4%] h-[8%] w-[10.7%]"
+            className="absolute left-[82%] top-[34.5%] h-[6%] w-[15%]"
           />
-          <Link
-            href={slide.productHref}
-            aria-label="View Velvet Touch Face Serum"
-            className="absolute left-[52.1%] top-[68.4%] h-[8%] w-[11.8%]"
-          />
+          {slide.productCta ? (
+            <Link
+              href={slide.productHref}
+              aria-label={slide.productCta}
+              className="absolute left-[52.1%] top-[68.4%] h-[8%] w-[11.8%]"
+            />
+          ) : null}
         </div>
       ) : (
         <div className="relative grid min-h-[520px] grid-cols-1 md:min-h-[560px] md:grid-cols-[minmax(0,1fr)_minmax(260px,0.65fr)_minmax(0,1fr)]">
