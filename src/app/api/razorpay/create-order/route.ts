@@ -6,6 +6,7 @@ import { calculatePartnerDiscount, findPartnerByCode } from "@/lib/marketingPart
 
 interface CartLineInput {
   productId: string;
+  slug?: string;
   quantity: number;
 }
 
