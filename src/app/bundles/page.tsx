@@ -43,11 +43,11 @@ export default async function BundlesPage() {
       items: [bySlug("velvet-touch-face-wash"), bySlug("velvet-touch-face-serum"), bySlug("sunscreen-spf-50")].filter(Boolean) as Product[],
     },
     {
-      name: "Protein Shake Shampoo + Conditioner",
+      name: "Protein Shake Anti Hairfall Shampoo + Silk Shake Smooth Shine Conditioner",
       items: [bySlug("repair-shampoo"), bySlug("repair-conditioner")].filter(Boolean) as Product[],
     },
     {
-      name: "Protein Shake Shampoo + Hair Mask",
+      name: "Protein Shake Anti Hairfall Shampoo + Milk Shake Repairing Smooth Hair Mask",
       items: [bySlug("repair-shampoo"), bySlug("repair-hair-mask")].filter(Boolean) as Product[],
     },
   ];
