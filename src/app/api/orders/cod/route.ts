@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { calculatePartnerDiscount, creditPartnerReward, findPartnerByCode } from "@/lib/marketingPartner";
+import { calculateBundleSavings } from "@/lib/bundles";
 
-interface CodLine { productId: string; quantity: number; }
+interface CodLine { productId: string; slug?: string; quantity: number; }
 interface ShippingDetails {
   fullName: string; email: string; phone: string; line1: string; line2?: string;
   city: string; state: string; pincode: string;
@@ -49,7 +50,7 @@ export async function POST(request: Request) {
     }
 
     const { data: products, error: productsError } = await supabase
-      .from("products").select("id,catalog_id,status,price_inr,stock_quantity,name").in("id", productIds);
+      .from("products").select("id,catalog_id,status,price_inr,stock_quantity,name,slug").in("id", productIds);
     if (productsError) throw productsError;
 
     const productMap = new Map((products ?? []).map((product) => [String(product.id), product]));
@@ -77,8 +78,12 @@ export async function POST(request: Request) {
       return { priceInr: Number(product?.price_inr ?? 0), quantity: line.quantity };
     });
     if (partnerMatch) partnerDiscountInr = calculatePartnerDiscount(pricedLines);
+    const bundleSavingsInr = calculateBundleSavings(
+      lines.map((line) => ({ slug: line.slug || String(productMap.get(line.productId)?.slug || ""), quantity: line.quantity })),
+      Array.from(productMap.values()).map((product) => ({ slug: String(product.slug), price_inr: Number(product.price_inr) }))
+    );
     const firstOrderDiscount = firstOrderDiscountInr ? Math.round(subtotalInr * 0.10) : 0;
-    const combinedDiscount = firstOrderDiscount + partnerDiscountInr;
+    const combinedDiscount = firstOrderDiscount + partnerDiscountInr + bundleSavingsInr;
     const { data, error } = await supabase.rpc("create_cod_order", {
       p_lines: rpcLines,
       p_shipping: shipping,
@@ -103,6 +108,7 @@ export async function POST(request: Request) {
       orderNumber: result.order_number,
       totalInr: Number(result.total_inr),
       discountInr: combinedDiscount,
+      bundleSavingsInr,
       codChargeInr: 25,
     });
   } catch (error) {
