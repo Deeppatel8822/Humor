@@ -26,17 +26,16 @@ export default function RoutineUpsell({ product, products }: { product: Product;
       </div>
 
       {offers.map((offer) => {
-        const single = offer.missing.length === 1;
-        const missingNames = offer.missing
+        const addNames = offer.missing
           .map((item) => item.name.replace("Fullmoon ", "").replace("Blemish Block ", "").replace("Velvet Touch ", ""))
           .join(" + ");
 
         return (
-          <div key={offer.bundle.name} className="rounded-2xl border border-[var(--line)] bg-[var(--milk-sage)] p-4 md:p-5 shadow-[0_8px_30px_rgba(48,35,59,0.05)]">
+          <div key={offer.bundle.name} className="rounded-2xl border border-[var(--line)] bg-white/70 p-4">
             <div className="flex items-center gap-3">
               <div className="flex -space-x-2 shrink-0">
                 {offer.missing.map((item) => (
-                  <div key={item.id} className="w-12 h-12 rounded-xl overflow-hidden border-2 border-white bg-white shadow-sm">
+                  <div key={item.id} className="w-14 h-14 rounded-xl overflow-hidden border-2 border-white bg-white shadow-sm">
                     {item.images?.[0] ? (
                       <img src={item.images[0]} alt={item.name} className="w-full h-full object-cover" />
                     ) : (
@@ -47,21 +46,20 @@ export default function RoutineUpsell({ product, products }: { product: Product;
               </div>
 
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-[var(--ink)]">Add {missingNames}</p>
-                <p className="text-xs text-[var(--muted)] mt-0.5">
-                  {single ? "Special routine price" : "Complete the routine at a special price"}
-                  {" · "}
-                  <span className="font-semibold text-[var(--deep-wine)]">&#8377;{offer.specialMissing}</span>
-                  {offer.saving > 0 && <> · Save &#8377;{offer.saving}</>}
+                <p className="text-[13px] font-medium leading-snug text-[var(--ink)]">
+                  Add {addNames} <span className="whitespace-nowrap">@ &#8377;{offer.specialMissing}</span>
+                </p>
+                <p className="text-[11px] text-[var(--muted)] mt-1">
+                  Regularly &#8377;{offer.regularMissing} · <span className="font-semibold text-green-700">Save &#8377;{offer.saving}</span>
                 </p>
               </div>
 
               <button
                 type="button"
                 onClick={() => addOffer(offer)}
-                className="shrink-0 rounded-full border border-[var(--deep-wine)] bg-white px-3.5 py-2 text-[11px] font-semibold text-[var(--deep-wine)] hover:bg-[var(--deep-wine)] hover:text-white transition-colors"
+                className="shrink-0 rounded-full bg-[var(--deep-wine)] px-3.5 py-2.5 text-[11px] font-semibold text-white hover:bg-[var(--ink)] transition-colors"
               >
-                {added === offer.bundle.name ? "Added ✓" : single ? "Add ₹" + offer.specialMissing : "Add offer"}
+                {added === offer.bundle.name ? "Added ✓" : "Add & Save ₹" + offer.saving}
               </button>
             </div>
           </div>
