@@ -132,7 +132,7 @@ async function getDatabaseProducts(): Promise<Product[] | null> {
 export async function getAllProducts(): Promise<Product[]> {
   if (isShopifyConfigured()) {
     try {
-      return await fetchShopifyProducts();
+      return (await fetchShopifyProducts()).map(withMainImage);
     } catch (err) {
       console.error("Shopify fetch failed, trying Supabase/local catalog:", err);
     }
@@ -147,7 +147,7 @@ export async function getProduct(slug: string): Promise<Product | undefined> {
   if (isShopifyConfigured()) {
     try {
       const product = await fetchShopifyProductByHandle(slug);
-      if (product) return product;
+      if (product) return withMainImage(product);
     } catch (err) {
       console.error("Shopify fetch failed, trying Supabase/local catalog:", err);
     }
