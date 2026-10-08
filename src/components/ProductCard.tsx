@@ -41,7 +41,7 @@ export default function ProductCard({ product }: { product: Product }) {
       <Link href={`/product/${product.slug}`} className="block">
         <div className="relative aspect-square rounded-[1.75rem] border border-[var(--line)] bg-white mb-3 flex items-center justify-center overflow-hidden shadow-[0_8px_24px_rgba(111,74,154,0.06)]">
           {mainImage ? (
-            <img src={mainImage} alt={product.name} className="w-full h-full object-contain p-3 transition-transform duration-300 group-hover:scale-[1.02]" loading="lazy" />
+            <img src={mainImage} alt={product.name} className="w-full h-full object-cover p-0 transition-transform duration-300 group-hover:scale-[1.02]" loading="lazy" />
           ) : (
             <span className="font-display text-lg text-[var(--deep-wine)]/25 px-4 text-center">{product.name}</span>
           )}
