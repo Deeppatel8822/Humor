@@ -15,7 +15,7 @@ declare global {
 }
 
 export default function CheckoutPage() {
-  const { lines, subtotalInr, clearCart } = useCart();
+  const { lines, subtotalInr, bundleSavingsInr, clearCart } = useCart();
   const router = useRouter();
 
   const [paymentMethod, setPaymentMethod] = useState<"online" | "cod">("online");
@@ -41,7 +41,7 @@ export default function CheckoutPage() {
   const prepaidDiscountInr = paymentMethod === "online" ? Math.round(subtotalInr * prepaidDiscountRate) : 0;
   const prepaidSavingsPreviewInr = Math.round(subtotalInr * prepaidDiscountRate);
   const codChargeInr = paymentMethod === "cod" ? 25 : 0;
-  const totalDiscountInr = firstOrderDiscountInr + prepaidDiscountInr + vendorDiscountInr;
+  const totalDiscountInr = firstOrderDiscountInr + prepaidDiscountInr + vendorDiscountInr + bundleSavingsInr;
   const totalInr = Math.max(0, subtotalInr - totalDiscountInr + shippingInr + codChargeInr);
 
   async function applyVendorCode(): Promise<number> {
@@ -51,7 +51,7 @@ export default function CheckoutPage() {
     try {
       const response = await fetch("/api/marketing-partner/validate", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code, lines: lines.map((l) => ({ productId: l.productId, quantity: l.quantity })) }),
+        body: JSON.stringify({ code, lines: lines.map((l) => ({ productId: l.productId, slug: l.slug, quantity: l.quantity })) }),
       });
       const data = await response.json();
       if (!response.ok || !data.valid) { setVendorDiscountInr(0); setVendorCodeMessage(data.error || "Invalid vendor code."); return 0; }
@@ -277,6 +277,7 @@ export default function CheckoutPage() {
               <div className="flex justify-between text-sm text-[var(--muted)]"><span>Subtotal</span><span>&#8377;{subtotalInr}</span></div>
               {firstOrderDiscountInr > 0 && <div className="flex justify-between text-sm text-[var(--muted)]"><span>First order 10% OFF</span><span className="text-green-700">−₹{firstOrderDiscountInr}</span></div>}
               {prepaidDiscountInr > 0 && <div className="flex justify-between text-sm text-[var(--muted)]"><span>Prepaid savings ({Math.round(prepaidDiscountRate * 100)}%)</span><span className="text-green-700">−₹{prepaidDiscountInr}</span></div>}
+              {bundleSavingsInr > 0 && <div className="flex justify-between text-sm text-[var(--muted)]"><span>Bundle savings</span><span className="text-green-700">−₹{bundleSavingsInr}</span></div>}
               <div className="flex justify-between text-sm text-[var(--muted)]">
                 <span>Shipping</span>
                 <span className={qualifiesForFreeShipping ? "font-medium text-green-700" : "text-[var(--ink)]"}>
