@@ -4,18 +4,17 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 
 type Mode = "signup" | "login";
-type LoginMethod = "email" | "phone";
 
 export default function CustomerAuthPopup() {
   const pathname = usePathname();
   const [open, setOpen] = useState(true);
   const [mode, setMode] = useState<Mode>("signup");
-  const [loginMethod, setLoginMethod] = useState<LoginMethod>("email");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [identifier, setIdentifier] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState("");
   const [forgotPassword, setForgotPassword] = useState(false);
   const [resetSent, setResetSent] = useState(false);
@@ -73,9 +72,28 @@ export default function CustomerAuthPopup() {
     setError("");
   }
 
+  async function loginWithGoogle() {
+    setError("");
+    setGoogleLoading(true);
+    try {
+      const { getSupabase } = await import("@/lib/supabase");
+      const { error: googleError } = await getSupabase().auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: window.location.origin + window.location.pathname,
+        },
+      });
+      if (googleError) throw googleError;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not continue with Google.");
+      setGoogleLoading(false);
+    }
+  }
+
   async function login() {
     setError("");
-    if (!identifier.trim()) return setError("Enter your email or mobile number.");
+    if (!identifier.trim()) return setError("Enter your email address.");
+    if (!/^\S+@\S+\.\S+$/.test(identifier.trim())) return setError("Enter a valid email address.");
     if (password.length < 6) return setError("Enter your password.");
 
     setLoading(true);
@@ -83,7 +101,7 @@ export default function CustomerAuthPopup() {
       const response = await fetch("/api/customer/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ identifier: identifier.trim(), password }),
+        body: JSON.stringify({ identifier: identifier.trim().toLowerCase(), password }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Invalid login details.");
@@ -181,7 +199,7 @@ export default function CustomerAuthPopup() {
         <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--warm-gold)]">Humor Luxury</p>
         <h2 className="mt-2 font-display text-2xl text-[var(--deep-wine)]">{mode === "signup" ? "Get 10% OFF your first order" : "Welcome back"}</h2>
         <p className="mt-2 text-sm leading-5 text-[var(--muted)]">
-          {mode === "signup" ? "Create your account with your mobile number, email and password." : "Login with your email or mobile number and password."}
+          {mode === "signup" ? "Create your account with your mobile number, email and password." : "Choose how you’d like to login to your Humor account."}
         </p>
 
         <div className="mt-5 grid grid-cols-2 rounded-full bg-[var(--milk-sage)] p-1">
@@ -192,23 +210,34 @@ export default function CustomerAuthPopup() {
         {mode === "login" ? (
           <>
             {!forgotPassword && (
-              <div className="mt-4 grid grid-cols-2 rounded-full border border-[var(--line)] p-1">
-                <button onClick={() => setLoginMethod("email")} className={"rounded-full py-2 text-xs " + (loginMethod === "email" ? "bg-[var(--deep-wine)] text-white" : "text-[var(--muted)]")}>Email</button>
-                <button onClick={() => setLoginMethod("phone")} className={"rounded-full py-2 text-xs " + (loginMethod === "phone" ? "bg-[var(--deep-wine)] text-white" : "text-[var(--muted)]")}>Mobile</button>
-              </div>
-            )}
-            {!forgotPassword && <input value={identifier} onChange={(e) => setIdentifier(e.target.value)} placeholder={loginMethod === "email" ? "Email address" : "Mobile number with +91"} type={loginMethod === "email" ? "email" : "tel"} className="mt-4 w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm outline-none" />}
-            {!forgotPassword ? (
               <>
-                <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" type="password" className="mt-3 w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm outline-none" />
+                <button
+                  type="button"
+                  onClick={loginWithGoogle}
+                  disabled={googleLoading}
+                  className="mt-5 flex w-full items-center justify-center gap-3 rounded-full border border-[var(--line)] bg-white px-5 py-3.5 text-sm font-medium text-[var(--deep-wine)] shadow-sm transition hover:bg-[var(--milk-sage)] disabled:opacity-50"
+                >
+                  <span className="flex h-5 w-5 items-center justify-center text-base font-bold">G</span>
+                  {googleLoading ? "Connecting…" : "Continue with Google"}
+                </button>
+
+                <div className="my-5 flex items-center gap-3">
+                  <div className="h-px flex-1 bg-[var(--line)]" />
+                  <span className="text-[10px] uppercase tracking-[0.18em] text-[var(--muted)]">or</span>
+                  <div className="h-px flex-1 bg-[var(--line)]" />
+                </div>
+
+                <input value={identifier} onChange={(e) => setIdentifier(e.target.value)} placeholder="Email address" type="email" autoComplete="email" className="w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm outline-none" />
+                <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" type="password" autoComplete="current-password" className="mt-3 w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm outline-none" />
                 <button type="button" onClick={() => { setForgotPassword(true); setError(""); setResetSent(false); setResetEmail(""); }} className="mt-2 text-left text-xs text-[var(--deep-wine)] underline underline-offset-2">Forgot password?</button>
                 {error && <p className="mt-3 text-xs text-red-600">{error}</p>}
-                <button onClick={login} disabled={loading} className="mt-4 w-full rounded-full bg-[var(--deep-wine)] px-5 py-3.5 text-sm font-medium text-white disabled:opacity-50">{loading ? "Logging in…" : "Login"}</button>
+                <button onClick={login} disabled={loading} className="mt-4 w-full rounded-full bg-[var(--deep-wine)] px-5 py-3.5 text-sm font-medium text-white disabled:opacity-50">{loading ? "Logging in…" : "Login with Email & Password"}</button>
               </>
-            ) : (
+            )}
+            {forgotPassword && (
               <>
-                <p className="mt-4 text-sm leading-5 text-[var(--muted)]">Enter your registered email and we’ll send you a secure password reset link.</p>
-                <input value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} placeholder="Registered email address" type="email" className="mt-4 w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm outline-none" />
+                <p className="mt-5 text-sm leading-5 text-[var(--muted)]">Enter your registered email and we’ll send you a secure password reset link.</p>
+                <input value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} placeholder="Registered email address" type="email" autoComplete="email" className="mt-4 w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm outline-none" />
                 {resetSent && <p className="mt-3 text-xs text-green-700">Reset link sent. Please check your email, including Spam/Junk.</p>}
                 {error && <p className="mt-3 text-xs text-red-600">{error}</p>}
                 <button onClick={sendPasswordReset} disabled={loading || resetSent} className="mt-4 w-full rounded-full bg-[var(--deep-wine)] px-5 py-3.5 text-sm font-medium text-white disabled:opacity-50">{loading ? "Sending…" : resetSent ? "Reset link sent" : "Send reset link"}</button>
@@ -218,10 +247,28 @@ export default function CustomerAuthPopup() {
           </>
         ) : (
           <>
-            <div className="grid sm:grid-cols-2 gap-3 mt-4">
-              <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Mobile number with +91" type="tel" className="w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm outline-none" />
-              <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email address" type="email" className="w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm outline-none" />
-              <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Create password" type="password" className="w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm outline-none sm:col-span-2" />
+            <div className="mt-5">
+              <button
+                type="button"
+                onClick={loginWithGoogle}
+                disabled={googleLoading}
+                className="flex w-full items-center justify-center gap-3 rounded-full border border-[var(--line)] bg-white px-5 py-3.5 text-sm font-medium text-[var(--deep-wine)] shadow-sm transition hover:bg-[var(--milk-sage)] disabled:opacity-50"
+              >
+                <span className="flex h-5 w-5 items-center justify-center text-base font-bold">G</span>
+                {googleLoading ? "Connecting…" : "Continue with Google"}
+              </button>
+            </div>
+
+            <div className="my-5 flex items-center gap-3">
+              <div className="h-px flex-1 bg-[var(--line)]" />
+              <span className="text-[10px] uppercase tracking-[0.18em] text-[var(--muted)]">or create with email</span>
+              <div className="h-px flex-1 bg-[var(--line)]" />
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Mobile number with +91" type="tel" autoComplete="tel" className="w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm outline-none" />
+              <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email address" type="email" autoComplete="email" className="w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm outline-none" />
+              <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Create password" type="password" autoComplete="new-password" className="w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm outline-none sm:col-span-2" />
             </div>
             {error && <p className="mt-3 text-xs text-red-600">{error}</p>}
             <button onClick={signup} disabled={loading} className="mt-4 w-full rounded-full bg-[var(--deep-wine)] px-5 py-3.5 text-sm font-medium text-white disabled:opacity-50">{loading ? "Creating account…" : "Create account & get 10% OFF"}</button>
