@@ -34,19 +34,6 @@ const slides = [
     productCta: "",
     productHref: "/collections/skin-care",
   },
-  {
-    fullWidth: false,
-    leftImage: "/products/serum-hero.webp",
-    rightImage: "/products/velvet-touch-serum-hero.webp",
-    eyebrow: "Face Serum",
-    title: <>Targeted Care.<br />Visible Glow.</>,
-    cta: "Shop Serums",
-    href: "/collections/skin-care",
-    leftLabel: "Skin Care",
-    leftTitle: "Serum Care",
-    leftHref: "/collections/skin-care",
-    rightHref: "/product/velvet-touch-face-serum",
-  },
 ] as const;
 
 export default function HeroSlider() {
