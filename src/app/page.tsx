@@ -88,36 +88,23 @@ export default async function Home() {
 
       <SocialReels />
 
-      <section className="px-5 md:px-8 pb-20">
-        <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[2rem] border border-[var(--line)] bg-[var(--velvet-gradient-soft)] shadow-[0_18px_60px_rgba(111,74,154,0.12)]">
-          <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-white/55 blur-3xl" aria-hidden="true" />
-          <div className="absolute -bottom-28 left-1/3 h-72 w-72 rounded-full bg-[var(--dusty-rose)]/15 blur-3xl" aria-hidden="true" />
-          <div className="relative grid items-center gap-8 px-6 py-9 md:grid-cols-[1fr_auto] md:px-12 md:py-11">
-            <div className="max-w-3xl">
-              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[var(--deep-wine)]/15 bg-white/65 px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--deep-wine)]">
-                <span className="h-1.5 w-1.5 rounded-full bg-[var(--warm-gold)]" aria-hidden="true" />
-                Humor Business Opportunity
-              </div>
-              <h2 className="font-display text-3xl leading-tight text-[var(--ink)] md:text-5xl">
-                Turn Your Beauty Audience Into Your Own Business.
-              </h2>
-              <p className="mt-4 max-w-2xl text-sm leading-6 text-[var(--muted)] md:text-base">
-                Are you an influencer, salon or parlour owner, or running a beauty business from home?
-                Start with Humor and build your beauty business in just 2 minutes.
-              </p>
-              <div className="mt-5 flex flex-wrap items-center gap-3">
-                <span className="rounded-full bg-[var(--deep-wine)] px-4 py-2 text-xs font-semibold text-white shadow-sm">Get started for just ₹9</span>
-                <span className="text-xs font-medium text-[var(--wine-soft)]">No hidden charges</span>
-              </div>
-            </div>
-            <div className="flex md:justify-end">
-              <Link
-                href="/your-business"
-                className="group inline-flex min-w-[170px] items-center justify-center gap-2 rounded-full bg-[var(--deep-wine)] px-7 py-4 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(111,74,154,0.24)] transition-all hover:-translate-y-0.5 hover:bg-[var(--wine-soft)]"
-              >
-                Start Here <span className="transition-transform group-hover:translate-x-1">→</span>
-              </Link>
-            </div>
+      <section className="border-y border-[var(--line)] bg-[#f7f2fb] py-8 md:py-10">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 px-5 md:grid-cols-4 md:px-8">
+          <div className="rounded-2xl border border-[var(--line)] bg-white/75 px-5 py-5">
+            <h3 className="text-sm font-semibold text-[var(--deep-wine)]">Dermatologically Tested</h3>
+            <p className="mt-2 text-xs leading-5 text-[var(--muted)]">Thoughtfully formulated for everyday beauty routines.</p>
+          </div>
+          <div className="rounded-2xl border border-[var(--line)] bg-white/75 px-5 py-5">
+            <h3 className="text-sm font-semibold text-[var(--deep-wine)]">Exciting Offers & Discounts</h3>
+            <p className="mt-2 text-xs leading-5 text-[var(--muted)]">Discover special offers, bundle deals and limited-time savings.</p>
+          </div>
+          <div className="rounded-2xl border border-[var(--line)] bg-white/75 px-5 py-5">
+            <h3 className="text-sm font-semibold text-[var(--deep-wine)]">Sign Up & Get a Discount</h3>
+            <p className="mt-2 text-xs leading-5 text-[var(--muted)]">Create your account and unlock exclusive offers and member savings.</p>
+          </div>
+          <div className="rounded-2xl border border-[var(--line)] bg-white/75 px-5 py-5">
+            <h3 className="text-sm font-semibold text-[var(--deep-wine)]">COD Available</h3>
+            <p className="mt-2 text-xs leading-5 text-[var(--muted)]">Cash on Delivery is available at checkout.</p>
           </div>
         </div>
       </section>
