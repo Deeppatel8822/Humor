@@ -15,6 +15,16 @@ const slides = [
     productHref: "/product/velvet-touch-face-serum",
   },
   {
+    fullWidth: true,
+    heroImage: "https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/2fce331a-18d3-4782-b35b-4020caa0727c.png",
+    eyebrow: "Hair Care",
+    title: <>Stronger. Smoother.<br />Healthier Hair.</>,
+    cta: "Shop Now",
+    href: "/collections/hair-care",
+    productCta: "",
+    productHref: "/collections/hair-care",
+  },
+  {
     fullWidth: false,
     leftImage: "/products/facewash-hero.webp",
     rightImage: "/products/fullmoon-face-wash-hero.webp",
