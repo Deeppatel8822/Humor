@@ -99,9 +99,9 @@ export default async function BundlesPage() {
                 {bundle.items.map((item, i) => (
                   <div key={item.id} className="flex items-center gap-2 md:gap-3 min-w-0">
                     {i > 0 && <span className="text-lg md:text-xl font-light text-[var(--muted)]">+</span>}
-                    <div className="w-24 h-24 md:w-32 md:h-32 rounded-2xl border border-[var(--line)] bg-white overflow-hidden flex items-center justify-center shrink-0">
+                    <div className="w-24 h-24 md:w-32 md:h-32 rounded-2xl border border-[var(--line)] bg-white overflow-hidden flex items-center justify-center shrink-0 group/bundle-img">
                       {item.images?.[0] ? (
-                        <img src={item.images[0]} alt={item.name} className="w-full h-full object-cover" loading="lazy" />
+                        <img src={item.images[0]} alt={item.name} className="w-full h-full object-cover transition-transform duration-300 ease-out group-hover/bundle-img:scale-[1.05] active:scale-[1.05]" loading="lazy" />
                       ) : (
                         <span className="text-[10px] md:text-xs text-center text-[var(--muted)] px-2">{item.name}</span>
                       )}
