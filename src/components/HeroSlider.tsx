@@ -6,7 +6,7 @@ import Link from "next/link";
 const slides = [
   {
     fullWidth: true,
-    heroImage: "https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/3140d269-13c9-42f0-ab80-4657139140e1.png",
+    heroImage: "https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/f7bcec3b-11a8-4443-b814-7fb6c97e818a.png",
     eyebrow: "Face Serum",
     title: <>Targeted Care.<br />Visible Glow.</>,
     cta: "Shop Serums",
@@ -73,7 +73,7 @@ export default function HeroSlider() {
           />
           <Link
             href={slide.href}
-            aria-label="Shop Skin Care"
+            aria-label="Shop Now"
             className="absolute left-[40.2%] top-[68.4%] h-[8%] w-[10.7%]"
           />
           <Link
