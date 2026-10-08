@@ -11,6 +11,11 @@ function bundleTotal(products: Product[]) {
   return products.reduce((sum, p) => sum + p.price_inr, 0);
 }
 
+function bundlePrice(products: Product[]) {
+  // Flat 5% discount on the combined current selling price.
+  return Math.round(bundleTotal(products) * 0.95);
+}
+
 export default async function BundlesPage() {
   const products = await getAllProducts();
   const bySlug = (slug: string) => products.find((p) => p.slug === slug);
@@ -32,6 +37,26 @@ export default async function BundlesPage() {
       name: "Hair Care Ritual",
       items: [bySlug("repair-shampoo"), bySlug("repair-conditioner"), bySlug("repair-hair-mask")].filter(Boolean) as Product[],
     },
+    {
+      name: "Fullmoon Complete Routine",
+      items: [bySlug("fullmoon-face-wash"), bySlug("fullmoon-face-serum"), bySlug("sunscreen-spf-50")].filter(Boolean) as Product[],
+    },
+    {
+      name: "Blemish Block Complete Routine",
+      items: [bySlug("blemish-block-face-wash"), bySlug("blemish-block-face-serum"), bySlug("sunscreen-spf-50")].filter(Boolean) as Product[],
+    },
+    {
+      name: "Velvet Touch Complete Routine",
+      items: [bySlug("velvet-touch-face-wash"), bySlug("velvet-touch-face-serum"), bySlug("sunscreen-spf-50")].filter(Boolean) as Product[],
+    },
+    {
+      name: "Protein Shake Shampoo + Conditioner",
+      items: [bySlug("repair-shampoo"), bySlug("repair-conditioner")].filter(Boolean) as Product[],
+    },
+    {
+      name: "Protein Shake Shampoo + Hair Mask",
+      items: [bySlug("repair-shampoo"), bySlug("repair-hair-mask")].filter(Boolean) as Product[],
+    },
   ];
 
   return (
@@ -39,7 +64,7 @@ export default async function BundlesPage() {
       <h1 className="font-display text-3xl md:text-4xl text-[var(--deep-wine)] mb-2">Bundles</h1>
       <p className="text-[var(--muted)] mb-2">Complete routines, bundled together.</p>
       <p className="text-xs text-[var(--muted)] mb-10">
-        * Bundle discount pricing to be finalized in Shopify — shown here at combined individual price until then.
+        Get 5% off the combined current selling price when you buy a bundle.
       </p>
 
       <div className="grid md:grid-cols-2 gap-6">
@@ -54,10 +79,20 @@ export default async function BundlesPage() {
                 </div>
               ))}
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-lg font-semibold text-[var(--ink)]">
-                &#8377;{bundleTotal(bundle.items)}
-              </span>
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-[var(--muted)] line-through">
+                    &#8377;{bundleTotal(bundle.items)}
+                  </span>
+                  <span className="text-[10px] font-semibold uppercase tracking-wide rounded-full bg-[var(--deep-wine)] text-white px-2 py-1">
+                    5% OFF
+                  </span>
+                </div>
+                <span className="text-lg font-semibold text-[var(--ink)]">
+                  &#8377;{bundlePrice(bundle.items)}
+                </span>
+              </div>
               <AddBundleButton products={bundle.items} />
             </div>
           </div>
