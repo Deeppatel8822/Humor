@@ -17,13 +17,13 @@ const usps = [
 const brighteningSteps = [
   { label: "01 — Cleanse · Fullmoon Face Wash", detail: "Gently cleanse your face and prepare the skin for your treatment step." },
   { label: "02 — Treat · Fullmoon Face Serum", detail: "Apply a few drops to clean, dry skin and let the serum absorb." },
-  { label: "03 — Protect · Sunscreen SPF 50 PA++++", detail: "Finish your morning routine with daily sun protection." },
+  { label: "03 — Protect · Light & Shade Sunscreen SPF 50", detail: "Finish your morning routine with daily sun protection." },
 ];
 
 const blemishSteps = [
   { label: "01 — Cleanse · Blemish Block Face Wash", detail: "Start with a clean face by gently cleansing away daily buildup and excess oil." },
   { label: "02 — Treat · Blemish Block Face Serum", detail: "Apply a few drops to clean, dry skin as your targeted treatment step." },
-  { label: "03 — Protect · Sunscreen SPF 50 PA++++", detail: "Complete your morning routine with daily sun protection." },
+  { label: "03 — Protect · Light & Shade Sunscreen SPF 50", detail: "Complete your morning routine with daily sun protection." },
 ];
 
 export default async function Home() {
