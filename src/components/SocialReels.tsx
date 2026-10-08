@@ -24,24 +24,7 @@ function InstagramIcon({ className = "h-5 w-5" }: { className?: string }) {
   );
 }
 
-const trustPoints = [
-  {
-    title: "Dermatologist Tested",
-    text: "Thoughtfully formulated for everyday beauty routines.",
-  },
-  {
-    title: "Made in India",
-    text: "Proudly created and made in India.",
-  },
-  {
-    title: "Free Shipping",
-    text: "Free shipping on orders ₹299+.",
-  },
-  {
-    title: "COD Available",
-    text: "Cash on Delivery is available at checkout.",
-  },
-];
+
 
 export default function SocialReels() {
   return (
@@ -91,22 +74,6 @@ export default function SocialReels() {
                 />
               </div>
             </article>
-          ))}
-        </div>
-
-        <div className="mt-12 grid gap-3 border-t border-[var(--line)] pt-10 sm:grid-cols-2 lg:grid-cols-4">
-          {trustPoints.map((point) => (
-            <div
-              key={point.title}
-              className="rounded-2xl border border-[var(--line)] bg-[var(--milk-sage)] px-5 py-5"
-            >
-              <p className="text-sm font-semibold text-[var(--deep-wine)]">
-                {point.title}
-              </p>
-              <p className="mt-2 text-xs leading-5 text-[var(--muted)]">
-                {point.text}
-              </p>
-            </div>
           ))}
         </div>
 
