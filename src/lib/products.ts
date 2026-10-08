@@ -202,7 +202,7 @@ export const products: Product[] = [
     ...base,
     id: "7",
     slug: "sunscreen-spf-50",
-    name: "Sunscreen SPF 50 PA++++",
+    name: "Light & Shade Sunscreen SPF 50",
     tagline: "Lightweight daily sun protection",
     description:
       "A broad-spectrum SPF 50 sunscreen with a no-white-cast finish, light enough to wear every day under makeup.",
@@ -230,7 +230,7 @@ export const products: Product[] = [
     ...base,
     id: "8",
     slug: "repair-shampoo",
-    name: "Repair Shampoo",
+    name: "Protein Shake Anti Hairfall Shampoo",
     tagline: "Sulphate-free shampoo for damaged, frizzy hair",
     description:
       "A sulphate-free, protein-enriched shampoo that cleanses without stripping. Built for hair that's colour-treated, heat-styled, or just needs a little extra softness back.",
@@ -260,7 +260,7 @@ export const products: Product[] = [
     ...base,
     id: "9",
     slug: "repair-conditioner",
-    name: "Repair Conditioner",
+    name: "Silk Shake Smooth Shine Conditioner",
     tagline: "Detangling conditioner for damaged, frizzy hair",
     description:
       "A rich conditioner that detangles and smooths without weighing hair down — the second half of the Repair duo.",
@@ -290,7 +290,7 @@ export const products: Product[] = [
     ...base,
     id: "10",
     slug: "repair-hair-mask",
-    name: "Repair Hair Mask",
+    name: "Milk Shake Repairing Smooth Hair Mask",
     tagline: "Weekly deep-repair treatment mask",
     description:
       "An intensive weekly treatment for chemically-treated or heat-damaged hair — a deeper dose of the same repair actives as the shampoo and conditioner.",
@@ -321,7 +321,7 @@ export const products: Product[] = [
     ...base,
     id: "11",
     slug: "shower-gel",
-    name: "Shower Gel",
+    name: "Royal Water Soft Shower Cream",
     tagline: "Everyday gentle body wash",
     description:
       "A gentle, sulphate-free body wash that cleanses without drying out skin, for daily use across the whole body.",
