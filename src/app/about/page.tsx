@@ -26,7 +26,7 @@ export default function AboutPage() {
         <div className="grid md:grid-cols-2 gap-10 md:gap-16 items-center">
           <div className="order-1 md:order-2">
             <div className="aspect-[4/5] rounded-3xl bg-[var(--milk-sage)] border border-[var(--line)] overflow-hidden">
-              <img src="/images/about/humor-luxury-story.webp.png" alt="My Humor lifestyle beauty portrait for Humor Luxury" className="w-full h-full object-cover object-center" />
+              <img src="/images/about/humor-luxury-story.webp.png" alt="My Humor lifestyle beauty portrait for Humor Luxury" className="w-full h-full object-cover object-top" />
             </div>
           </div>
           <div className="order-2 md:order-1">
