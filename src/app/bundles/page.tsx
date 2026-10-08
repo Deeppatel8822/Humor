@@ -94,36 +94,30 @@ export default async function BundlesPage() {
         {bundles.map((bundle) => (
           <div key={bundle.name} className="border border-[var(--line)] rounded-2xl p-6">
             <h2 className="font-display text-xl text-[var(--deep-wine)] mb-4">{bundle.name}</h2>
-            {bundle.name === "Blemish Block Duo" ? (
-              <div className="mb-5">
-                <div className="flex items-center justify-center gap-3">
-                  {bundle.items.map((item, i) => (
-                    <div key={item.id} className="flex items-center gap-3">
-                      {i > 0 && <span className="text-xl font-light text-[var(--muted)]">+</span>}
-                      <div className="w-28 h-28 md:w-32 md:h-32 rounded-2xl border border-[var(--line)] bg-white overflow-hidden flex items-center justify-center">
-                        {item.images?.[0] ? (
-                          <img src={item.images[0]} alt={item.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <span className="text-xs text-center text-[var(--muted)] px-2">{item.name}</span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="flex justify-center gap-2 mt-3 text-xs text-[var(--muted)]">
-                  {bundle.items.map((item) => <span key={item.id}>{item.name}</span>)}
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-2 mb-5">
+            <div className="mb-5">
+              <div className="flex items-center justify-center gap-2 md:gap-3">
                 {bundle.items.map((item, i) => (
-                  <div key={item.id} className="flex items-center gap-2 text-sm text-[var(--ink)]/85">
-                    {i > 0 && <span className="text-[var(--muted)]">+</span>}
-                    <span>{item.name}</span>
+                  <div key={item.id} className="flex items-center gap-2 md:gap-3 min-w-0">
+                    {i > 0 && <span className="text-lg md:text-xl font-light text-[var(--muted)]">+</span>}
+                    <div className="w-24 h-24 md:w-32 md:h-32 rounded-2xl border border-[var(--line)] bg-white overflow-hidden flex items-center justify-center shrink-0">
+                      {item.images?.[0] ? (
+                        <img src={item.images[0]} alt={item.name} className="w-full h-full object-cover" loading="lazy" />
+                      ) : (
+                        <span className="text-[10px] md:text-xs text-center text-[var(--muted)] px-2">{item.name}</span>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
-            )}
+              <div className="flex justify-center flex-wrap gap-x-3 gap-y-1 mt-3 text-[10px] md:text-xs text-[var(--muted)]">
+                {bundle.items.map((item, i) => (
+                  <span key={item.id} className="flex items-center gap-1">
+                    {i > 0 && <span>•</span>}
+                    {item.name}
+                  </span>
+                ))}
+              </div>
+            </div>
             <div className="flex items-end justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2">
