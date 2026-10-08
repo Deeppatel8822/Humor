@@ -11,9 +11,18 @@ function bundleTotal(products: Product[]) {
   return products.reduce((sum, p) => sum + p.price_inr, 0);
 }
 
-function bundlePrice(products: Product[]) {
-  // Flat 5% discount on the combined current selling price.
-  return Math.round(bundleTotal(products) * 0.95);
+function bundleDiscountRate(bundleName: string) {
+  // Skincare routines get 15% off; hair-care bundles get 10% off.
+  return bundleName.toLowerCase().includes("hair") ||
+    bundleName.toLowerCase().includes("shampoo") ||
+    bundleName.toLowerCase().includes("conditioner") ||
+    bundleName.toLowerCase().includes("mask")
+    ? 0.10
+    : 0.15;
+}
+
+function bundlePrice(products: Product[], bundleName: string) {
+  return Math.round(bundleTotal(products) * (1 - bundleDiscountRate(bundleName)));
 }
 
 export default async function BundlesPage() {
@@ -64,7 +73,7 @@ export default async function BundlesPage() {
       <h1 className="font-display text-3xl md:text-4xl text-[var(--deep-wine)] mb-2">Bundles</h1>
       <p className="text-[var(--muted)] mb-2">Complete routines, bundled together.</p>
       <p className="text-xs text-[var(--muted)] mb-10">
-        Get 5% off the combined current selling price when you buy a bundle.
+        Save 15% on skincare routines and 10% on hair-care bundles.
       </p>
 
       <div className="grid md:grid-cols-2 gap-6">
@@ -90,7 +99,7 @@ export default async function BundlesPage() {
                   </span>
                 </div>
                 <span className="text-lg font-semibold text-[var(--ink)]">
-                  &#8377;{bundlePrice(bundle.items)}
+                  &#8377;{bundlePrice(bundle.items, bundle.name)}
                 </span>
               </div>
               <AddBundleButton products={bundle.items} />
