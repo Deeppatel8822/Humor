@@ -4,7 +4,6 @@ import ProductCard from "@/components/ProductCard";
 import HeroSlider from "@/components/HeroSlider";
 import SocialReels from "@/components/SocialReels";
 import { getAllProducts } from "@/lib/catalog";
-import TrustFacts from "@/components/TrustFacts";
 
 const usps = [
   { label: "Dermatologically Tested", symbol: "✓" },
@@ -42,10 +41,7 @@ export default async function Home() {
         <div className="max-w-7xl mx-auto px-5 md:px-8 py-5 md:py-6 flex flex-wrap justify-center gap-x-7 gap-y-4 md:gap-x-10">
           {usps.map((usp) => (
             <div key={usp.label} className="flex items-center gap-2.5 text-[var(--deep-wine)]">
-              <span
-                aria-hidden="true"
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--deep-wine)]/30 bg-white/70 text-base font-semibold"
-              >
+              <span aria-hidden="true" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--deep-wine)]/30 bg-white/70 text-base font-semibold">
                 {usp.symbol}
               </span>
               <span className="text-[11px] md:text-xs uppercase tracking-[0.13em] font-medium whitespace-nowrap">
@@ -70,18 +66,14 @@ export default async function Home() {
         <div className="max-w-2xl mb-12">
           <p className="text-xs uppercase tracking-[0.18em] text-[var(--warm-gold)] mb-3">Simple. Intentional. Effective.</p>
           <h2 className="font-display text-3xl md:text-4xl text-[var(--deep-wine)] mb-3">Shop by Routine</h2>
-          <p className="text-[var(--muted)] max-w-xl">
-            The right products in the right order can turn your daily skincare into a simple, consistent ritual.
-          </p>
+          <p className="text-[var(--muted)] max-w-xl">The right products in the right order can turn your daily skincare into a simple, consistent ritual.</p>
         </div>
         <div className="grid md:grid-cols-2 gap-16">
           <RoutineThread title="Brightening Routine" steps={brighteningSteps} />
           <RoutineThread title="Acne & Blemish Routine" steps={blemishSteps} />
         </div>
         <div className="mt-10">
-          <Link href="/build-your-routine" className="inline-block border border-[var(--deep-wine)] text-[var(--deep-wine)] px-7 py-3.5 rounded-full text-sm font-medium hover:bg-[var(--milk-sage)] transition-colors">
-            Build Your Routine &rarr;
-          </Link>
+          <Link href="/build-your-routine" className="inline-block border border-[var(--deep-wine)] text-[var(--deep-wine)] px-7 py-3.5 rounded-full text-sm font-medium hover:bg-[var(--milk-sage)] transition-colors">Build Your Routine &rarr;</Link>
         </div>
       </section>
 
@@ -106,7 +98,6 @@ export default async function Home() {
       </section>
 
       <SocialReels />
-      <TrustFacts />
     </>
   );
 }
