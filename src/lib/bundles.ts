@@ -41,34 +41,41 @@ export function bundleDiscountPercent(products: Product[], bundleName: string) {
   return total ? Math.round(((total - bundlePrice(products, bundleName)) / total) * 100) : 0;
 }
 
-export function calculateBundleSavings(lines: Array<{ slug: string; quantity: number }>, products: Array<Pick<Product, "slug" | "price_inr">>) {
+export function calculateBundleSavings(
+  lines: Array<{ slug: string; quantity: number }>,
+  products: Array<Pick<Product, "slug" | "price_inr">>
+) {
   const productMap = new Map(products.map((product) => [product.slug, product]));
-  const remaining = new Map(lines.map((line) => [line.slug, Math.max(0, line.quantity)]));
-  let savings = 0;
+  const initial = bundleDefinitions.map((bundle) => ({
+    bundle,
+    bundleProducts: bundle.slugs.map((slug) => productMap.get(slug)).filter(Boolean) as Array<Pick<Product, "slug" | "price_inr">>,
+  })).filter((entry) => entry.bundleProducts.length === entry.bundle.slugs.length);
 
-  const candidates = bundleDefinitions.map((bundle) => {
-    const bundleProducts = bundle.slugs.map((slug) => productMap.get(slug)).filter(Boolean) as Product[];
-    if (bundleProducts.length !== bundle.slugs.length) return null;
-    const possible = Math.min(...bundle.slugs.map((slug) => remaining.get(slug) ?? 0));
-    if (possible <= 0) return null;
-    return {
-      bundle,
-      bundleProducts,
-      possible,
-      saved: Math.max(0, bundleTotal(bundleProducts) - bundlePrice(bundleProducts, bundle.name)),
-    };
-  }).filter(Boolean) as Array<{ bundle: BundleDefinition; bundleProducts: Product[]; possible: number; saved: number }>;
+  const quantities = new Map(lines.map((line) => [line.slug, Math.max(0, line.quantity)]));
+  const memo = new Map<string, number>();
 
-  candidates.sort((a, b) => (b.saved / b.bundleProducts.length) - (a.saved / a.bundleProducts.length));
+  function solve(index: number, remaining: Map<string, number>): number {
+    if (index >= initial.length) return 0;
+    const key = index + "|" + initial.map((entry) => entry.bundle.slugs.map((slug) => remaining.get(slug) ?? 0).join(",")).join("|");
+    const cached = memo.get(key);
+    if (cached !== undefined) return cached;
 
-  for (const candidate of candidates) {
-    const count = Math.min(candidate.possible, ...candidate.bundle.slugs.map((slug) => remaining.get(slug) ?? 0));
-    if (count <= 0) continue;
-    savings += candidate.saved * count;
-    candidate.bundle.slugs.forEach((slug) => remaining.set(slug, (remaining.get(slug) ?? 0) - count));
+    const entry = initial[index];
+    const possible = Math.min(...entry.bundle.slugs.map((slug) => remaining.get(slug) ?? 0));
+    let best = solve(index + 1, remaining);
+
+    for (let count = 1; count <= possible; count += 1) {
+      entry.bundle.slugs.forEach((slug) => remaining.set(slug, (remaining.get(slug) ?? 0) - 1));
+      const saved = Math.max(0, bundleTotal(entry.bundleProducts as Product[]) - bundlePrice(entry.bundleProducts as Product[], entry.bundle.name));
+      best = Math.max(best, saved * count + solve(index + 1, remaining));
+    }
+
+    entry.bundle.slugs.forEach((slug) => remaining.set(slug, (remaining.get(slug) ?? 0) + possible));
+    memo.set(key, Math.round(best));
+    return Math.round(best);
   }
 
-  return Math.round(savings);
+  return solve(0, quantities);
 }
 
 export function getRoutineUpsells(product: Product, products: Product[]) {
