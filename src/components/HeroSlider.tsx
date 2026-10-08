@@ -15,6 +15,7 @@ const slides = [
     productHref: "/product/velvet-touch-face-serum",
   },
   {
+    fullWidth: false,
     leftImage: "/products/facewash-hero.webp",
     rightImage: "/products/fullmoon-face-wash-hero.webp",
     eyebrow: "Face Wash",
@@ -27,6 +28,7 @@ const slides = [
     rightHref: "/product/fullmoon-face-wash",
   },
   {
+    fullWidth: false,
     leftImage: "/products/serum-hero.webp",
     rightImage: "/products/velvet-touch-serum-hero.webp",
     eyebrow: "Face Serum",
