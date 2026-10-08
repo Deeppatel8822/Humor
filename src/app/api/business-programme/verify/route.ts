@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { razorpayClient } from "@/lib/razorpay";
 
 export async function POST(req: NextRequest) {
   try {
@@ -31,13 +32,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Payment verification failed." }, { status: 400 });
     }
 
+    const razorpayOrder = await razorpayClient().orders.fetch(razorpayOrderId);
+    if (Number(razorpayOrder.amount) !== 900 || razorpayOrder.currency !== "INR") {
+      return NextResponse.json({ error: "Invalid registration payment amount." }, { status: 400 });
+    }
+
     const businessType = String(registration.businessType || "").trim();
     const businessName = String(registration.businessName || "").trim();
     const mobile = String(registration.mobile || "").trim();
     const address = String(registration.address || "").trim();
     const proofPath = String(registration.proofPath || "").trim();
 
-    if (!businessType || !businessName || !mobile || !address || !proofPath) {
+    if (!businessType || !businessName || !mobile || !address || !proofPath || !proofPath.startsWith(authData.user.id + "/")) {
       return NextResponse.json({ error: "Registration details are incomplete." }, { status: 400 });
     }
 
