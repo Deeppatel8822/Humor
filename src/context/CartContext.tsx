@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { Product } from "@/types/product";
+import { calculateBundleSavings } from "@/lib/bundles";
 
 export interface CartLine {
   productId: string;
@@ -21,6 +22,7 @@ interface CartContextValue {
   clearCart: () => void;
   itemCount: number;
   subtotalInr: number;
+  bundleSavingsInr: number;
   startCheckout: () => Promise<{ mode: "shopify" | "local"; url?: string }>;
 }
 
@@ -121,10 +123,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const itemCount = lines.reduce((sum, l) => sum + l.quantity, 0);
   const subtotalInr = lines.reduce((sum, l) => sum + l.price_inr * l.quantity, 0);
+  const bundleSavingsInr = calculateBundleSavings(lines, lines.map((line) => ({ slug: line.slug, price_inr: line.price_inr })));
 
   return (
     <CartContext.Provider
-      value={{ lines, addItem, removeItem, updateQuantity, clearCart, itemCount, subtotalInr, startCheckout }}
+      value={{ lines, addItem, removeItem, updateQuantity, clearCart, itemCount, subtotalInr, bundleSavingsInr, startCheckout }}
     >
       {children}
     </CartContext.Provider>
