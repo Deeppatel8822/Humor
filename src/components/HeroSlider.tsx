@@ -133,14 +133,4 @@ export default function HeroSlider() {
       </div>
     </section>
   );
-}  {
-    fullWidth: true,
-    heroImage: "https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/2c94c4e6-aa1f-4800-a519-b89f8bb2f350.png",
-    eyebrow: "Face Serum",
-    title: <>Targeted Care.<br />Visible Glow.</>,
-    cta: "Shop Serums",
-    href: "/collections/skin-care",
-    productCta: "View Velvet Touch",
-    productHref: "/product/velvet-touch-face-serum",
-  },
-
+} 
