@@ -1,77 +1,45 @@
-"use client";
-
-import { useEffect, useState } from "react";
-
-const facts = [
-  { value: 11, suffix: "", label: "Products, 3 Categories", icon: "✦" },
-  { value: 100, suffix: "%", label: "Cruelty Free", icon: "♡" },
-  { value: 0, suffix: "", label: "Parabens / Sulphates", icon: "◌" },
-  { value: 0, suffix: "", label: "Proudly Made In", text: "India", icon: "✿" },
-];
-
-function CountUp({ value, suffix, start }: { value: number; suffix: string; start: boolean }) {
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    if (!start || value === 0) return;
-
-    let frame = 0;
-    const duration = 900;
-    const startedAt = performance.now();
-
-    const tick = (now: number) => {
-      const progress = Math.min((now - startedAt) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setCount(Math.round(value * eased));
-
-      if (progress < 1) {
-        frame = requestAnimationFrame(tick);
-      }
-    };
-
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [start, value]);
-
-  return <>{count}{suffix}</>;
-}
-
 export default function TrustFacts() {
-  const [started, setStarted] = useState(false);
-
-  useEffect(() => {
-    const section = document.getElementById("trust-facts");
-    if (!section) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setStarted(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.3 }
-    );
-
-    observer.observe(section);
-    return () => observer.disconnect();
-  }, []);
+  const facts = [
+    {
+      icon: "↗",
+      title: "Shipping & COD Available",
+      text: "Free shipping on orders ₹299+ with Cash on Delivery available.",
+    },
+    {
+      icon: "✦",
+      title: "Exciting Offers & Discounts",
+      text: "Discover special offers, bundle deals and limited-time savings.",
+    },
+    {
+      icon: "♡",
+      title: "Sign Up & Get a Discount",
+      text: "Create your account and unlock exclusive offers and member savings.",
+    },
+  ];
 
   return (
-    <section id="trust-facts" className="bg-[var(--milk-sage)] border-y border-[var(--line)] py-14 md:py-16">
-      <div className="max-w-7xl mx-auto px-5 md:px-8 grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-6 text-center">
+    <section
+      id="trust-facts"
+      className="border-y border-[var(--line)] bg-[#f7f2fb] py-8 md:py-10"
+    >
+      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 px-5 md:grid-cols-3 md:px-8">
         {facts.map((fact) => (
-          <div key={fact.label} className="group">
+          <div
+            key={fact.title}
+            className="group rounded-2xl border border-[var(--line)] bg-white/75 px-5 py-5 text-center transition-all duration-300 hover:-translate-y-0.5 hover:shadow-sm"
+          >
             <div
               aria-hidden="true"
-              className="mx-auto mb-3 flex h-9 w-9 items-center justify-center rounded-full border border-[var(--warm-gold)]/45 text-lg text-[var(--warm-gold)] transition-transform duration-300 group-hover:scale-110"
+              className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full border border-[var(--deep-wine)]/25 bg-[#f7f2fb] text-lg font-semibold text-[var(--deep-wine)] transition-transform duration-300 group-hover:scale-110"
             >
               {fact.icon}
             </div>
-            <div className="font-display text-2xl md:text-3xl text-[var(--deep-wine)] mb-1 tabular-nums">
-              {fact.text ? fact.text : <CountUp value={fact.value} suffix={fact.suffix} start={started} />}
-            </div>
-            <div className="text-xs text-[var(--muted)] uppercase tracking-wide">{fact.label}</div>
+            <h3 className="text-sm font-semibold text-[var(--deep-wine)]">
+              {fact.title}
+            </h3>
+            <p className="mx-auto mt-2 max-w-sm text-xs leading-5 text-[var(--muted)]">
+              {fact.text}
+            </p>
           </div>
         ))}
       </div>
