@@ -53,7 +53,7 @@ const routineSteps: Record<string, RoutineStep[]> = {
       title: "Protect",
       productSlug: "sunscreen-spf-50",
       description:
-        "Finish your morning routine with Sunscreen SPF 50 PA++++.",
+        "Finish your morning routine with Light & Shade Sunscreen SPF 50.",
       howToUse:
         "Apply generously as the final step of your morning skincare routine before sun exposure. Reapply during prolonged outdoor exposure.",
       why:
@@ -89,7 +89,7 @@ const routineSteps: Record<string, RoutineStep[]> = {
       title: "Protect",
       productSlug: "sunscreen-spf-50",
       description:
-        "Complete your morning routine with Sunscreen SPF 50 PA++++.",
+        "Complete your morning routine with Light & Shade Sunscreen SPF 50.",
       howToUse:
         "Apply generously as the final step before sun exposure. Reapply when spending extended time outdoors.",
       why:
@@ -125,7 +125,7 @@ const routineSteps: Record<string, RoutineStep[]> = {
       title: "Protect",
       productSlug: "sunscreen-spf-50",
       description:
-        "Finish with Sunscreen SPF 50 PA++++ every morning.",
+        "Finish with Light & Shade Sunscreen SPF 50 every morning.",
       howToUse:
         "Apply generously as the final skincare step before sun exposure. Reapply during prolonged outdoor exposure.",
       why:
@@ -139,7 +139,7 @@ const routineSteps: Record<string, RoutineStep[]> = {
       title: "Cleanse",
       productSlug: "repair-shampoo",
       description:
-        "Start your haircare routine by cleansing your scalp and hair with Repair Shampoo.",
+        "Start your haircare routine by cleansing your scalp and hair with Protein Shake Anti Hairfall Shampoo.",
       howToUse:
         "Apply to wet hair and scalp. Massage gently with your fingertips, then rinse thoroughly.",
       why:
@@ -150,7 +150,7 @@ const routineSteps: Record<string, RoutineStep[]> = {
       title: "Condition",
       productSlug: "repair-conditioner",
       description:
-        "Follow with Repair Conditioner through the lengths of your hair.",
+        "Follow with Silk Shake Smooth Shine Conditioner through the lengths of your hair.",
       howToUse:
         "Apply mainly to the mid-lengths and ends. Leave briefly, then rinse thoroughly.",
       why:
@@ -161,7 +161,7 @@ const routineSteps: Record<string, RoutineStep[]> = {
       title: "Deep Repair",
       productSlug: "repair-hair-mask",
       description:
-        "Use Repair Hair Mask as your deeper haircare step.",
+        "Use Milk Shake Repairing Smooth Hair Mask as your deeper haircare step.",
       howToUse:
         "Apply to clean, damp hair, focusing on lengths and ends. Leave according to product directions, then rinse.",
       why:
@@ -186,7 +186,7 @@ const routineSteps: Record<string, RoutineStep[]> = {
       title: "Protect",
       productSlug: "sunscreen-spf-50",
       description:
-        "Finish with Sunscreen SPF 50 PA++++ as your daily protection step.",
+        "Finish with Light & Shade Sunscreen SPF 50 as your daily protection step.",
       howToUse:
         "Apply generously as the final step of your morning skincare routine before sun exposure. Reapply during prolonged outdoor exposure.",
       why:
@@ -200,7 +200,7 @@ const routineSteps: Record<string, RoutineStep[]> = {
       title: "Cleanse",
       productSlug: "shower-gel",
       description:
-        "Begin your bodycare routine with Shower Gel.",
+        "Begin your bodycare routine with Royal Water Soft Shower Cream.",
       howToUse:
         "Apply to wet skin, gently cleanse the body and rinse thoroughly.",
       why:
