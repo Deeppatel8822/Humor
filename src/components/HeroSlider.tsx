@@ -6,7 +6,7 @@ import Link from "next/link";
 const slides = [
   {
     fullWidth: true,
-    heroImage: "https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/10830a0c-e9b3-4ac2-812c-fbce28e6dbc0.webp",
+    heroImage: "https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/26e20e0b-697e-4979-a320-a9294c916595.png",
     eyebrow: "Face Serum",
     title: <>Targeted Care.<br />Visible Glow.</>,
     cta: "Shop Serums",
