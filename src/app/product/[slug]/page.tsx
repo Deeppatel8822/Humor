@@ -6,6 +6,7 @@ import ProductCard from "@/components/ProductCard";
 import CompleteRoutineButton from "@/components/AddBundleButton";
 import ProductGallery from "@/components/ProductGallery";
 import CustomerReviews from "@/components/CustomerReviews";
+import RoutineUpsell from "@/components/RoutineUpsell";
 
 export async function generateStaticParams() { return getLocalProducts().map((p) => ({ slug: p.slug })); }
 
@@ -69,6 +70,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           </div>
           <div className="flex items-center gap-3 mb-6"><span className="text-2xl font-medium text-[var(--deep-wine)]">&#8377;{product.price_inr}</span>{onSale && <span className="text-base text-[var(--ink)]/40 line-through">&#8377;{product.compare_at_price_inr}</span>}</div>
           <p className="text-sm text-[var(--ink)]/85 mb-6 leading-relaxed">{product.description}</p>
+          <RoutineUpsell product={product} products={allProducts} />
           <AddToCartForm product={product} />
           <div className="grid grid-cols-2 gap-3 mt-6 text-xs text-[var(--muted)]">
             <div className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[var(--moss)]" />{product.stock_quantity > 0 ? "In stock, ready to ship" : "Out of stock"}</div>
