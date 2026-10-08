@@ -20,11 +20,12 @@ const cartImageFallbacks: Record<string, string> = {
 };
 
 export default function CartPage() {
-  const { lines, updateQuantity, removeItem, subtotalInr, startCheckout } = useCart();
+  const { lines, updateQuantity, removeItem, subtotalInr, bundleSavingsInr, startCheckout } = useCart();
   const router = useRouter();
   const [checkingOut, setCheckingOut] = useState(false);
   const freeShippingThresholdInr = 299;
-  const shippingInr = subtotalInr >= freeShippingThresholdInr ? 0 : 50;
+  const netSubtotalInr = Math.max(0, subtotalInr - bundleSavingsInr);
+  const shippingInr = netSubtotalInr >= freeShippingThresholdInr ? 0 : 50;
   const amountToFreeShippingInr = Math.max(0, freeShippingThresholdInr - subtotalInr);
 
   async function handleCheckout() {
@@ -96,11 +97,12 @@ export default function CartPage() {
           <div className="bg-white border border-[var(--line)] rounded-xl p-6 h-fit">
             <h2 className="font-display text-xl text-[var(--deep-wine)] mb-5">Order summary</h2>
             <div className="flex justify-between text-sm text-[var(--muted)] mb-2"><span>Subtotal</span><span>&#8377;{subtotalInr}</span></div>
+            {bundleSavingsInr > 0 && <div className="flex justify-between text-sm text-[var(--muted)] mb-2"><span>Bundle savings</span><span className="text-green-700">−₹{bundleSavingsInr}</span></div>}
             <div className="flex justify-between text-sm text-[var(--muted)] mb-4">
               <span>Shipping</span>
               <span className={shippingInr === 0 ? "text-green-700" : "text-[var(--ink)]"}>{shippingInr === 0 ? "Free" : "₹50"}</span>
             </div>
-            <div className="border-t border-[var(--line)] pt-4 flex justify-between text-base font-semibold text-[var(--ink)] mb-6"><span>Total</span><span>&#8377;{subtotalInr + shippingInr}</span></div>
+            <div className="border-t border-[var(--line)] pt-4 flex justify-between text-base font-semibold text-[var(--ink)] mb-6"><span>Total</span><span>&#8377;{netSubtotalInr + shippingInr}</span></div>
             <button type="button" onClick={handleCheckout} disabled={checkingOut} className="w-full text-center bg-[var(--deep-wine)] text-white px-6 py-3.5 rounded-full text-sm font-medium hover:bg-[var(--ink)] transition-colors disabled:opacity-60">{checkingOut ? "Opening checkout..." : "Continue to checkout"}</button>
                       </div>
         </div>
