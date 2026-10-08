@@ -83,15 +83,10 @@ body {
 }
 @media (max-width: 767px) {
   .usp-marquee-track {
-    animation-duration: 28s;
+    animation: humorUspMarquee 28s linear infinite !important;
   }
   .usp-marquee-group {
     gap: 1.5rem;
     padding-right: 1.5rem;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .usp-marquee-track {
-    animation: none;
   }
 }
