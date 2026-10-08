@@ -3,15 +3,15 @@
 
 :root {
   --paper: #FFFFFF;
-  --milk-sage: #F6F1FA;       /* soft lavender-white */
-  --deep-wine: #8B63B7;       /* velvet violet */
-  --wine-soft: #6E4A9A;       /* deeper violet */
-  --warm-gold: #D49A6A;       /* soft champagne-peach */
-  --dusty-rose: #D58CB2;      /* blush accent */
+  --milk-sage: #F7F2FA;       /* soft luxury lavender-ivory */
+  --deep-wine: #6E4A9A;       /* rich plum */
+  --wine-soft: #583A7D;       /* deep plum */
+  --warm-gold: #C58A62;       /* champagne accent */
+  --dusty-rose: #C98AA8;      /* muted blush */
   --moss: #74A9A3;             /* muted aqua accent */
   --ink: #30233B;             /* deep plum text */
-  --line: #E5DDF0;             /* lavender borders */
-  --muted: #756B80;            /* soft plum-grey */
+  --line: #DED4E7;             /* readable lavender borders */
+  --muted: #514957;            /* readable plum-grey */
 }
 
 body {
