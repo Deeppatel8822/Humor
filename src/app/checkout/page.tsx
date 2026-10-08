@@ -115,7 +115,7 @@ export default function CheckoutPage() {
       method: "POST",
       headers: { "Content-Type": "application/json", ...(await authHeaders()) },
       body: JSON.stringify({
-        lines: lines.map((l) => ({ productId: l.productId, quantity: l.quantity })),
+        lines: lines.map((l) => ({ productId: l.productId, slug: l.slug, quantity: l.quantity })),
         shipping: form,
         subtotalInr,
         shippingInr,
@@ -134,7 +134,7 @@ export default function CheckoutPage() {
     const createRes = await fetch("/api/razorpay/create-order", {
       method: "POST",
       headers: { "Content-Type": "application/json", ...(await authHeaders()) },
-      body: JSON.stringify({ lines: lines.map((l) => ({ productId: l.productId, quantity: l.quantity })), paymentMethod: "online", firstOrderDiscountInr, prepaidDiscountInr, vendorCode }),
+      body: JSON.stringify({ lines: lines.map((l) => ({ productId: l.productId, slug: l.slug, quantity: l.quantity })), paymentMethod: "online", firstOrderDiscountInr, prepaidDiscountInr, vendorCode }),
     });
     const createData = await createRes.json();
     if (!createRes.ok) throw new Error(createData.error ?? "Could not start payment.");
@@ -157,7 +157,7 @@ export default function CheckoutPage() {
               headers: { "Content-Type": "application/json", ...(await authHeaders()) },
               body: JSON.stringify({
                 ...r,
-                lines: lines.map((l) => ({ productId: l.productId, quantity: l.quantity })),
+                lines: lines.map((l) => ({ productId: l.productId, slug: l.slug, quantity: l.quantity })),
                 shipping: form, subtotalInr, shippingInr, firstOrderDiscountInr, prepaidDiscountInr, vendorCode,
               }),
             });
