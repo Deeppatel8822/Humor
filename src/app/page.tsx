@@ -4,7 +4,6 @@ import ProductCard from "@/components/ProductCard";
 import HeroSlider from "@/components/HeroSlider";
 import SocialReels from "@/components/SocialReels";
 import { getAllProducts } from "@/lib/catalog";
-import TrustFacts from "@/components/TrustFacts";
 
 const usps = [
   { label: "Dermatologically Tested", symbol: "✓" },
@@ -37,21 +36,13 @@ export default async function Home() {
     <>
       <HeroSlider />
 
-      {/* USP strip: single clean horizontal line */}
       <section className="border-y border-[var(--line)] bg-[#f7f2fb]">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 overflow-x-auto">
           <div className="flex min-w-max items-center justify-center gap-5 md:gap-8 whitespace-nowrap">
             {usps.map((usp) => (
               <div key={usp.label} className="flex shrink-0 items-center gap-2 text-[var(--deep-wine)]">
-                <span
-                  aria-hidden="true"
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--deep-wine)]/25 bg-white/70 text-sm font-semibold"
-                >
-                  {usp.symbol}
-                </span>
-                <span className="text-[10px] md:text-[11px] uppercase tracking-[0.11em] font-medium">
-                  {usp.label}
-                </span>
+                <span aria-hidden="true" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--deep-wine)]/25 bg-white/70 text-sm font-semibold">{usp.symbol}</span>
+                <span className="text-[10px] md:text-[11px] uppercase tracking-[0.11em] font-medium">{usp.label}</span>
               </div>
             ))}
           </div>
@@ -96,7 +87,6 @@ export default async function Home() {
       </section>
 
       <SocialReels />
-      <TrustFacts />
     </>
   );
 }
