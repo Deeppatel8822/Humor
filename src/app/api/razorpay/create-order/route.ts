@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { razorpayClient } from "@/lib/razorpay";
-import { products } from "@/lib/products";
+import { getAllProducts } from "@/lib/catalog";
+import { calculateBundleSavings } from "@/lib/bundles";
 import { calculatePartnerDiscount, findPartnerByCode } from "@/lib/marketingPartner";
 
 interface CartLineInput {
@@ -20,12 +21,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Cart is empty." }, { status: 400 });
     }
 
+    const products = await getAllProducts();
+
     // Recompute the total server-side from the trusted product catalog.
     // TODO: once Supabase is connected, replace `products` with a live
     // query against the `products` table (select id, price_inr, stock_quantity).
     let subtotalInr = 0;
     for (const line of lines) {
-      const product = products.find((p) => p.id === line.productId && p.status === "live");
+      const product = products.find((p) => (p.id === line.productId || p.slug === line.slug) && p.status === "live");
       if (!product) {
         return NextResponse.json({ error: `Unknown product: ${line.productId}` }, { status: 400 });
       }
@@ -38,7 +41,9 @@ export async function POST(req: NextRequest) {
       subtotalInr += product.price_inr * line.quantity;
     }
 
-    const shippingInr = subtotalInr >= 299 ? 0 : 50;
+    const bundleSavingsInr = calculateBundleSavings(lines.map((line) => ({ slug: line.slug || products.find((p) => p.id === line.productId)?.slug || "", quantity: line.quantity })), products);
+    const shippingBaseInr = Math.max(0, subtotalInr - bundleSavingsInr);
+    const shippingInr = shippingBaseInr >= 299 ? 0 : 50;
     let partnerDiscountInr = 0;
     let partnerMatch: Awaited<ReturnType<typeof findPartnerByCode>> = null;
     if (vendorCode) {
@@ -71,7 +76,7 @@ export async function POST(req: NextRequest) {
       }
     }
     const prepaidDiscountInr = Math.round(subtotalInr * (subtotalInr >= 1000 ? 0.04 : 0.03));
-    const totalDiscountInr = firstOrderDiscountInr + partnerDiscountInr + prepaidDiscountInr;
+    const totalDiscountInr = firstOrderDiscountInr + partnerDiscountInr + prepaidDiscountInr + bundleSavingsInr;
     const totalInr = Math.max(0, subtotalInr - totalDiscountInr + shippingInr);
 
     const order = await razorpayClient().orders.create({
@@ -89,6 +94,7 @@ export async function POST(req: NextRequest) {
       keyId: process.env.RAZORPAY_KEY_ID,
       discountInr: totalDiscountInr,
       vendorDiscountInr: partnerDiscountInr,
+      bundleSavingsInr,
     });
   } catch (err) {
     console.error("Razorpay order creation failed:", err);
