@@ -40,7 +40,7 @@ const slides = [
     leftHref: "/collections/skin-care",
     rightHref: "/product/velvet-touch-face-serum",
   },
-];
+] as const;
 
 export default function HeroSlider() {
   const [active, setActive] = useState(0);
