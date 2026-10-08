@@ -88,6 +88,40 @@ export default async function Home() {
 
       <SocialReels />
 
+      <section className="px-5 md:px-8 pb-10 pt-2">
+        <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[2rem] border border-[var(--line)] bg-[var(--velvet-gradient-soft)] shadow-[0_18px_60px_rgba(111,74,154,0.12)]">
+          <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-white/60 blur-3xl" aria-hidden="true" />
+          <div className="absolute -bottom-24 left-1/3 h-64 w-64 rounded-full bg-[var(--dusty-rose)]/15 blur-3xl" aria-hidden="true" />
+          <div className="relative grid items-center gap-7 px-6 py-9 md:grid-cols-[1fr_auto] md:px-12 md:py-10">
+            <div className="max-w-3xl">
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[var(--deep-wine)]/15 bg-white/70 px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--deep-wine)]">
+                <span className="h-1.5 w-1.5 rounded-full bg-[var(--warm-gold)]" aria-hidden="true" />
+                HUMOR BUSINESS PROGRAMME
+              </div>
+              <h2 className="font-display text-3xl leading-tight text-[var(--ink)] md:text-5xl">
+                Start Your Beauty Business for Just ₹9.
+              </h2>
+              <p className="mt-3 text-lg font-semibold text-[var(--wine-soft)] md:text-xl">
+                Register in 2 Minutes. Start Selling. Start Earning.
+              </p>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--muted)] md:text-base">
+                Are you an influencer, salon or parlour owner, or running a beauty business from home?
+                Join Humor and turn your beauty audience into an income opportunity.
+              </p>
+              <div className="mt-5 flex flex-wrap items-center gap-3">
+                <span className="rounded-full bg-[var(--deep-wine)] px-4 py-2 text-xs font-semibold text-white shadow-sm">₹9 to Get Started</span>
+                <span className="text-xs font-semibold text-[var(--wine-soft)]">No Hidden Charges</span>
+              </div>
+            </div>
+            <div className="flex md:justify-end">
+              <Link href="/your-business" className="group inline-flex min-w-[170px] items-center justify-center gap-2 rounded-full bg-[var(--deep-wine)] px-7 py-4 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(111,74,154,0.24)] transition-all hover:-translate-y-0.5 hover:bg-[var(--wine-soft)]">
+                START HERE <span className="transition-transform group-hover:translate-x-1">→</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="border-y border-[var(--line)] bg-[#f7f2fb] py-8 md:py-10">
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 px-5 md:grid-cols-4 md:px-8">
           <div className="rounded-2xl border border-[var(--line)] bg-white/75 px-5 py-5">
