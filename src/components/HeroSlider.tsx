@@ -82,24 +82,19 @@ export default function HeroSlider() {
       aria-label="Humor Luxury featured collection"
     >
       <div className="relative w-full overflow-hidden">
-        <img
-          src={slide.heroImage}
-          alt="Humor Luxury skincare hero banner"
-          className="block h-auto w-full select-none transition-transform duration-700 ease-out hover:scale-[1.01]"
-          draggable={false}
-        />
         <Link
           href={slide.href}
           aria-label={slide.cta}
-          className="absolute left-[78%] top-[32%] h-[12%] w-[20%]"
-        />
-        {slide.productCta ? (
-          <Link
-            href={slide.productHref}
-            aria-label={slide.productCta}
-            className="absolute left-[52.1%] top-[68.4%] h-[8%] w-[11.8%]"
+          className="block w-full"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <img
+            src={slide.heroImage}
+            alt="Humor Luxury featured collection"
+            className="block h-auto w-full select-none transition-transform duration-700 ease-out hover:scale-[1.01]"
+            draggable={false}
           />
-        ) : null}
+        </Link>
       </div>
 
       <div className="absolute bottom-0 left-0 right-0 z-20 flex items-center justify-center gap-2 py-4">
