@@ -11,22 +11,26 @@ function bundleTotal(products: Product[]) {
   return products.reduce((sum, p) => sum + p.price_inr, 0);
 }
 
-function bundlePrice(products: Product[], bundleName: string) {
-  // Psychological bundle pricing: keep the offer close to the target price point
-  // instead of applying a fixed percentage to every bundle.
-  const targetPrices: Record<string, number> = {
-    "Blemish Block Duo": 449,
-    "Fullmoon Duo": 449,
-    "Velvet Touch Duo": 449,
-    "Hair Care Ritual": 999,
-    "Fullmoon Complete Routine": 699,
-    "Blemish Block Complete Routine": 699,
-    "Velvet Touch Complete Routine": 699,
-    "Protein Shake Shampoo + Conditioner": 549,
-    "Protein Shake Shampoo + Hair Mask": 799,
-  };
+function isHairBundle(bundleName: string) {
+  const name = bundleName.toLowerCase();
+  return name.includes("hair") || name.includes("shampoo") || name.includes("conditioner") || name.includes("mask");
+}
 
-  return targetPrices[bundleName] ?? Math.round(bundleTotal(products) * 0.9);
+function bundlePrice(products: Product[], bundleName: string) {
+  const total = bundleTotal(products);
+
+  // Dynamic psychological pricing: the bundle always follows the
+  // products' current selling prices instead of using fixed bundle prices.
+  // The final amount is kept just below an attractive round price.
+  const discountRate = isHairBundle(bundleName)
+    ? total >= 1000 ? 0.09 : total >= 800 ? 0.06 : 0.12
+    : total >= 800 ? 0.15 : 0.14;
+
+  const discounted = total * (1 - discountRate);
+  const step = discounted >= 1000 ? 100 : 50;
+  const rounded = Math.floor(discounted / step) * step;
+
+  return Math.max(1, rounded - 1);
 }
 
 function bundleDiscountPercent(products: Product[], bundleName: string) {
