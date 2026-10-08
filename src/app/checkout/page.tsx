@@ -28,6 +28,8 @@ export default function CheckoutPage() {
   const [vendorDiscountInr, setVendorDiscountInr] = useState(0);
   const [vendorCodeMessage, setVendorCodeMessage] = useState("");
   const [vendorCodeLoading, setVendorCodeLoading] = useState(false);
+  const [couponCode, setCouponCode] = useState("");
+  const [couponMessage, setCouponMessage] = useState("");
   const [form, setForm] = useState({
     fullName: "", email: "", phone: "", line1: "", line2: "", city: "", state: "", pincode: "",
   });
@@ -272,6 +274,28 @@ export default function CheckoutPage() {
                   <span>{l.name} &times; {l.quantity}</span><span>&#8377;{l.price_inr * l.quantity}</span>
                 </div>
               ))}
+            </div>
+            <div className="mb-5 rounded-2xl border border-[var(--line)] bg-white/70 p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--deep-wine)]">Have a coupon?</span>
+                <span className="text-[10px] text-[var(--muted)]">Optional</span>
+              </div>
+              <div className="flex gap-2">
+                <input
+                  value={couponCode}
+                  onChange={(e) => { setCouponCode(e.target.value); setCouponMessage(""); }}
+                  placeholder="Enter coupon code"
+                  className="min-w-0 flex-1 rounded-full border border-[var(--line)] bg-white px-4 py-2.5 text-xs outline-none focus:border-[var(--deep-wine)]"
+                />
+                <button
+                  type="button"
+                  onClick={() => setCouponMessage(couponCode.trim() ? "Coupon validation will be connected next." : "Enter a coupon code.")}
+                  className="shrink-0 rounded-full border border-[var(--deep-wine)] px-4 py-2.5 text-xs font-semibold text-[var(--deep-wine)] hover:bg-[var(--deep-wine)] hover:text-white transition-colors"
+                >
+                  Apply
+                </button>
+              </div>
+              {couponMessage && <p className="mt-2 text-[11px] text-[var(--muted)]">{couponMessage}</p>}
             </div>
             <div className="border-t border-[var(--line)] pt-4 space-y-2">
               <div className="flex justify-between text-sm text-[var(--muted)]"><span>Subtotal</span><span>&#8377;{subtotalInr}</span></div>
