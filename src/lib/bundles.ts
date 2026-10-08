@@ -41,7 +41,7 @@ export function bundleDiscountPercent(products: Product[], bundleName: string) {
   return total ? Math.round(((total - bundlePrice(products, bundleName)) / total) * 100) : 0;
 }
 
-export function calculateBundleSavings(lines: Array<{ slug: string; quantity: number }>, products: Product[]) {
+export function calculateBundleSavings(lines: Array<{ slug: string; quantity: number }>, products: Array<Pick<Product, "slug" | "price_inr">>) {
   const productMap = new Map(products.map((product) => [product.slug, product]));
   const remaining = new Map(lines.map((line) => [line.slug, Math.max(0, line.quantity)]));
   let savings = 0;
