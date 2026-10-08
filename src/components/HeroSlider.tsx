@@ -69,55 +69,24 @@ export default function HeroSlider() {
       aria-label="Humor Luxury featured collection"
     >
       {slide.fullWidth ? (
-        <div className="relative min-h-[520px] bg-[#9a6649] md:min-h-[560px]">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_58%_45%,rgba(255,222,177,0.42),transparent_48%),linear-gradient(90deg,#5b392b_0%,#9b6548_48%,#c28b61_100%)]" />
-
-          <div className="absolute inset-y-0 left-0 w-[56%] overflow-hidden">
-            <img
-              src={slide.modelImage}
-              alt="Woman with Humor Luxury face serum"
-              className="h-full w-full object-cover object-center"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-[#8f5b42]/80" />
-          </div>
-
-          <div className="absolute inset-y-0 right-0 w-[31%] md:w-[29%]">
-            <img
-              src={slide.productImage}
-              alt="Humor Luxury Velvet Touch Face Serum"
-              className="h-full w-full object-contain object-center drop-shadow-2xl"
-            />
-          </div>
-
-          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(33,17,12,0.04),rgba(78,35,25,0.05),rgba(255,214,168,0.08))]" />
-
-          <div className="relative z-10 flex min-h-[520px] items-center justify-center px-[30%] text-center md:min-h-[560px] md:px-[29%]">
-            <div key={active} className="max-w-[560px] text-white motion-safe:animate-[humorHeroSlide_700ms_ease-out]">
-              <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.34em] text-white/90">
-                {slide.eyebrow}
-              </p>
-              <h1 className="font-display text-4xl leading-[1.05] text-white md:text-[54px] lg:text-[60px]">
-                {slide.title}
-              </h1>
-
-              <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-                <Link
-                  href={slide.href}
-                  className="inline-flex bg-[#8f286f] px-7 py-3.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-white shadow-xl transition-all duration-300 hover:-translate-y-1 hover:bg-[#a63783]"
-                >
-                  {slide.cta}
-                </Link>
-                <Link
-                  href={slide.productHref}
-                  className="inline-flex border border-white/80 bg-black/10 px-7 py-3.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-white shadow-lg backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:bg-white/10"
-                >
-                  {slide.productCta}
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : (
+        <div className="relative w-full overflow-hidden">
+          <img
+            src={slide.heroImage}
+            alt="Humor Luxury Velvet Touch Face Serum hero banner"
+            className="block h-auto w-full select-none"
+            draggable={false}
+          />
+          <Link
+            href={slide.href}
+            aria-label="Shop Serums"
+            className="absolute left-[40.2%] top-[68.4%] h-[8%] w-[10.7%]"
+          />
+          <Link
+            href={slide.productHref}
+            aria-label="View Velvet Touch Face Serum"
+            className="absolute left-[52.1%] top-[68.4%] h-[8%] w-[11.8%]"
+          />
+        </div>      ) : (
         <div className="relative grid min-h-[520px] grid-cols-1 md:min-h-[560px] md:grid-cols-[minmax(0,1fr)_minmax(260px,0.65fr)_minmax(0,1fr)]">
           <Link href={slide.leftHref} className="group relative min-h-[430px] overflow-hidden md:min-h-0">
             <img src={slide.leftImage} alt={slide.leftTitle} className="absolute inset-0 h-full w-full object-contain transition-transform duration-1000 group-hover:scale-[1.02]" />
@@ -170,4 +139,14 @@ export default function HeroSlider() {
       </div>
     </section>
   );
-}
+}  {
+    fullWidth: true,
+    heroImage: "https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/2c94c4e6-aa1f-4800-a519-b89f8bb2f350.png",
+    eyebrow: "Face Serum",
+    title: <>Targeted Care.<br />Visible Glow.</>,
+    cta: "Shop Serums",
+    href: "/collections/skin-care",
+    productCta: "View Velvet Touch",
+    productHref: "/product/velvet-touch-face-serum",
+  },
+
