@@ -87,6 +87,26 @@ export default async function Home() {
       </section>
 
       <SocialReels />
+
+      <section className="border-y border-[var(--line)] bg-[#f7f2fb] py-8 md:py-10">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 px-5 md:grid-cols-3 md:px-8">
+          <div className="rounded-2xl border border-[var(--line)] bg-white/75 px-5 py-5 text-center">
+            <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full border border-[var(--deep-wine)]/25 bg-[#f7f2fb] text-lg text-[var(--deep-wine)]">↗</div>
+            <h3 className="text-sm font-semibold text-[var(--deep-wine)]">Shipping & COD Available</h3>
+            <p className="mx-auto mt-2 max-w-sm text-xs leading-5 text-[var(--muted)]">Free shipping on orders ₹299+ with Cash on Delivery available.</p>
+          </div>
+          <div className="rounded-2xl border border-[var(--line)] bg-white/75 px-5 py-5 text-center">
+            <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full border border-[var(--deep-wine)]/25 bg-[#f7f2fb] text-lg text-[var(--deep-wine)]">✦</div>
+            <h3 className="text-sm font-semibold text-[var(--deep-wine)]">Exciting Offers & Discounts</h3>
+            <p className="mx-auto mt-2 max-w-sm text-xs leading-5 text-[var(--muted)]">Discover special offers, bundle deals and limited-time savings.</p>
+          </div>
+          <div className="rounded-2xl border border-[var(--line)] bg-white/75 px-5 py-5 text-center">
+            <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full border border-[var(--deep-wine)]/25 bg-[#f7f2fb] text-lg text-[var(--deep-wine)]">♡</div>
+            <h3 className="text-sm font-semibold text-[var(--deep-wine)]">Sign Up & Get a Discount</h3>
+            <p className="mx-auto mt-2 max-w-sm text-xs leading-5 text-[var(--muted)]">Create your account and unlock exclusive offers and member savings.</p>
+          </div>
+        </div>
+      </section>
     </>
   );
 }
