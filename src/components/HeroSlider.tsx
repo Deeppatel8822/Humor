@@ -5,12 +5,17 @@ import Link from "next/link";
 
 const slides = [
   {
+    fullWidth: true,
+    modelImage: "/products/velvet-touch-face-serum-model-1.webp",
+    productImage: "/products/velvet-touch-serum-hero.webp",
+    eyebrow: "Face Serum",
+    title: <>Targeted Care.<br />Visible Glow.</>,
+    cta: "Shop Serums",
+    href: "/collections/skin-care",
+    productCta: "View Velvet Touch",
+    productHref: "/product/velvet-touch-face-serum",
     leftImage: "/products/protein-shake-hero.webp",
     rightImage: "/products/milk-shake-hair-mask-hero.webp",
-    eyebrow: "Protein Shake Shampoo",
-    title: <>Strong Hair<br />Beautifully Nourished</>,
-    cta: "Shop Now",
-    href: "/product/protein-shake-shampoo",
     leftLabel: "Hair Care",
     leftTitle: "Protein Shake",
     leftHref: "/product/protein-shake-shampoo",
@@ -63,42 +68,93 @@ export default function HeroSlider() {
       onMouseLeave={() => setPaused(false)}
       aria-label="Humor Luxury featured collection"
     >
-      <div className="relative grid min-h-[520px] grid-cols-1 md:min-h-[560px] md:grid-cols-[minmax(0,1fr)_minmax(260px,0.65fr)_minmax(0,1fr)]">
-        <Link href={slide.leftHref} className="group relative min-h-[430px] overflow-hidden md:min-h-0">
-          <img src={slide.leftImage} alt={slide.leftTitle} className="absolute inset-0 h-full w-full object-contain transition-transform duration-1000 group-hover:scale-[1.02]" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#38171c]/80 via-[#38171c]/15 to-transparent" />
-          <div className="absolute bottom-10 left-7 z-10 text-white md:left-10 md:bottom-12">
-            <p className="mb-2 text-[9px] font-semibold uppercase tracking-[0.28em]">{slide.leftLabel}</p>
-            <h2 className="font-display text-3xl md:text-[42px]">{slide.leftTitle}</h2>
-            <span className="mt-5 inline-flex bg-[#8f286f] px-7 py-3 text-[10px] font-semibold uppercase tracking-[0.18em] shadow-lg transition-all duration-300 group-hover:-translate-y-1">
-              Shop Now
-            </span>
-          </div>
-        </Link>
+      {slide.fullWidth ? (
+        <div className="relative min-h-[520px] bg-[#9a6649] md:min-h-[560px]">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_58%_45%,rgba(255,222,177,0.42),transparent_48%),linear-gradient(90deg,#5b392b_0%,#9b6548_48%,#c28b61_100%)]" />
 
-        <div className="relative flex min-h-[350px] items-center justify-center overflow-hidden bg-[#ead8e2] px-7 text-center md:min-h-0">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,rgba(255,255,255,0.8),transparent_48%)]" />
-          <span className="absolute left-[8%] top-[13%] h-12 w-7 rotate-[28deg] rounded-[100%_0] border border-[#b67a96]/35 motion-safe:animate-[humorHeroFloat_6s_ease-in-out_infinite]" />
-          <span className="absolute right-[10%] top-[18%] h-16 w-8 rotate-[-32deg] rounded-[100%_0] border border-[#b67a96]/30 motion-safe:animate-[humorHeroFloat_7s_ease-in-out_infinite]" />
-          <span className="absolute bottom-[12%] left-[12%] h-16 w-8 rotate-[35deg] rounded-[100%_0] border border-[#b67a96]/30 motion-safe:animate-[humorHeroFloat_8s_ease-in-out_infinite]" />
-          <span className="absolute bottom-[10%] right-[12%] h-12 w-6 rotate-[-28deg] border border-[#b67a96]/30 motion-safe:animate-[humorHeroFloat_7s_ease-in-out_infinite]" />
-          <div key={active} className="relative z-10 max-w-[390px] motion-safe:animate-[humorHeroSlide_700ms_ease-out]">
-            <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.32em] text-[var(--deep-wine)]">{slide.eyebrow}</p>
-            <h1 className="font-display text-4xl leading-[1.08] text-[var(--deep-wine)] md:text-[46px] lg:text-[50px]">{slide.title}</h1>
-            <Link href={slide.href} className="mt-7 inline-flex bg-[#8f286f] px-8 py-3.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-white shadow-md transition-all duration-300 hover:-translate-y-1 hover:bg-[#a63783]">
-              {slide.cta}
-            </Link>
+          <div className="absolute inset-y-0 left-0 w-[56%] overflow-hidden">
+            <img
+              src={slide.modelImage}
+              alt="Woman with Humor Luxury face serum"
+              className="h-full w-full object-cover object-center"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-[#8f5b42]/80" />
+          </div>
+
+          <div className="absolute inset-y-0 right-0 w-[31%] md:w-[29%]">
+            <img
+              src={slide.productImage}
+              alt="Humor Luxury Velvet Touch Face Serum"
+              className="h-full w-full object-contain object-center drop-shadow-2xl"
+            />
+          </div>
+
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(33,17,12,0.04),rgba(78,35,25,0.05),rgba(255,214,168,0.08))]" />
+
+          <div className="relative z-10 flex min-h-[520px] items-center justify-center px-[30%] text-center md:min-h-[560px] md:px-[29%]">
+            <div key={active} className="max-w-[560px] text-white motion-safe:animate-[humorHeroSlide_700ms_ease-out]">
+              <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.34em] text-white/90">
+                {slide.eyebrow}
+              </p>
+              <h1 className="font-display text-4xl leading-[1.05] text-white md:text-[54px] lg:text-[60px]">
+                {slide.title}
+              </h1>
+
+              <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+                <Link
+                  href={slide.href}
+                  className="inline-flex bg-[#8f286f] px-7 py-3.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-white shadow-xl transition-all duration-300 hover:-translate-y-1 hover:bg-[#a63783]"
+                >
+                  {slide.cta}
+                </Link>
+                <Link
+                  href={slide.productHref}
+                  className="inline-flex border border-white/80 bg-black/10 px-7 py-3.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-white shadow-lg backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:bg-white/10"
+                >
+                  {slide.productCta}
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
+      ) : (
+        <div className="relative grid min-h-[520px] grid-cols-1 md:min-h-[560px] md:grid-cols-[minmax(0,1fr)_minmax(260px,0.65fr)_minmax(0,1fr)]">
+          <Link href={slide.leftHref} className="group relative min-h-[430px] overflow-hidden md:min-h-0">
+            <img src={slide.leftImage} alt={slide.leftTitle} className="absolute inset-0 h-full w-full object-contain transition-transform duration-1000 group-hover:scale-[1.02]" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#38171c]/80 via-[#38171c]/15 to-transparent" />
+            <div className="absolute bottom-10 left-7 z-10 text-white md:left-10 md:bottom-12">
+              <p className="mb-2 text-[9px] font-semibold uppercase tracking-[0.28em]">{slide.leftLabel}</p>
+              <h2 className="font-display text-3xl md:text-[42px]">{slide.leftTitle}</h2>
+              <span className="mt-5 inline-flex bg-[#8f286f] px-7 py-3 text-[10px] font-semibold uppercase tracking-[0.18em] shadow-lg transition-all duration-300 group-hover:-translate-y-1">
+                Shop Now
+              </span>
+            </div>
+          </Link>
 
-        <Link href={slide.rightHref} className="group relative min-h-[430px] overflow-hidden bg-[#dfe0ff] md:min-h-0">
-          <img src={slide.rightImage} alt="Humor Luxury product collection" className="absolute inset-0 h-full w-full object-contain transition-transform duration-1000 group-hover:scale-[1.02]" />
-          <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-[#7d80ad]/15" />
-          <span className="absolute bottom-9 left-1/2 -translate-x-1/2 bg-[#8f286f] px-7 py-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-white opacity-0 shadow-lg transition-all duration-500 group-hover:opacity-100">
-            Explore Product
-          </span>
-        </Link>
-      </div>
+          <div className="relative flex min-h-[350px] items-center justify-center overflow-hidden bg-[#ead8e2] px-7 text-center md:min-h-0">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,rgba(255,255,255,0.8),transparent_48%)]" />
+            <span className="absolute left-[8%] top-[13%] h-12 w-7 rotate-[28deg] rounded-[100%_0] border border-[#b67a96]/35 motion-safe:animate-[humorHeroFloat_6s_ease-in-out_infinite]" />
+            <span className="absolute right-[10%] top-[18%] h-16 w-8 rotate-[-32deg] rounded-[100%_0] border border-[#b67a96]/30 motion-safe:animate-[humorHeroFloat_7s_ease-in-out_infinite]" />
+            <span className="absolute bottom-[12%] left-[12%] h-16 w-8 rotate-[35deg] rounded-[100%_0] border border-[#b67a96]/30 motion-safe:animate-[humorHeroFloat_8s_ease-in-out_infinite]" />
+            <span className="absolute bottom-[10%] right-[12%] h-12 w-6 rotate-[-28deg] border border-[#b67a96]/30 motion-safe:animate-[humorHeroFloat_7s_ease-in-out_infinite]" />
+            <div key={active} className="relative z-10 max-w-[390px] motion-safe:animate-[humorHeroSlide_700ms_ease-out]">
+              <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.32em] text-[var(--deep-wine)]">{slide.eyebrow}</p>
+              <h1 className="font-display text-4xl leading-[1.08] text-[var(--deep-wine)] md:text-[46px] lg:text-[50px]">{slide.title}</h1>
+              <Link href={slide.href} className="mt-7 inline-flex bg-[#8f286f] px-8 py-3.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-white shadow-md transition-all duration-300 hover:-translate-y-1 hover:bg-[#a63783]">
+                {slide.cta}
+              </Link>
+            </div>
+          </div>
+
+          <Link href={slide.rightHref} className="group relative min-h-[430px] overflow-hidden bg-[#dfe0ff] md:min-h-0">
+            <img src={slide.rightImage} alt="Humor Luxury product collection" className="absolute inset-0 h-full w-full object-contain transition-transform duration-1000 group-hover:scale-[1.02]" />
+            <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-[#7d80ad]/15" />
+            <span className="absolute bottom-9 left-1/2 -translate-x-1/2 bg-[#8f286f] px-7 py-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-white opacity-0 shadow-lg transition-all duration-500 group-hover:opacity-100">
+              Explore Product
+            </span>
+          </Link>
+        </div>
+      )}
 
       <div className="absolute bottom-0 left-0 right-0 z-20 flex items-center justify-center gap-2 py-4">
         {slides.map((_, index) => (
