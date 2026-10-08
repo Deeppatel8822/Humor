@@ -3,7 +3,7 @@ import ProductCard from "@/components/ProductCard";
 
 export const metadata = {
   title: "Body Care | Humor Luxury",
-  description: "Shower gel and body wash — Humor Luxury's bodycare range.",
+  description: "Royal Water Soft Shower Cream and body care — Humor Luxury's bodycare range.",
 };
 
 export default async function BodyCarePage() {
