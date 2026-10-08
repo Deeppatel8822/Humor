@@ -58,3 +58,40 @@ body {
   --velvet-gradient-soft: linear-gradient(135deg, #F0E8F7 0%, #F8EEF8 50%, #FDEFF5 100%);
   --velvet-gradient-blue: linear-gradient(135deg, #765BA8 0%, #7E86C5 52%, #7DB4C5 100%);
 }
+
+/* Smooth horizontal USP marquee */
+.usp-marquee {
+  width: 100%;
+  overflow: hidden;
+}
+.usp-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: humorUspMarquee 32s linear infinite;
+  will-change: transform;
+}
+.usp-marquee-group {
+  display: flex;
+  align-items: center;
+  gap: 2.25rem;
+  padding-right: 2.25rem;
+  flex-shrink: 0;
+}
+@keyframes humorUspMarquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@media (max-width: 767px) {
+  .usp-marquee-track {
+    animation-duration: 28s;
+  }
+  .usp-marquee-group {
+    gap: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .usp-marquee-track {
+    animation: none;
+  }
+}
