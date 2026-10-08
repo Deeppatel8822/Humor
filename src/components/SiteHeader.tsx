@@ -56,7 +56,6 @@ export default function SiteHeader() {
     };
   }, []);
 
-
   async function openAccount() {
     try {
       const { getSupabase } = await import("@/lib/supabase");
@@ -71,21 +70,14 @@ export default function SiteHeader() {
   return (
     <div className="sticky top-0 z-50">
       <div className="bg-[var(--deep-wine)] text-white text-center text-xs py-2 px-4">
-        Free shipping on orders ₹299+ &nbsp;&middot;&nbsp; Dermatologist tested, made in India
+        Free shipping on orders ₹299+ &nbsp;&middot;&nbsp; Dermatologically Tested &nbsp;&middot;&nbsp; Made in India
       </div>
 
       <header className="bg-white/95 backdrop-blur border-b border-[var(--line)]">
         <div className="max-w-7xl mx-auto px-5 md:px-8">
           <div className="flex items-center justify-between h-16 md:h-[72px]">
             <Link href="/" aria-label="Humor Luxury home" className="flex items-center shrink-0" onClick={() => setMenuOpen(false)}>
-              <Image
-                src="/humor-logo.svg"
-                alt="Humor Luxury"
-                width={180}
-                height={54}
-                priority
-                className="h-10 md:h-12 w-auto object-contain"
-              />
+              <Image src="/humor-logo.svg" alt="Humor Luxury" width={180} height={54} priority className="h-10 md:h-12 w-auto object-contain" />
             </Link>
 
             <nav className="hidden lg:flex items-center gap-8 text-[13px] font-medium text-[var(--ink)]">
@@ -96,22 +88,12 @@ export default function SiteHeader() {
 
             <div className="flex items-center gap-1">
               {customerName && (
-                <button
-                  type="button"
-                  onClick={openAccount}
-                  aria-label={"Open " + customerName + "'s account"}
-                  className="hidden sm:inline-flex items-center mr-1 px-2 py-2 text-xs font-medium text-[var(--deep-wine)] hover:text-[var(--warm-gold)] transition-colors"
-                >
+                <button type="button" onClick={openAccount} aria-label={"Open " + customerName + "'s account"} className="hidden sm:inline-flex items-center mr-1 px-2 py-2 text-xs font-medium text-[var(--deep-wine)] hover:text-[var(--warm-gold)] transition-colors">
                   Hi {customerName}
                 </button>
               )}
 
-              <button
-                type="button"
-                aria-label="Login or sign up"
-                onClick={openAccount}
-                className="p-2 text-[var(--ink)] hover:text-[var(--deep-wine)] transition-colors"
-              >
+              <button type="button" aria-label="Login or sign up" onClick={openAccount} className="p-2 text-[var(--ink)] hover:text-[var(--deep-wine)] transition-colors">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
                   <circle cx="12" cy="8" r="3.5" />
                   <path d="M5 20c.8-3.3 3.1-5 7-5s6.2 1.7 7 5" />
@@ -126,13 +108,7 @@ export default function SiteHeader() {
               </Link>
 
               <div className="lg:hidden relative">
-                <button
-                  type="button"
-                  aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
-                  aria-expanded={menuOpen}
-                  onClick={() => setMenuOpen((open) => !open)}
-                  className="p-2 text-[var(--ink)] hover:text-[var(--deep-wine)] transition-colors"
-                >
+                <button type="button" aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"} aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)} className="p-2 text-[var(--ink)] hover:text-[var(--deep-wine)] transition-colors">
                   <span className="sr-only">Menu</span>
                   <svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                     <circle cx="12" cy="5" r="1.8" />
@@ -144,12 +120,7 @@ export default function SiteHeader() {
                 {menuOpen && (
                   <div className="absolute right-0 top-12 w-56 rounded-2xl border border-[var(--line)] bg-white p-2 shadow-xl">
                     {mobileLinks.map((link) => (
-                      <Link
-                        key={link.href}
-                        href={link.href}
-                        onClick={() => setMenuOpen(false)}
-                        className="block rounded-xl px-4 py-3 text-sm font-medium text-[var(--ink)] hover:bg-[var(--milk-sage)] hover:text-[var(--deep-wine)]"
-                      >
+                      <Link key={link.href} href={link.href} onClick={() => setMenuOpen(false)} className="block rounded-xl px-4 py-3 text-sm font-medium text-[var(--ink)] hover:bg-[var(--milk-sage)] hover:text-[var(--deep-wine)]">
                         {link.label}
                       </Link>
                     ))}
