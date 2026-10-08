@@ -1,14 +1,15 @@
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
-import { products } from "@/lib/products";
+import { getAllProducts } from "@/lib/catalog";
+import { calculateBundleSavings } from "@/lib/bundles";
 import { calculatePartnerDiscount, creditPartnerReward, findPartnerByCode } from "@/lib/marketingPartner";
 
 interface VerifyBody {
   razorpay_order_id: string;
   razorpay_payment_id: string;
   razorpay_signature: string;
-  lines: { productId: string; quantity: number }[];
+  lines: { productId: string; slug?: string; quantity: number }[];
   shipping: {
     fullName: string;
     email: string;
@@ -27,6 +28,7 @@ interface VerifyBody {
 export async function POST(req: NextRequest) {
   const body: VerifyBody = await req.json();
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature, lines, shipping, subtotalInr, shippingInr, vendorCode } = body;
+  const products = await getAllProducts();
 
   // 1. Verify the payment signature — this is the step that actually confirms
   // Razorpay processed the payment, rather than trusting the client's word for it.
@@ -67,12 +69,13 @@ export async function POST(req: NextRequest) {
       if (current.data.user?.id === partnerMatch.user.id) return NextResponse.json({ error: "You cannot use your own partner code." }, { status: 400 });
     }
     partnerDiscountInr = calculatePartnerDiscount(lines.map((line) => ({
-      priceInr: products.find((p) => p.id === line.productId)?.price_inr ?? 0,
+      priceInr: products.find((p) => p.id === line.productId || p.slug === line.slug)?.price_inr ?? 0,
       quantity: line.quantity,
     })));
   }
+  const bundleSavingsInr = calculateBundleSavings(lines.map((line) => ({ slug: line.slug || products.find((p) => p.id === line.productId)?.slug || "", quantity: line.quantity })), products);
   const prepaidDiscountInr = Math.round(subtotalInr * (subtotalInr >= 1000 ? 0.04 : 0.03));
-  const totalDiscountInr = firstOrderDiscountInr + partnerDiscountInr + prepaidDiscountInr;
+  const totalDiscountInr = firstOrderDiscountInr + partnerDiscountInr + prepaidDiscountInr + bundleSavingsInr;
   const calculatedShippingInr = subtotalInr >= 299 ? 0 : 50;
   const totalInr = Math.max(0, subtotalInr - totalDiscountInr + calculatedShippingInr);
   const orderNumber = `HL-${Math.floor(10000 + Math.random() * 90000)}`;
