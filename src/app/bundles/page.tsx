@@ -11,18 +11,28 @@ function bundleTotal(products: Product[]) {
   return products.reduce((sum, p) => sum + p.price_inr, 0);
 }
 
-function bundleDiscountRate(bundleName: string) {
-  // Skincare routines get 15% off; hair-care bundles get 10% off.
-  return bundleName.toLowerCase().includes("hair") ||
-    bundleName.toLowerCase().includes("shampoo") ||
-    bundleName.toLowerCase().includes("conditioner") ||
-    bundleName.toLowerCase().includes("mask")
-    ? 0.10
-    : 0.15;
+function bundlePrice(products: Product[], bundleName: string) {
+  // Psychological bundle pricing: keep the offer close to the target price point
+  // instead of applying a fixed percentage to every bundle.
+  const targetPrices: Record<string, number> = {
+    "Blemish Block Duo": 449,
+    "Fullmoon Duo": 449,
+    "Velvet Touch Duo": 449,
+    "Hair Care Ritual": 999,
+    "Fullmoon Complete Routine": 699,
+    "Blemish Block Complete Routine": 699,
+    "Velvet Touch Complete Routine": 699,
+    "Protein Shake Shampoo + Conditioner": 549,
+    "Protein Shake Shampoo + Hair Mask": 799,
+  };
+
+  return targetPrices[bundleName] ?? Math.round(bundleTotal(products) * 0.9);
 }
 
-function bundlePrice(products: Product[], bundleName: string) {
-  return Math.round(bundleTotal(products) * (1 - bundleDiscountRate(bundleName)));
+function bundleDiscountPercent(products: Product[], bundleName: string) {
+  const original = bundleTotal(products);
+  const finalPrice = bundlePrice(products, bundleName);
+  return Math.round(((original - finalPrice) / original) * 100);
 }
 
 export default async function BundlesPage() {
@@ -73,7 +83,7 @@ export default async function BundlesPage() {
       <h1 className="font-display text-3xl md:text-4xl text-[var(--deep-wine)] mb-2">Bundles</h1>
       <p className="text-[var(--muted)] mb-2">Complete routines, bundled together.</p>
       <p className="text-xs text-[var(--muted)] mb-10">
-        Save 15% on skincare routines and 10% on hair-care bundles.
+        Special bundle pricing with psychological price points designed to feel like a better-value deal.
       </p>
 
       <div className="grid md:grid-cols-2 gap-6">
