@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 const slides = [
@@ -10,7 +10,7 @@ const slides = [
     eyebrow: "Face Serum",
     title: <>Targeted Care.<br />Visible Glow.</>,
     cta: "Shop Serums",
-    href: "/shop",
+    href: "/products",
     productCta: "View Velvet Touch",
     productHref: "/product/velvet-touch-face-serum",
   },
@@ -38,7 +38,7 @@ const slides = [
 
 export default function HeroSlider() {
   const [active, setActive] = useState(0);
-  const [paused, setPaused] = useState(false);
+  const [paused, setPaused] = useState(false);\n  const touchStartX = useRef<number | null>(null);\n  const touchStartY = useRef<number | null>(null);
 
   useEffect(() => {
     if (paused) return;
@@ -54,20 +54,20 @@ export default function HeroSlider() {
     <section
       className="relative overflow-hidden bg-white"
       onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
+      onMouseLeave={() => setPaused(false)}\n      onTouchStart={(event) => { touchStartX.current = event.touches[0]?.clientX ?? null; touchStartY.current = event.touches[0]?.clientY ?? null; }}\n      onTouchEnd={(event) => {\n        const startX = touchStartX.current;\n        const startY = touchStartY.current;\n        const endX = event.changedTouches[0]?.clientX;\n        const endY = event.changedTouches[0]?.clientY;\n        touchStartX.current = null; touchStartY.current = null;\n        if (startX == null || startY == null || endX == null || endY == null) return;\n        const dx = endX - startX;\n        const dy = endY - startY;\n        if (Math.abs(dx) < 40 || Math.abs(dx) <= Math.abs(dy)) return;\n        setActive((current) => (current + (dx < 0 ? 1 : slides.length - 1)) % slides.length);\n      }}
       aria-label="Humor Luxury featured collection"
     >
       <div className="relative w-full overflow-hidden">
         <img
           src={slide.heroImage}
           alt="Humor Luxury skincare hero banner"
-          className="block h-auto w-full select-none"
+          className="block h-auto w-full select-none transition-transform duration-700 ease-out hover:scale-[1.01]"
           draggable={false}
         />
         <Link
           href={slide.href}
           aria-label={slide.cta}
-          className="absolute left-[82%] top-[34.5%] h-[6%] w-[15%]"
+          className="absolute left-[78%] top-[32%] h-[12%] w-[20%]"
         />
         {slide.productCta ? (
           <Link
