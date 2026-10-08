@@ -70,7 +70,7 @@ export default function SiteHeader() {
 
   return (
     <div className="sticky top-0 z-50">
-      <div className="bg-[var(--deep-wine)] text-white text-center text-xs py-2 px-4">
+      <div className="bg-[var(--ink)] text-white text-center text-xs py-2 px-4">
         Free shipping on orders ₹299+ &nbsp;&middot;&nbsp; Dermatologically Tested &nbsp;&middot;&nbsp; Made in India
       </div>
 
