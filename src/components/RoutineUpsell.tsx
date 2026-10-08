@@ -69,11 +69,11 @@ export default function RoutineUpsell({ product, products }: { product: Product;
               </div>
 
               <div className="min-w-0 flex-1">
-                <p className="text-[13px] font-semibold leading-tight text-[var(--ink)]">
-                  Add {addNames} @ &#8377;{offer.specialMissing}
+                <p className="text-[13px] font-semibold leading-snug text-[var(--ink)]">
+                  Add {addNames} for &#8377;{offer.specialMissing}
                 </p>
-                <p className="text-[11px] leading-tight text-[var(--muted)] mt-1">
-                  Regular &#8377;{offer.regularMissing} · <span className="font-semibold text-green-700">Save &#8377;{offer.saving}</span>
+                <p className="text-[11px] font-medium leading-tight text-green-700 mt-1">
+                  Save &#8377;{offer.saving} on this offer
                 </p>
               </div>
             </div>
@@ -98,7 +98,7 @@ export default function RoutineUpsell({ product, products }: { product: Product;
                 onClick={() => addOffer(offer)}
                 className="mt-3 w-full rounded-full bg-[var(--deep-wine)] px-4 py-2.5 text-[11px] font-semibold text-white hover:bg-[var(--ink)] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
               >
-                Add & Save &#8377;{offer.saving}
+                Add & Save
               </button>
             )}
           </div>
