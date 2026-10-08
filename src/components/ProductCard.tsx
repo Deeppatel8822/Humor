@@ -39,13 +39,20 @@ export default function ProductCard({ product }: { product: Product }) {
   return (
     <div className="group block">
       <Link href={`/product/${product.slug}`} className="block">
+        {/* Mobile-only badge row keeps labels completely outside the product image. */}
+        <div className="md:hidden min-h-7 mb-1.5 flex flex-wrap gap-1.5 items-start">
+          {product.is_bestseller && <span className="text-[10px] font-semibold uppercase tracking-wide bg-[var(--deep-wine)] text-white px-2 py-1 rounded">Best Seller</span>}
+          {product.is_new && <span className="text-[10px] font-semibold uppercase tracking-wide bg-[var(--ink)] text-white px-2 py-1 rounded">New</span>}
+          {onSale && <span className="text-[10px] font-semibold uppercase tracking-wide bg-white text-[var(--deep-wine)] px-2 py-1 rounded border border-[var(--line)]">{discountPct}% off</span>}
+        </div>
+
         <div className="relative aspect-square rounded-[1.75rem] border border-[var(--line)] bg-white mb-3 flex items-center justify-center overflow-hidden shadow-[0_8px_24px_rgba(111,74,154,0.06)]">
           {mainImage ? (
             <img src={mainImage} alt={product.name} className="w-full h-full object-cover p-0 transition-transform duration-300 group-hover:scale-[1.02]" loading="lazy" />
           ) : (
             <span className="font-display text-lg text-[var(--deep-wine)]/25 px-4 text-center">{product.name}</span>
           )}
-          <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5 items-start">
+          <div className="hidden md:flex absolute top-2.5 left-2.5 flex-col gap-1.5 items-start">
             {product.is_bestseller && <span className="text-[10px] font-semibold uppercase tracking-wide bg-[var(--deep-wine)] text-white px-2 py-1 rounded">Best Seller</span>}
             {product.is_new && <span className="text-[10px] font-semibold uppercase tracking-wide bg-[var(--ink)] text-white px-2 py-1 rounded">New</span>}
             {onSale && <span className="text-[10px] font-semibold uppercase tracking-wide bg-white text-[var(--deep-wine)] px-2 py-1 rounded border border-[var(--line)]">{discountPct}% off</span>}
