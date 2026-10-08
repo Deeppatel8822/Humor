@@ -88,6 +88,37 @@ export default async function Home() {
 
       <SocialReels />
 
+      <section className="max-w-7xl mx-auto px-5 md:px-8 pb-12 pt-2">
+        <div className="grid gap-5 md:grid-cols-3">
+          <div className="group rounded-[1.5rem] border border-[var(--line)] bg-[var(--milk-sage)] p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(111,74,154,0.10)]">
+            <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-white text-[var(--deep-wine)] shadow-sm">
+              <span aria-hidden="true" className="text-lg">🚚</span>
+            </div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--warm-gold)]">Easy Shopping</p>
+            <h3 className="mt-2 font-display text-2xl text-[var(--deep-wine)]">Shipping &amp; COD Available</h3>
+            <p className="mt-2 text-sm leading-6 text-[var(--muted)]">Convenient delivery options with Cash on Delivery available at checkout.</p>
+          </div>
+
+          <div className="group rounded-[1.5rem] border border-[var(--line)] bg-[var(--milk-sage)] p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(111,74,154,0.10)]">
+            <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-white text-[var(--deep-wine)] shadow-sm">
+              <span aria-hidden="true" className="text-lg">✦</span>
+            </div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--warm-gold)]">Beauty Perks</p>
+            <h3 className="mt-2 font-display text-2xl text-[var(--deep-wine)]">Exciting Offers &amp; Discounts</h3>
+            <p className="mt-2 text-sm leading-6 text-[var(--muted)]">Discover special offers, seasonal savings and exclusive deals across Humor.</p>
+          </div>
+
+          <div className="group rounded-[1.5rem] border border-[var(--line)] bg-[var(--milk-sage)] p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(111,74,154,0.10)]">
+            <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-white text-[var(--deep-wine)] shadow-sm">
+              <span aria-hidden="true" className="text-lg">♡</span>
+            </div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--warm-gold)]">Welcome Gift</p>
+            <h3 className="mt-2 font-display text-2xl text-[var(--deep-wine)]">Sign Up &amp; Get a Discount</h3>
+            <p className="mt-2 text-sm leading-6 text-[var(--muted)]">Create your account and unlock your welcome discount for your first order.</p>
+          </div>
+        </div>
+      </section>
+
       <section className="px-5 md:px-8 pb-10 pt-2">
         <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[2rem] border border-[var(--line)] bg-[var(--velvet-gradient-soft)] shadow-[0_18px_60px_rgba(111,74,154,0.12)]">
           <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-white/60 blur-3xl" aria-hidden="true" />
