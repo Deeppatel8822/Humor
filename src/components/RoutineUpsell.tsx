@@ -56,18 +56,6 @@ export default function RoutineUpsell({ product, products }: { product: Product;
             )}
           >
             <div className="flex items-center gap-3">
-              <div className="flex -space-x-2 shrink-0">
-                {offer.missing.map((item) => (
-                  <div key={item.id} className="w-12 h-12 rounded-xl overflow-hidden border-2 border-white bg-white shadow-sm">
-                    {item.images?.[0] ? (
-                      <img src={item.images[0]} alt={item.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-[7px] text-center block p-1 text-[var(--muted)]">{item.name}</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-
               <div className="min-w-0 flex-1">
                 <p className="text-[13px] font-semibold leading-snug text-[var(--ink)]">
                   Add {addNames} for &#8377;{offer.specialMissing}
