@@ -105,7 +105,7 @@ export default async function BundlesPage() {
                     &#8377;{bundleTotal(bundle.items)}
                   </span>
                   <span className="text-[10px] font-semibold uppercase tracking-wide rounded-full bg-[var(--deep-wine)] text-white px-2 py-1">
-                    5% OFF
+                    {bundleDiscountPercent(bundle.items, bundle.name)}% OFF
                   </span>
                 </div>
                 <span className="text-lg font-semibold text-[var(--ink)]">
