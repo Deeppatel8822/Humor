@@ -277,11 +277,14 @@ export default function CheckoutPage() {
                 </div>
               ))}
             </div>
-            {lines.map((line) => {
-              const catalogProduct = catalogProducts.find((p) => p.slug === line.slug);
-              if (!catalogProduct) return null;
-              return <RoutineUpsell key={line.productId} product={catalogProduct} products={catalogProducts} />;
-            })}
+            {(() => {
+              const firstOfferProduct = lines
+                .map((line) => catalogProducts.find((p) => p.slug === line.slug))
+                .find((p) => p && p.slug);
+              return firstOfferProduct
+                ? <RoutineUpsell product={firstOfferProduct} products={catalogProducts} />
+                : null;
+            })()}
             <div className="mb-5 rounded-2xl border border-[var(--line)] bg-white/70 p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--deep-wine)]">Have a coupon?</span>
