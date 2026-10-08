@@ -4,6 +4,7 @@ import ProductCard from "@/components/ProductCard";
 import HeroSlider from "@/components/HeroSlider";
 import SocialReels from "@/components/SocialReels";
 import { getAllProducts } from "@/lib/catalog";
+import TrustFacts from "@/components/TrustFacts";
 
 const usps = [
   { label: "Dermatologically Tested", symbol: "✓" },
@@ -36,17 +37,12 @@ export default async function Home() {
     <>
       <HeroSlider />
 
-      {/* USP strip */}
       <section className="border-y border-[var(--line)] bg-[#f7f2fb]">
         <div className="max-w-7xl mx-auto px-5 md:px-8 py-5 md:py-6 flex flex-wrap justify-center gap-x-7 gap-y-4 md:gap-x-10">
           {usps.map((usp) => (
             <div key={usp.label} className="flex items-center gap-2.5 text-[var(--deep-wine)]">
-              <span aria-hidden="true" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--deep-wine)]/30 bg-white/70 text-base font-semibold">
-                {usp.symbol}
-              </span>
-              <span className="text-[11px] md:text-xs uppercase tracking-[0.13em] font-medium whitespace-nowrap">
-                {usp.label}
-              </span>
+              <span aria-hidden="true" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--deep-wine)]/30 bg-white/70 text-base font-semibold">{usp.symbol}</span>
+              <span className="text-[11px] md:text-xs uppercase tracking-[0.13em] font-medium whitespace-nowrap">{usp.label}</span>
             </div>
           ))}
         </div>
@@ -57,9 +53,7 @@ export default async function Home() {
           <h2 className="font-display text-3xl md:text-4xl text-[var(--deep-wine)]">Best Sellers</h2>
           <Link href="/shop?sort=bestselling" className="text-sm text-[var(--warm-gold)] font-medium">View All &rarr;</Link>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {bestSellers.map((p) => <ProductCard key={p.id} product={p} />)}
-        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">{bestSellers.map((p) => <ProductCard key={p.id} product={p} />)}</div>
       </section>
 
       <section className="max-w-7xl mx-auto px-5 md:px-8 py-20">
@@ -72,9 +66,7 @@ export default async function Home() {
           <RoutineThread title="Brightening Routine" steps={brighteningSteps} />
           <RoutineThread title="Acne & Blemish Routine" steps={blemishSteps} />
         </div>
-        <div className="mt-10">
-          <Link href="/build-your-routine" className="inline-block border border-[var(--deep-wine)] text-[var(--deep-wine)] px-7 py-3.5 rounded-full text-sm font-medium hover:bg-[var(--milk-sage)] transition-colors">Build Your Routine &rarr;</Link>
-        </div>
+        <div className="mt-10"><Link href="/build-your-routine" className="inline-block border border-[var(--deep-wine)] text-[var(--deep-wine)] px-7 py-3.5 rounded-full text-sm font-medium hover:bg-[var(--milk-sage)] transition-colors">Build Your Routine &rarr;</Link></div>
       </section>
 
       <section className="max-w-7xl mx-auto px-5 md:px-8 py-20">
@@ -82,9 +74,7 @@ export default async function Home() {
           <h2 className="font-display text-3xl md:text-4xl text-[var(--deep-wine)]">Skin Care</h2>
           <Link href="/collections/skin-care" className="text-sm text-[var(--warm-gold)] font-medium">View All &rarr;</Link>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {skincare.map((p) => <ProductCard key={p.id} product={p} />)}
-        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">{skincare.map((p) => <ProductCard key={p.id} product={p} />)}</div>
       </section>
 
       <section className="max-w-7xl mx-auto px-5 md:px-8 py-20">
@@ -92,12 +82,11 @@ export default async function Home() {
           <h2 className="font-display text-3xl md:text-4xl text-[var(--deep-wine)]">Hair Care</h2>
           <Link href="/collections/hair-care" className="text-sm text-[var(--warm-gold)] font-medium">View All &rarr;</Link>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-          {haircare.map((p) => <ProductCard key={p.id} product={p} />)}
-        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">{haircare.map((p) => <ProductCard key={p.id} product={p} />)}</div>
       </section>
 
       <SocialReels />
+      <TrustFacts />
     </>
   );
 }
