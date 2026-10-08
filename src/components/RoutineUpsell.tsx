@@ -6,16 +6,32 @@ import { useCart } from "@/context/CartContext";
 import { getRoutineUpsells } from "@/lib/bundles";
 
 export default function RoutineUpsell({ product, products }: { product: Product; products: Product[] }) {
-  const { addItem } = useCart();
+  const { lines, addItem, removeItem } = useCart();
   const [added, setAdded] = useState<string | null>(null);
+  const [addedSlugs, setAddedSlugs] = useState<string[]>([]);
   const offers = getRoutineUpsells(product, products);
 
   if (!offers.length) return null;
 
+  const activeOffer = offers.find((offer) =>
+    offer.missing.every((item) => lines.some((line) => line.slug === item.slug && line.quantity > 0))
+  );
+  const offerLocked = Boolean(added || activeOffer);
+
   function addOffer(offer: (typeof offers)[number]) {
+    if (offerLocked) return;
     offer.missing.forEach((item) => addItem(item, 1));
     setAdded(offer.bundle.name);
-    window.setTimeout(() => setAdded(null), 2200);
+    setAddedSlugs(offer.missing.map((item) => item.slug));
+  }
+
+  function removeOffer() {
+    addedSlugs.forEach((slug) => {
+      const line = lines.find((item) => item.slug === slug);
+      if (line) removeItem(line.productId);
+    });
+    setAdded(null);
+    setAddedSlugs([]);
   }
 
   return (
@@ -31,7 +47,14 @@ export default function RoutineUpsell({ product, products }: { product: Product;
           .join(" + ");
 
         return (
-          <div key={offer.bundle.name} className="rounded-2xl border border-[var(--line)] bg-white/80 p-3.5">
+          <div
+            key={offer.bundle.name}
+            className={"rounded-2xl border p-3.5 transition-opacity " + (
+              offerLocked && activeOffer?.bundle.name !== offer.bundle.name && added !== offer.bundle.name
+                ? "border-[var(--line)] bg-white/40 opacity-35"
+                : "border-[var(--line)] bg-white/80"
+            )}
+          >
             <div className="flex items-center gap-3">
               <div className="flex -space-x-2 shrink-0">
                 {offer.missing.map((item) => (
@@ -55,13 +78,29 @@ export default function RoutineUpsell({ product, products }: { product: Product;
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => addOffer(offer)}
-              className="mt-3 w-full rounded-full bg-[var(--deep-wine)] px-4 py-2.5 text-[11px] font-semibold text-white hover:bg-[var(--ink)] transition-colors"
-            >
-              {added === offer.bundle.name ? "Added ✓" : "Add & Save ₹" + offer.saving}
-            </button>
+            {added === offer.bundle.name ? (
+              <div className="mt-3 flex items-center gap-2">
+                <div className="flex-1 rounded-full bg-green-50 border border-green-200 px-4 py-2.5 text-center text-[11px] font-semibold text-green-700">
+                  Added ✓
+                </div>
+                <button
+                  type="button"
+                  onClick={removeOffer}
+                  className="rounded-full border border-[var(--line)] bg-white px-4 py-2.5 text-[11px] font-semibold text-[var(--muted)] hover:text-[var(--deep-wine)] hover:border-[var(--deep-wine)] transition-colors"
+                >
+                  Remove
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                disabled={offerLocked}
+                onClick={() => addOffer(offer)}
+                className="mt-3 w-full rounded-full bg-[var(--deep-wine)] px-4 py-2.5 text-[11px] font-semibold text-white hover:bg-[var(--ink)] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Add & Save &#8377;{offer.saving}
+              </button>
+            )}
           </div>
         );
       })}
