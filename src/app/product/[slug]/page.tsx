@@ -3,7 +3,6 @@ import { getProduct, getAllProducts } from "@/lib/catalog";
 import { getProducts as getLocalProducts } from "@/lib/products";
 import AddToCartForm from "@/components/AddToCartForm";
 import ProductCard from "@/components/ProductCard";
-import CompleteRoutineButton from "@/components/AddBundleButton";
 import ProductGallery from "@/components/ProductGallery";
 import CustomerReviews from "@/components/CustomerReviews";
 import RoutineUpsell from "@/components/RoutineUpsell";
@@ -47,7 +46,6 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   if (!product) return notFound();
   const allProducts = await getAllProducts();
   const related = allProducts.filter((p) => p.id !== product.id && p.category === product.category).slice(0, 4);
-  const routinePartner = product.subrange ? allProducts.find((p) => p.subrange === product.subrange && p.id !== product.id) : undefined;
   const onSale = product.compare_at_price_inr && product.compare_at_price_inr > product.price_inr;
   const gallery = slug === "sunscreen-spf-50" ? sunscreenImages : product.images.map((src) => ({ src, alt: product.name }));
 
@@ -87,7 +85,6 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       {product.how_to_use && <div className="mb-20 bg-[var(--milk-sage)] border border-[var(--line)] rounded-3xl p-8 md:p-10"><h2 className="font-display text-2xl text-[var(--deep-wine)] mb-3">How to use</h2><p className="text-sm text-[var(--ink)]/85 leading-relaxed max-w-2xl">{product.how_to_use}</p></div>}
       <CustomerReviews product={product} />
       <div className="mb-20 max-w-3xl"><h2 className="font-display text-2xl text-[var(--deep-wine)] mb-6">Frequently asked questions</h2><div className="space-y-3">{genericFaqs.map((f) => <details key={f.q} className="bg-[var(--milk-sage)] border border-[var(--line)] rounded-xl p-5"><summary className="cursor-pointer text-sm font-medium text-[var(--deep-wine)]">{f.q}</summary><p className="mt-2 text-sm text-[var(--muted)] leading-relaxed">{f.a}</p></details>)}</div></div>
-      {routinePartner && <div className="mb-20 bg-[var(--milk-sage)] border border-[var(--line)] rounded-3xl p-8 md:p-10"><h2 className="font-display text-2xl text-[var(--deep-wine)] mb-6">Complete your {product.subrange} routine</h2><div className="flex flex-wrap items-center gap-6"><div className="text-sm font-medium text-[var(--ink)]">{product.name}</div><span className="text-[var(--muted)] text-lg">+</span><div className="text-sm font-medium text-[var(--ink)]">{routinePartner.name}</div><CompleteRoutineButton products={[product, routinePartner]} label="Add Both to Cart" /></div></div>}
       {related.length > 0 && <div><h2 className="font-display text-2xl text-[var(--deep-wine)] mb-6">You may also like</h2><div className="grid grid-cols-2 md:grid-cols-4 gap-6">{related.map((p) => <ProductCard key={p.id} product={p} />)}</div></div>}
     </div>
   );
