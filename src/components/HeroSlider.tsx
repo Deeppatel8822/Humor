@@ -6,20 +6,13 @@ import Link from "next/link";
 const slides = [
   {
     fullWidth: true,
-    modelImage: "/products/velvet-touch-face-serum-model-1.webp",
-    productImage: "/products/velvet-touch-serum-hero.webp",
+    heroImage: "https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/2c94c4e6-aa1f-4800-a519-b89f8bb2f350.png",
     eyebrow: "Face Serum",
     title: <>Targeted Care.<br />Visible Glow.</>,
     cta: "Shop Serums",
     href: "/collections/skin-care",
     productCta: "View Velvet Touch",
     productHref: "/product/velvet-touch-face-serum",
-    leftImage: "/products/protein-shake-hero.webp",
-    rightImage: "/products/milk-shake-hair-mask-hero.webp",
-    leftLabel: "Hair Care",
-    leftTitle: "Protein Shake",
-    leftHref: "/product/protein-shake-shampoo",
-    rightHref: "/product/repair-hair-mask",
   },
   {
     leftImage: "/products/facewash-hero.webp",
@@ -86,7 +79,8 @@ export default function HeroSlider() {
             aria-label="View Velvet Touch Face Serum"
             className="absolute left-[52.1%] top-[68.4%] h-[8%] w-[11.8%]"
           />
-        </div>      ) : (
+        </div>
+      ) : (
         <div className="relative grid min-h-[520px] grid-cols-1 md:min-h-[560px] md:grid-cols-[minmax(0,1fr)_minmax(260px,0.65fr)_minmax(0,1fr)]">
           <Link href={slide.leftHref} className="group relative min-h-[430px] overflow-hidden md:min-h-0">
             <img src={slide.leftImage} alt={slide.leftTitle} className="absolute inset-0 h-full w-full object-contain transition-transform duration-1000 group-hover:scale-[1.02]" />
