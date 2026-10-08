@@ -13,8 +13,8 @@ export const bundleDefinitions: BundleDefinition[] = [
   { name: "Fullmoon Complete Routine", slugs: ["fullmoon-face-wash", "fullmoon-face-serum", "sunscreen-spf-50"] },
   { name: "Blemish Block Complete Routine", slugs: ["blemish-block-face-wash", "blemish-block-face-serum", "sunscreen-spf-50"] },
   { name: "Velvet Touch Complete Routine", slugs: ["velvet-touch-face-wash", "velvet-touch-face-serum", "sunscreen-spf-50"] },
-  { name: "Protein Shake Shampoo + Conditioner", slugs: ["repair-shampoo", "repair-conditioner"] },
-  { name: "Protein Shake Shampoo + Hair Mask", slugs: ["repair-shampoo", "repair-hair-mask"] },
+  { name: "Protein Shake Anti Hairfall Shampoo + Silk Shake Smooth Shine Conditioner", slugs: ["repair-shampoo", "repair-conditioner"] },
+  { name: "Protein Shake Anti Hairfall Shampoo + Milk Shake Repairing Smooth Hair Mask", slugs: ["repair-shampoo", "repair-hair-mask"] },
 ];
 
 export function bundleTotal(products: Product[]) {
