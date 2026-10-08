@@ -142,6 +142,19 @@ export default function YourBusinessPage() {
 
   if (registered) {
     return (
+      <main className="min-h-[70vh] bg-[var(--milk-sage)] px-5 py-16 md:px-8 md:py-24">
+        <div className="mx-auto max-w-2xl rounded-[2rem] border border-[var(--line)] bg-white p-8 text-center shadow-[0_18px_60px_rgba(111,74,154,0.10)] md:p-12">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[var(--deep-wine)] text-2xl text-white">✓</div>
+          <p className="mt-6 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--warm-gold)]">Registration Complete</p>
+          <h1 className="mt-2 font-display text-4xl text-[var(--deep-wine)]">Welcome to Humor Business</h1>
+          <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-[var(--muted)]">{message}</p>
+          <Link href="/" className="mt-7 inline-flex rounded-full bg-[var(--deep-wine)] px-7 py-3.5 text-sm font-semibold text-white">Back to Humor Luxury</Link>
+        </div>
+      </main>
+    );
+  }
+
+  return (
     <>
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
       <main className="relative min-h-[calc(100vh-180px)] overflow-hidden bg-[var(--paper)]">
