@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Script from "next/script";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
+import { products as catalogProducts } from "@/lib/products";
+import RoutineUpsell from "@/components/RoutineUpsell";
 
 declare global {
   interface Window {
@@ -275,6 +277,11 @@ export default function CheckoutPage() {
                 </div>
               ))}
             </div>
+            {lines.map((line) => {
+              const catalogProduct = catalogProducts.find((p) => p.slug === line.slug);
+              if (!catalogProduct) return null;
+              return <RoutineUpsell key={line.productId} product={catalogProduct} products={catalogProducts} />;
+            })}
             <div className="mb-5 rounded-2xl border border-[var(--line)] bg-white/70 p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--deep-wine)]">Have a coupon?</span>
