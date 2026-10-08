@@ -36,13 +36,28 @@ export default async function Home() {
     <>
       <HeroSlider />
 
-      <section className="border-y border-[var(--line)] bg-[#f7f2fb]">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 overflow-x-auto">
-          <div className="flex min-w-max items-center justify-center gap-5 md:gap-8 whitespace-nowrap">
-            {usps.map((usp) => (
-              <div key={usp.label} className="flex shrink-0 items-center gap-2 text-[var(--deep-wine)]">
-                <span aria-hidden="true" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--deep-wine)]/25 bg-white/70 text-sm font-semibold">{usp.symbol}</span>
-                <span className="text-[10px] md:text-[11px] uppercase tracking-[0.11em] font-medium">{usp.label}</span>
+      <section className="border-y border-[var(--line)] bg-[#f7f2fb] overflow-hidden" aria-label="Why choose Humor Luxury">
+        <div className="usp-marquee py-3.5 md:py-4">
+          <div className="usp-marquee-track">
+            {[0, 1].map((copy) => (
+              <div
+                key={copy}
+                className="usp-marquee-group"
+                aria-hidden={copy === 1 ? "true" : undefined}
+              >
+                {usps.map((usp) => (
+                  <div key={copy + "-" + usp.label} className="flex shrink-0 items-center gap-2.5 text-[var(--deep-wine)]">
+                    <span
+                      aria-hidden="true"
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--deep-wine)]/25 bg-white/70 text-sm font-semibold"
+                    >
+                      {usp.symbol}
+                    </span>
+                    <span className="text-[10px] md:text-[11px] uppercase tracking-[0.11em] font-medium whitespace-nowrap">
+                      {usp.label}
+                    </span>
+                  </div>
+                ))}
               </div>
             ))}
           </div>
