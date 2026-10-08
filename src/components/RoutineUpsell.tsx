@@ -19,9 +19,9 @@ export default function RoutineUpsell({ product, products }: { product: Product;
   }
 
   return (
-    <div className="space-y-3 mb-6">
+    <div className="space-y-3 mb-6" aria-label="Routine bundle offers">
       <div className="flex items-center gap-2">
-        <span className="text-[10px] font-semibold tracking-[0.18em] uppercase text-[var(--warm-gold)]">Complete your routine</span>
+        <span className="text-[10px] font-semibold tracking-[0.18em] uppercase text-[var(--warm-gold)]">Exclusive routine offer</span>
         <span className="h-px flex-1 bg-[var(--line)]" />
       </div>
 
@@ -32,7 +32,7 @@ export default function RoutineUpsell({ product, products }: { product: Product;
           .join(" + ");
 
         return (
-          <div key={offer.bundle.name} className="rounded-2xl border border-[var(--line)] bg-[var(--milk-sage)]/55 p-4 md:p-5">
+          <div key={offer.bundle.name} className="rounded-2xl border border-[var(--line)] bg-[var(--milk-sage)] p-4 md:p-5 shadow-[0_8px_30px_rgba(48,35,59,0.05)]">
             <div className="flex items-center gap-3">
               <div className="flex -space-x-2 shrink-0">
                 {offer.missing.map((item) => (
