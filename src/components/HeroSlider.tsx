@@ -6,11 +6,11 @@ import Link from "next/link";
 const slides = [
   {
     fullWidth: true,
-    heroImage: "https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/f7bcec3b-11a8-4443-b814-7fb6c97e818a.png",
+    heroImage: "https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/f0043f74-6f29-4bf5-85c7-0af17d06741b.png",
     eyebrow: "Face Serum",
     title: <>Targeted Care.<br />Visible Glow.</>,
     cta: "Shop Serums",
-    href: "/collections/skin-care",
+    href: "/shop",
     productCta: "View Velvet Touch",
     productHref: "/product/velvet-touch-face-serum",
   },
@@ -67,7 +67,7 @@ export default function HeroSlider() {
         <div className="relative w-full overflow-hidden">
           <img
             src={slide.heroImage}
-            alt="Humor Luxury Velvet Touch Face Serum hero banner"
+            alt="Humor Luxury all products hero banner"
             className="block h-auto w-full select-none"
             draggable={false}
           />
