@@ -42,9 +42,7 @@ export default function RoutineUpsell({ product, products }: { product: Product;
       </div>
 
       {offers.map((offer) => {
-        const addNames = offer.missing
-          .map((item) => item.name.replace("Fullmoon ", "").replace("Blemish Block ", "").replace("Velvet Touch ", ""))
-          .join(" + ");
+        const addNames = offer.missing.map((item) => item.name).join(" + ");
 
         return (
           <div
