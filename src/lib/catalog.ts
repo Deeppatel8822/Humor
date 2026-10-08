@@ -12,6 +12,14 @@ function isSupabaseConfigured() {
   return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
 }
 
+const finalProductNames: Record<string, string> = {
+  "sunscreen-spf-50": "Light & Shade Sunscreen SPF 50",
+  "repair-shampoo": "Protein Shake Anti Hairfall Shampoo",
+  "repair-conditioner": "Silk Shake Smooth Shine Conditioner",
+  "repair-hair-mask": "Milk Shake Repairing Smooth Hair Mask",
+  "shower-gel": "Royal Water Soft Shower Cream",
+};
+
 const mainImageOverrides: Record<string, string> = {
   "blemish-block-face-wash": "/products/blemish-block-face-wash-main.webp",
   "velvet-touch-face-wash": "/products/velvet-touch-face-wash-main.webp",
@@ -64,6 +72,7 @@ function withMainImage(product: Product): Product {
 
   return {
     ...product,
+    ...(finalProductNames[product.slug] ? { name: finalProductNames[product.slug] } : {}),
     ...(legacyRating ?? { rating: 0, review_count: 0 }),
     images,
   };
