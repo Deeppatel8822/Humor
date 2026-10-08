@@ -4,7 +4,7 @@ import ProductCard from "@/components/ProductCard";
 export const metadata = {
   title: "Skin Care | Humor Luxury",
   description:
-    "Explore Humor Luxury skincare ranges including Fullmoon, Blemish Block, Velvet Touch, and Sunscreen.",
+    "Explore Humor Luxury skincare ranges including Fullmoon, Blemish Block, Velvet Touch, and Light & Shade Sunscreen SPF 50.",
 };
 
 const subranges = ["Fullmoon", "Blemish Block", "Velvet Touch"];
@@ -21,7 +21,7 @@ export default async function SkinCarePage({
     ? products.filter(
         (p) =>
           p.subrange === range ||
-          (range === "Sunscreen" && !p.subrange)
+          (range === "Light & Shade Sunscreen SPF 50" && !p.subrange)
       )
     : products;
 
