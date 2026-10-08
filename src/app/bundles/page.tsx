@@ -1,43 +1,13 @@
 import { getAllProducts } from "@/lib/catalog";
 import { Product } from "@/types/product";
 import AddBundleButton from "@/components/AddBundleButton";
+import { bundleTotal, bundlePrice, bundleDiscountPercent } from "@/lib/bundles";
 
 export const metadata = {
   title: "Bundles | Humor Luxury",
   description: "Curated Humor Luxury routines at a bundle price.",
 };
 
-function bundleTotal(products: Product[]) {
-  return products.reduce((sum, p) => sum + p.price_inr, 0);
-}
-
-function isHairBundle(bundleName: string) {
-  const name = bundleName.toLowerCase();
-  return name.includes("hair") || name.includes("shampoo") || name.includes("conditioner") || name.includes("mask");
-}
-
-function bundlePrice(products: Product[], bundleName: string) {
-  const total = bundleTotal(products);
-
-  // Dynamic psychological pricing: the bundle always follows the
-  // products' current selling prices instead of using fixed bundle prices.
-  // The final amount is kept just below an attractive round price.
-  const discountRate = isHairBundle(bundleName)
-    ? total >= 1000 ? 0.09 : total >= 800 ? 0.06 : 0.12
-    : total >= 800 ? 0.15 : 0.14;
-
-  const discounted = total * (1 - discountRate);
-  const step = discounted >= 1000 ? 100 : 50;
-  const rounded = Math.floor(discounted / step) * step;
-
-  return Math.max(1, rounded - 1);
-}
-
-function bundleDiscountPercent(products: Product[], bundleName: string) {
-  const original = bundleTotal(products);
-  const finalPrice = bundlePrice(products, bundleName);
-  return Math.round(((original - finalPrice) / original) * 100);
-}
 
 export default async function BundlesPage() {
   const products = await getAllProducts();
