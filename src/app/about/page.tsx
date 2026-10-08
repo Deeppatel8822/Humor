@@ -25,11 +25,8 @@ export default function AboutPage() {
       <section className="max-w-7xl mx-auto px-5 md:px-8 py-14 md:py-20">
         <div className="grid md:grid-cols-2 gap-10 md:gap-16 items-center">
           <div className="order-1 md:order-2">
-            <div className="aspect-[4/5] rounded-3xl bg-[var(--milk-sage)] border border-[var(--line)] flex items-center justify-center">
-              <div className="text-center px-8">
-                <div className="text-[10px] uppercase tracking-[0.18em] text-[var(--warm-gold)] mb-3">Photography</div>
-                <p className="font-display text-lg text-[var(--deep-wine)]/35">Model / Brand Image</p>
-              </div>
+            <div className="aspect-[4/5] rounded-3xl bg-[var(--milk-sage)] border border-[var(--line)] overflow-hidden">
+              <img src="/images/about/humor-luxury-story.webp.png" alt="My Humor lifestyle beauty portrait" className="w-full h-full object-cover object-center" />
             </div>
           </div>
           <div className="order-2 md:order-1">
