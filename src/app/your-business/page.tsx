@@ -4,14 +4,6 @@ import Link from "next/link";
 import Script from "next/script";
 import { useEffect, useState } from "react";
 
-declare global {
-  interface Window {
-    Razorpay: new (options: Record<string, unknown>) => {
-      open: () => void;
-    };
-  }
-}
-
 const businessTypes = [
   "Influencer / Content Creator",
   "Salon / Parlour",
@@ -82,7 +74,8 @@ export default function YourBusinessPage() {
     if (!createRes.ok) throw new Error(createData.error || "Could not start payment.");
 
     return new Promise<void>((resolve, reject) => {
-      const rzp = new window.Razorpay({
+      const RazorpayCheckout = (window as unknown as { Razorpay: new (options: Record<string, unknown>) => { open: () => void } }).Razorpay;
+      const rzp = new RazorpayCheckout({
         key: createData.keyId,
         amount: createData.amountInr * 100,
         currency: "INR",
