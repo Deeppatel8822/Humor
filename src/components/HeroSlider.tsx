@@ -7,12 +7,12 @@ const slides = [
   {
     fullWidth: true,
     heroImage: "https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/f0043f74-6f29-4bf5-85c7-0af17d06741b.png",
-    eyebrow: "Face Serum",
-    title: <>Targeted Care.<br />Visible Glow.</>,
-    cta: "Shop Serums",
+    eyebrow: "All Products",
+    title: <>Discover Humor Luxury.<br />All Products.</>,
+    cta: "Shop Now",
     href: "/shop",
-    productCta: "View Velvet Touch",
-    productHref: "/product/velvet-touch-face-serum",
+    productCta: "",
+    productHref: "/shop",
   },
   {
     fullWidth: true,
@@ -38,7 +38,10 @@ const slides = [
 
 export default function HeroSlider() {
   const [active, setActive] = useState(0);
-  const [paused, setPaused] = useState(false);\n  const touchStartX = useRef<number | null>(null);\n  const touchStartY = useRef<number | null>(null);\n  const pointerStartX = useRef<number | null>(null);
+  const [paused, setPaused] = useState(false);
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+  const pointerStartX = useRef<number | null>(null);
 
   useEffect(() => {
     if (paused) return;
@@ -54,7 +57,8 @@ export default function HeroSlider() {
     <section
       className="relative cursor-grab overflow-hidden bg-white active:cursor-grabbing"
       onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}\n      onPointerDown={(event) => { if (event.pointerType === "mouse") pointerStartX.current = event.clientX; }}
+      onMouseLeave={() => setPaused(false)}
+      onPointerDown={(event) => { if (event.pointerType === "mouse") pointerStartX.current = event.clientX; }}
       onPointerUp={(event) => {
         if (event.pointerType !== "mouse" || pointerStartX.current == null) return;
         const dx = event.clientX - pointerStartX.current;
@@ -62,7 +66,19 @@ export default function HeroSlider() {
         if (Math.abs(dx) < 50) return;
         setActive((current) => (current + (dx < 0 ? 1 : slides.length - 1)) % slides.length);
       }}
-      onTouchStart={(event) => { touchStartX.current = event.touches[0]?.clientX ?? null; touchStartY.current = event.touches[0]?.clientY ?? null; }}\n      onTouchEnd={(event) => {\n        const startX = touchStartX.current;\n        const startY = touchStartY.current;\n        const endX = event.changedTouches[0]?.clientX;\n        const endY = event.changedTouches[0]?.clientY;\n        touchStartX.current = null; touchStartY.current = null;\n        if (startX == null || startY == null || endX == null || endY == null) return;\n        const dx = endX - startX;\n        const dy = endY - startY;\n        if (Math.abs(dx) < 40 || Math.abs(dx) <= Math.abs(dy)) return;\n        setActive((current) => (current + (dx < 0 ? 1 : slides.length - 1)) % slides.length);\n      }}
+      onTouchStart={(event) => { touchStartX.current = event.touches[0]?.clientX ?? null; touchStartY.current = event.touches[0]?.clientY ?? null; }}
+      onTouchEnd={(event) => {
+        const startX = touchStartX.current;
+        const startY = touchStartY.current;
+        const endX = event.changedTouches[0]?.clientX;
+        const endY = event.changedTouches[0]?.clientY;
+        touchStartX.current = null; touchStartY.current = null;
+        if (startX == null || startY == null || endX == null || endY == null) return;
+        const dx = endX - startX;
+        const dy = endY - startY;
+        if (Math.abs(dx) < 40 || Math.abs(dx) <= Math.abs(dy)) return;
+        setActive((current) => (current + (dx < 0 ? 1 : slides.length - 1)) % slides.length);
+      }}
       aria-label="Humor Luxury featured collection"
     >
       <div className="relative w-full overflow-hidden">
