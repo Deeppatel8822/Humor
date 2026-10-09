@@ -29,6 +29,10 @@ export default function AccountPage() {
   const [passwordSaving, setPasswordSaving] = useState(false);
   const [passwordMessage, setPasswordMessage] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [showOrderTracking, setShowOrderTracking] = useState(false);
+  const [orderNumber, setOrderNumber] = useState("");
+  const [orderEmail, setOrderEmail] = useState("");
+  const [orderStatus, setOrderStatus] = useState("");
 
   async function load() {
     setLoading(true);
@@ -104,9 +108,9 @@ export default function AccountPage() {
         </button>
 
         <div className="grid md:grid-cols-3 gap-4 mt-8">
-          <Link href="/track-order" className="rounded-2xl bg-white border border-[var(--line)] p-5 hover:border-[var(--deep-wine)]">
-            <p className="text-xs text-[var(--muted)]">Orders</p><p className="mt-2 font-medium text-[var(--ink)]">Track your orders →</p>
-          </Link>
+          <button type="button" onClick={() => setShowOrderTracking((open) => !open)} className="text-left rounded-2xl bg-white border border-[var(--line)] p-5 hover:border-[var(--deep-wine)]">
+            <p className="text-xs text-[var(--muted)]">Orders</p><p className="mt-2 font-medium text-[var(--ink)]">{showOrderTracking ? "Hide order tracking ↑" : "Track your orders ↓"}</p>
+          </button>
           <Link href="#profile-settings" className="rounded-2xl bg-white border border-[var(--line)] p-5 hover:border-[var(--deep-wine)]">
             <p className="text-xs text-[var(--muted)]">Profile</p><p className="mt-2 font-medium text-[var(--ink)]">View or edit your details →</p>
           </Link>
@@ -114,6 +118,23 @@ export default function AccountPage() {
             <p className="text-xs text-[var(--muted)]">Partner</p><p className="mt-2 font-medium text-[var(--ink)]">{partner?.status === "approved" ? "Marketing Partner dashboard →" : "Become a Marketing Partner →"}</p>
           </Link>
         </div>
+
+        {showOrderTracking && (
+          <section id="order-tracking" className="mt-8 rounded-3xl bg-white border border-[var(--line)] p-6 md:p-8 scroll-mt-28">
+            <p className="text-xs uppercase tracking-[0.18em] text-[var(--warm-gold)]">Orders</p>
+            <h2 className="font-display text-2xl text-[var(--deep-wine)] mt-2">Track your order</h2>
+            <p className="mt-2 text-sm text-[var(--muted)]">Enter your order number and the email used at checkout.</p>
+            <form onSubmit={(event) => {
+              event.preventDefault();
+              setOrderStatus("Order tracking will be live once the order database is connected. In the meantime, check the email confirmation sent after your order.");
+            }} className="mt-5 grid gap-4 md:grid-cols-2">
+              <input required value={orderNumber} onChange={(event) => setOrderNumber(event.target.value)} placeholder="Order number (e.g. HL-10234)" className="w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm" />
+              <input required type="email" value={orderEmail} onChange={(event) => setOrderEmail(event.target.value)} placeholder="Email used at checkout" className="w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm" />
+              <button type="submit" className="md:col-span-2 rounded-full bg-[var(--deep-wine)] px-6 py-3.5 text-sm font-medium text-white hover:bg-[var(--ink)] transition-colors">Track order</button>
+            </form>
+            {orderStatus && <p className="mt-5 rounded-xl bg-[var(--milk-sage)] border border-[var(--line)] px-5 py-4 text-sm text-[var(--muted)]">{orderStatus}</p>}
+          </section>
+        )}
 
         <section id="profile-settings" className="mt-8 grid gap-5 lg:grid-cols-2 scroll-mt-28">
           <form onSubmit={async (event) => {
