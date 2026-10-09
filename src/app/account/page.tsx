@@ -3,6 +3,19 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+type RecentOrder = {
+  id: string;
+  order_number: string;
+  status?: string | null;
+  payment_status?: string | null;
+  subtotal_inr?: number | null;
+  discount_inr?: number | null;
+  shipping_inr?: number | null;
+  total_inr?: number | null;
+  created_at?: string | null;
+  items?: { quantity: number; unit_price_inr?: number | null; product?: { name?: string | null } | null }[];
+};
+
 type Partner = {
   status: "pending" | "approved" | "rejected";
   code?: string;
@@ -33,6 +46,9 @@ export default function AccountPage() {
   const [orderNumber, setOrderNumber] = useState("");
   const [orderEmail, setOrderEmail] = useState("");
   const [orderStatus, setOrderStatus] = useState("");
+  const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
+  const [ordersLoading, setOrdersLoading] = useState(false);
+  const [ordersError, setOrdersError] = useState("");
 
   async function load() {
     setLoading(true);
@@ -46,6 +62,21 @@ export default function AccountPage() {
         return;
       }
       setLoggedIn(true);
+      setOrdersLoading(true);
+      try {
+        const ordersResponse = await fetch("/api/customer/orders", {
+          headers: { Authorization: "Bearer " + data.session.access_token },
+          cache: "no-store",
+        });
+        const ordersResult = await ordersResponse.json();
+        if (!ordersResponse.ok) throw new Error(ordersResult.error || "Could not load your order history.");
+        setRecentOrders(Array.isArray(ordersResult.orders) ? ordersResult.orders : []);
+        setOrdersError("");
+      } catch (ordersErr) {
+        setOrdersError(ordersErr instanceof Error ? ordersErr.message : "Could not load your order history.");
+      } finally {
+        setOrdersLoading(false);
+      }
       const { data: userData } = await supabase.auth.getUser();
       const user = userData.user;
       if (user) {
@@ -135,8 +166,41 @@ export default function AccountPage() {
             {orderStatus && <p className="mt-5 rounded-xl bg-[var(--milk-sage)] border border-[var(--line)] px-5 py-4 text-sm text-[var(--muted)]">{orderStatus}</p>}
             <div className="mt-8 border-t border-[var(--line)] pt-6">
               <h3 className="font-display text-xl text-[var(--deep-wine)]">Your Recent Orders</h3>
-              <p className="mt-2 text-sm text-[var(--muted)]">Your latest orders and purchased products will appear here once order history is connected to your account.</p>
-              <div className="mt-4 rounded-2xl border border-dashed border-[var(--line)] bg-[var(--milk-sage)]/50 p-5 text-sm text-[var(--muted)]">No order history is available to display yet.</div>
+              <p className="mt-2 text-sm text-[var(--muted)]">Your recent orders, payment status and purchased products.</p>
+              {ordersLoading ? (
+                <div className="mt-4 rounded-2xl border border-[var(--line)] bg-[var(--milk-sage)]/50 p-5 text-sm text-[var(--muted)]">Loading your orders…</div>
+              ) : ordersError ? (
+                <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700">{ordersError}</div>
+              ) : recentOrders.length === 0 ? (
+                <div className="mt-4 rounded-2xl border border-dashed border-[var(--line)] bg-[var(--milk-sage)]/50 p-5 text-sm text-[var(--muted)]">No orders are linked to this account yet. If you just placed an order, make sure you used the same email for your account and checkout.</div>
+              ) : (
+                <div className="mt-4 space-y-4">
+                  {recentOrders.map((order) => (
+                    <article key={order.id} className="rounded-2xl border border-[var(--line)] p-5">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <p className="font-semibold text-[var(--deep-wine)]">{order.order_number || "Order"}</p>
+                          <p className="mt-1 text-xs text-[var(--muted)]">{order.created_at ? new Date(order.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "Date unavailable"}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold text-[var(--ink)]">₹{Number(order.total_inr || 0).toLocaleString("en-IN")}</p>
+                          <p className="mt-1 text-xs capitalize text-[var(--muted)]">{String(order.payment_status || order.status || "Processing").replace(/_/g, " ")}</p>
+                        </div>
+                      </div>
+                      {order.items?.length ? (
+                        <ul className="mt-4 border-t border-[var(--line)] pt-3 space-y-2">
+                          {order.items.map((item, index) => (
+                            <li key={index} className="flex justify-between gap-3 text-sm text-[var(--muted)]">
+                              <span>{item.product?.name || "Product"} × {item.quantity}</span>
+                              <span>₹{(Number(item.unit_price_inr || 0) * Number(item.quantity || 0)).toLocaleString("en-IN")}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : <p className="mt-3 text-xs text-[var(--muted)]">Product details are not available for this order.</p>}
+                    </article>
+                  ))}
+                </div>
+              )}
             </div>
           </section>
         )}
