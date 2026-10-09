@@ -97,9 +97,10 @@ export async function POST(request: Request) {
     // Ensure COD orders are linked to the signed-in account, even if the shipping
     // email differs from the login email or the SQL function created a guest customer.
     if (token) {
-      const { data: authData, error: authError } = await supabase.auth.getUser(token);
-      const user = authData.user;
-      if (!authError && user) {
+      try {
+        const { data: authData, error: authError } = await supabase.auth.getUser(token);
+        const user = authData.user;
+        if (!authError && user) {
         let customerId: string | null = null;
         if (user.email) {
           const { data: customer, error: customerError } = await supabase
@@ -134,13 +135,17 @@ export async function POST(request: Request) {
             customerId = createdCustomer.id;
           }
         }
-        if (customerId) {
-          const { error: linkError } = await supabase
-            .from("orders")
-            .update({ customer_id: customerId })
-            .eq("order_number", String(result.order_number));
-          if (linkError) throw linkError;
+          if (customerId) {
+            const { error: linkError } = await supabase
+              .from("orders")
+              .update({ customer_id: customerId })
+              .eq("order_number", String(result.order_number));
+            if (linkError) throw linkError;
+          }
         }
+      } catch (linkError) {
+        // Do not report a failed checkout after the COD order was already created.
+        console.error("Could not link COD order to signed-in customer:", linkError);
       }
     }
 
