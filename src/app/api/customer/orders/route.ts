@@ -126,7 +126,25 @@ export async function GET(request: Request) {
         // Some legacy orders use catalog IDs rather than database product IDs.
         console.warn("Could not resolve order products by database ID:", error.message);
       } else {
-        products = (data || []) as typeof products;
+        const mainImageOverrides: Record<string, string> = {
+          "blemish-block-face-wash": "/products/blemish-block-face-wash-main.webp",
+          "velvet-touch-face-wash": "/products/velvet-touch-face-wash-main.webp",
+          "fullmoon-face-wash": "/products/fullmoon-face-wash-main.webp",
+          "blemish-block-face-serum": "/products/blemish-block-face-serum-main.webp",
+          "velvet-touch-face-serum": "/products/velvet-touch-face-serum-main.webp",
+          "fullmoon-face-serum": "/products/fullmoon-face-serum-main.webp",
+          "repair-shampoo": "/products/protein-shake-shampoo-main.webp",
+          "repair-conditioner": "/products/conditioner-main.webp",
+          "repair-hair-mask": "/products/milk-shake-hair-mask-main.webp",
+          "sunscreen-spf-50": "/products/sunscreen-main.webp",
+          "shower-gel": "/products/shower-gel-main.webp",
+        };
+        products = (data || []).map((product) => {
+          const item = product as typeof products[number];
+          const images = Array.isArray(item.images) ? item.images.filter(Boolean) : [];
+          const fallback = item.slug ? mainImageOverrides[item.slug] : undefined;
+          return { ...item, images: images.length ? images : fallback ? [fallback] : [] };
+        });
       }
     }
 
