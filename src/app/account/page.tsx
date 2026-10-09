@@ -154,14 +154,41 @@ export default function AccountPage() {
           <section id="order-tracking" className="mt-8 rounded-3xl bg-white border border-[var(--line)] p-6 md:p-8">
             <p className="text-xs uppercase tracking-[0.18em] text-[var(--warm-gold)]">Orders</p>
             <h2 className="font-display text-2xl text-[var(--deep-wine)] mt-2">Track your order</h2>
-            <p className="mt-2 text-sm text-[var(--muted)]">Enter your order number and the email used at checkout.</p>
-            <form onSubmit={(event) => {
+            <p className="mt-2 text-sm text-[var(--muted)]">Enter your order number and checkout email to verify and link an order to this account.</p>
+            <form onSubmit={async (event) => {
               event.preventDefault();
-              setOrderStatus("Order tracking will be available once your order database is connected. Please check your order confirmation email in the meantime.");
+              setOrderStatus("");
+              setOrdersError("");
+              try {
+                const { getSupabase } = await import("@/lib/supabase");
+                const { data } = await getSupabase().auth.getSession();
+                if (!data.session) throw new Error("Please log in again to link your order.");
+                const claimResponse = await fetch("/api/customer/orders", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + data.session.access_token,
+                  },
+                  body: JSON.stringify({ orderNumber, checkoutEmail: orderEmail }),
+                });
+                const claimResult = await claimResponse.json();
+                if (!claimResponse.ok) throw new Error(claimResult.error || "Could not link this order.");
+                setOrderStatus("Order linked successfully. Refreshing your order history…");
+                const ordersResponse = await fetch("/api/customer/orders", {
+                  headers: { Authorization: "Bearer " + data.session.access_token },
+                  cache: "no-store",
+                });
+                const ordersResult = await ordersResponse.json();
+                if (!ordersResponse.ok) throw new Error(ordersResult.error || "Order linked, but order history could not be refreshed.");
+                setRecentOrders(Array.isArray(ordersResult.orders) ? ordersResult.orders : []);
+                setOrderStatus("Order linked successfully. It should now appear in Your Recent Orders.");
+              } catch (err) {
+                setOrderStatus(err instanceof Error ? err.message : "Could not verify this order.");
+              }
             }} className="mt-5 grid gap-4 md:grid-cols-2">
               <input required value={orderNumber} onChange={(event) => setOrderNumber(event.target.value)} placeholder="Order number (e.g. HL-10234)" className="w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm" />
               <input required type="email" value={orderEmail} onChange={(event) => setOrderEmail(event.target.value)} placeholder="Email used at checkout" className="w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm" />
-              <button type="submit" className="md:col-span-2 rounded-full bg-[var(--deep-wine)] px-6 py-3.5 text-sm font-medium text-white hover:bg-[var(--ink)] transition-colors">Track order</button>
+              <button type="submit" className="md:col-span-2 rounded-full bg-[var(--deep-wine)] px-6 py-3.5 text-sm font-medium text-white hover:bg-[var(--ink)] transition-colors">Verify & link order</button>
             </form>
             {orderStatus && <p className="mt-5 rounded-xl bg-[var(--milk-sage)] border border-[var(--line)] px-5 py-4 text-sm text-[var(--muted)]">{orderStatus}</p>}
             <div className="mt-8 border-t border-[var(--line)] pt-6">
