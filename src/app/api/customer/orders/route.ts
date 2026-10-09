@@ -119,9 +119,9 @@ export async function GET(request: Request) {
     if (itemsError) throw itemsError;
 
     const productIds = Array.from(new Set((items || []).map((item) => String(item.product_id))));
-    let products: { id: string | number; name: string; slug?: string | null }[] = [];
+    let products: { id: string | number; name: string; slug?: string | null; images?: string[] | null }[] = [];
     if (productIds.length) {
-      const { data, error } = await admin.from("products").select("id,name,slug").in("id", productIds);
+      const { data, error } = await admin.from("products").select("id,name,slug,images").in("id", productIds);
       if (error) {
         // Some legacy orders use catalog IDs rather than database product IDs.
         console.warn("Could not resolve order products by database ID:", error.message);
