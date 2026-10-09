@@ -53,6 +53,24 @@ const productContentOverrides: Record<string, Partial<Product>> = {
     skin_hair_type: ["Dull Skin", "Uneven Skin Tone"],
     concern_tags: ["Brightening", "Uneven Skin Tone"],
   },
+  "blemish-block-face-wash": {
+    tagline: "Anti-acne face wash for blemish-prone skin",
+    description: "A daily cleansing face wash formulated with Tea Tree, Piroctone, Seaweed and Betaine. Designed to cleanse away daily impurities and excess oil while helping keep blemish-prone skin feeling fresh and comfortable.",
+    key_benefits: [
+      "Cleanses away daily impurities and excess oil",
+      "Helps keep blemish-prone skin feeling fresh",
+      "Cleanses without leaving skin feeling overly dry",
+    ],
+    key_ingredients: [
+      { name: "Tea Tree", explanation: "Helps care for blemish-prone skin and excess oil." },
+      { name: "Piroctone", explanation: "Helps maintain a clean-feeling complexion." },
+      { name: "Seaweed", explanation: "Helps condition skin and support a fresh-looking feel." },
+      { name: "Betaine", explanation: "Helps maintain moisture and skin comfort during cleansing." },
+    ],
+    full_ingredient_list: "Tea Tree, Piroctone, Seaweed, Betaine.",
+    skin_hair_type: ["Oily Skin", "Acne-Prone Skin"],
+    concern_tags: ["Acne", "Blemishes", "Oil Control"],
+  },
   "blemish-block-face-serum": {
     tagline: "Anti-acne serum for blemish-prone skin",
     description: "A targeted anti-acne serum formulated with 0.5% Salicylic Acid, 0.5% Succinic Acid, 5% Niacinamide and 2% Allantoin. Designed to help unclog pores, reduce the appearance of blemishes and excess oil, and support calmer-looking skin.",
