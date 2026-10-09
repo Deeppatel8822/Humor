@@ -84,9 +84,23 @@ export async function POST(request: Request) {
     );
     const firstOrderDiscount = firstOrderDiscountInr ? Math.round(subtotalInr * 0.10) : 0;
     const combinedDiscount = firstOrderDiscount + partnerDiscountInr + bundleSavingsInr;
+    // The database has a unique constraint on customers.phone. If the shipping
+    // phone already belongs to a customer with another email, reuse that customer's
+    // email for the RPC insert; the order is linked to the signed-in account below.
+    let rpcShipping = { ...shipping };
+    const { data: phoneOwner, error: phoneOwnerError } = await supabase
+      .from("customers")
+      .select("email")
+      .eq("phone", shipping.phone.trim())
+      .maybeSingle();
+    if (phoneOwnerError) throw phoneOwnerError;
+    if (phoneOwner?.email && String(phoneOwner.email).trim().toLowerCase() !== shipping.email.trim().toLowerCase()) {
+      rpcShipping = { ...rpcShipping, email: String(phoneOwner.email) };
+    }
+
     const { data, error } = await supabase.rpc("create_cod_order", {
       p_lines: rpcLines,
-      p_shipping: shipping,
+      p_shipping: rpcShipping,
       p_discount: combinedDiscount,
     });
     if (error) throw error;
@@ -94,54 +108,51 @@ export async function POST(request: Request) {
     const result = Array.isArray(data) ? data[0] : data;
     if (!result?.order_number) throw new Error("Could not create the COD order.");
 
-    // Ensure COD orders are linked to the signed-in account, even if the shipping
-    // email differs from the login email or the SQL function created a guest customer.
+    // Link the new order to the authenticated account without violating the
+    // unique customers.phone constraint when that phone is already used elsewhere.
     if (token) {
       try {
         const { data: authData, error: authError } = await supabase.auth.getUser(token);
         const user = authData.user;
-        if (!authError && user) {
-        let customerId: string | null = null;
-        if (user.email) {
-          const { data: customer, error: customerError } = await supabase
-            .from("customers")
-            .upsert(
-              {
-                email: user.email,
-                phone: user.phone || shipping.phone,
-                full_name: String(user.user_metadata?.full_name || user.user_metadata?.name || shipping.fullName),
-              },
-              { onConflict: "email" }
-            )
-            .select("id")
-            .single();
-          if (customerError) throw customerError;
-          customerId = customer.id;
-        } else if (user.phone) {
-          const { data: existingCustomer, error: lookupError } = await supabase
+        if (!authError && user?.email) {
+          let customerId: string | null = null;
+          const { data: emailCustomer, error: emailError } = await supabase
             .from("customers")
             .select("id")
-            .eq("phone", user.phone)
+            .eq("email", user.email.toLowerCase())
             .maybeSingle();
-          if (lookupError) throw lookupError;
-          if (existingCustomer) customerId = existingCustomer.id;
-          else {
+          if (emailError) throw emailError;
+          if (emailCustomer?.id) customerId = String(emailCustomer.id);
+
+          const accountPhone = user.phone || String(user.user_metadata?.phone || "");
+          if (!customerId && accountPhone) {
+            const { data: phoneCustomer, error: phoneError } = await supabase
+              .from("customers")
+              .select("id")
+              .eq("phone", accountPhone)
+              .maybeSingle();
+            if (phoneError) throw phoneError;
+            if (phoneCustomer?.id) customerId = String(phoneCustomer.id);
+          }
+
+          if (!customerId) {
             const { data: createdCustomer, error: createError } = await supabase
               .from("customers")
-              .insert({ phone: user.phone, email: shipping.email, full_name: shipping.fullName })
+              .insert({
+                email: user.email.toLowerCase(),
+                full_name: String(user.user_metadata?.full_name || user.user_metadata?.name || shipping.fullName),
+              })
               .select("id")
               .single();
             if (createError) throw createError;
-            customerId = createdCustomer.id;
+            customerId = String(createdCustomer.id);
           }
-        }
-          if (customerId) {
-            const { error: linkError } = await supabase
-              .from("orders")
-              .update({ customer_id: customerId })
-              .eq("order_number", String(result.order_number));
-            if (linkError) throw linkError;
-          }
+
+          const { error: linkError } = await supabase
+            .from("orders")
+            .update({ customer_id: customerId })
+            .eq("order_number", String(result.order_number));
+          if (linkError) throw linkError;
         }
       } catch (linkError) {
         // Do not report a failed checkout after the COD order was already created.
