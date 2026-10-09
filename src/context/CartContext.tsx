@@ -62,6 +62,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [lines, hydrated]);
 
   function addItem(product: Product, quantity = 1) {
+    if (typeof window !== "undefined") {
+      window.setTimeout(() => window.dispatchEvent(new CustomEvent("humor-open-cart-popup")), 0);
+    }
     setLines((prev) => {
       const existing = prev.find((l) => l.productId === product.id);
       if (existing) {
