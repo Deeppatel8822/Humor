@@ -341,7 +341,7 @@ export const products: Product[] = [
     is_new: true,
     rating: 4.6,
     review_count: 87,
-  }
+  },
   // ---- Body Care ----
   {
     ...base,
