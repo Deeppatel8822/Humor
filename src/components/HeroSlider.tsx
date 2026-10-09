@@ -47,11 +47,9 @@ export default function HeroSlider() {
     if (paused) return;
     const timer = window.setInterval(() => {
       setActive((current) => (current + 1) % slides.length);
-    }, 5000);
+    }, 5600);
     return () => window.clearInterval(timer);
   }, [paused]);
-
-  const slide = slides[active];
 
   return (
     <section
@@ -82,19 +80,36 @@ export default function HeroSlider() {
       aria-label="Humor Luxury featured collection"
     >
       <div className="relative w-full overflow-hidden">
-        <Link
-          href={slide.href}
-          aria-label={slide.cta}
-          className="block w-full"
-          onClick={(event) => event.stopPropagation()}
-        >
-          <img
-            src={slide.heroImage}
-            alt="Humor Luxury featured collection"
-            className="block h-auto w-full select-none transition-transform duration-700 ease-out hover:scale-[1.01]"
-            draggable={false}
-          />
-        </Link>
+        {/* Keep the natural image ratio as the responsive banner height. */}
+        <img
+          src={slides[0].heroImage}
+          alt=""
+          aria-hidden="true"
+          className="block h-auto w-full opacity-0"
+          draggable={false}
+        />
+        {slides.map((slide, index) => (
+          <Link
+            key={slide.heroImage}
+            href={slide.href}
+            aria-label={slide.cta}
+            tabIndex={active === index ? 0 : -1}
+            aria-hidden={active !== index}
+            className={"absolute inset-0 block w-full overflow-hidden transition-opacity duration-1000 ease-in-out " + (
+              active === index ? "z-10 opacity-100 pointer-events-auto" : "z-0 opacity-0 pointer-events-none"
+            )}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <img
+              src={slide.heroImage}
+              alt="Humor Luxury featured collection"
+              className={"humor-banner-image block h-full w-full select-none object-cover " + (
+                active === index ? "humor-banner-image-active" : ""
+              )}
+              draggable={false}
+            />
+          </Link>
+        ))}
       </div>
 
       <div className="absolute bottom-0 left-0 right-0 z-20 flex items-center justify-center gap-2 py-4">
@@ -111,4 +126,4 @@ export default function HeroSlider() {
       </div>
     </section>
   );
-} 
+}
