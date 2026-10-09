@@ -74,13 +74,13 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             <div className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[var(--moss)]" />{product.stock_quantity > 0 ? "In stock, ready to ship" : "Out of stock"}</div>
             <div className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[var(--moss)]" />Delivered in 3–5 business days</div>
             <div className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[var(--moss)]" />Secure checkout via Razorpay</div>
-            <div className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[var(--moss)]" />Dermatologist tested</div>
+            <div className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[var(--moss)]" />Dermatologically tested</div>
           </div>
         </div>
       </div>
       <div className="grid md:grid-cols-2 gap-16 mb-20">
         <div><h2 className="font-display text-2xl text-[var(--deep-wine)] mb-5">Key benefits</h2><ul className="space-y-3">{product.key_benefits.map((b) => <li key={b} className="flex gap-3 text-sm text-[var(--ink)]/85"><span className="text-[var(--warm-gold)] mt-0.5">&#10003;</span>{b}</li>)}</ul><h2 className="font-display text-2xl text-[var(--deep-wine)] mt-10 mb-2">{product.category === "haircare" ? "Suitable for" : "Skin type"}</h2><div className="flex flex-wrap gap-2">{product.skin_hair_type.map((t) => <span key={t} className="text-xs px-3 py-1.5 rounded-full bg-[var(--milk-sage)] text-[var(--deep-wine)]">{t}</span>)}</div></div>
-        <div><h2 className="font-display text-2xl text-[var(--deep-wine)] mb-5">Key ingredients</h2><div className="space-y-4">{product.key_ingredients.map((ing) => <div key={ing.name}><div className="text-sm font-medium text-[var(--deep-wine)]">{ing.name}</div><div className="text-xs text-[var(--muted)] mt-0.5">{ing.explanation}</div></div>)}</div>{product.full_ingredient_list && <details className="mt-6 text-xs text-[var(--muted)]"><summary className="cursor-pointer text-[var(--deep-wine)] font-medium">Full ingredient list</summary><p className="mt-2 leading-relaxed">{product.full_ingredient_list}</p></details>}</div>
+        <div><h2 className="font-display text-2xl text-[var(--deep-wine)] mb-5">Key ingredients</h2><div className="space-y-4">{product.key_ingredients.map((ing) => <div key={ing.name}><div className="text-sm font-medium text-[var(--deep-wine)]">{ing.name}</div><div className="text-xs text-[var(--muted)] mt-0.5">{ing.explanation}</div></div>)}</div></div>
       </div>
       {product.how_to_use && <div className="mb-20 bg-[var(--milk-sage)] border border-[var(--line)] rounded-3xl p-8 md:p-10"><h2 className="font-display text-2xl text-[var(--deep-wine)] mb-3">How to use</h2><p className="text-sm text-[var(--ink)]/85 leading-relaxed max-w-2xl">{product.how_to_use}</p></div>}
       <CustomerReviews product={product} />
