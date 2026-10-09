@@ -54,22 +54,21 @@ const productContentOverrides: Record<string, Partial<Product>> = {
     concern_tags: ["Brightening", "Uneven Skin Tone"],
   },
   "fullmoon-face-serum": {
-    tagline: "Brightening serum for dull, uneven-looking skin",
-    description: "A targeted brightening serum designed to help reduce the look of dullness and uneven skin tone. Its selected ingredients support smoother-looking skin and a fresher, more radiant appearance with consistent use.",
+    tagline: "Whitening and brightening serum for uneven-looking skin tone",
+    description: "A targeted skin-brightening serum formulated with 1% Kojic Acid, 1% Hyaluronic Acid and 1% Pro-Vitamin B5. Designed to help reduce the appearance of dark spots and uneven tone while hydrating skin for a smoother, more radiant-looking complexion.",
     key_benefits: [
-      "Helps visibly brighten dull-looking skin",
-      "Helps improve the appearance of uneven skin tone",
-      "Supports smoother-looking skin texture",
+      "Helps improve the appearance of dark spots and uneven skin tone",
+      "Supports a brighter, more even-looking complexion",
+      "Hydrates skin and helps maintain a soft, comfortable feel",
     ],
     key_ingredients: [
-      { name: "Seaweed", explanation: "Helps condition skin and support a fresh-looking complexion." },
-      { name: "Glycolic Acid", explanation: "An exfoliating AHA that helps smooth the look of rough texture and dullness." },
-      { name: "Aloe Vera Extract", explanation: "Helps soothe and hydrate the skin." },
-      { name: "Niacinamide", explanation: "Helps improve the look of uneven tone and supports the skin barrier." },
+      { name: "Kojic Acid 1%", explanation: "Helps reduce the appearance of dark spots and uneven pigmentation for a brighter-looking complexion." },
+      { name: "Hyaluronic Acid 1%", explanation: "Helps attract and retain moisture so skin looks plump and hydrated." },
+      { name: "Pro-Vitamin B5 1% (Panthenol)", explanation: "Helps soothe skin and support moisture retention." },
     ],
-    full_ingredient_list: "Seaweed, Glycolic Acid, Aloe Vera Extract, Niacinamide.",
-    skin_hair_type: ["Dull Skin", "Uneven Skin Tone"],
-    concern_tags: ["Brightening", "Uneven Skin Tone"],
+    full_ingredient_list: "1% Kojic Acid, 1% Hyaluronic Acid, 1% Pro-Vitamin B5.",
+    skin_hair_type: ["Uneven Skin Tone", "Dull Skin"],
+    concern_tags: ["Whitening", "Brightening", "Dark Spots"],
   },
 };
 
