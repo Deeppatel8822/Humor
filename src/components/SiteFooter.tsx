@@ -34,7 +34,7 @@ export default function SiteFooter() {
               Humor <span className="text-[var(--warm-gold)] italic">Luxury</span>
             </Link>
             <p className="text-sm text-[var(--milk-sage)]/80 font-medium leading-7 max-w-xs">
-              Dermatologist-tested, cruelty-free skincare, haircare and bodycare,
+              Paraben-free, sulphate-free and cruelty-free skincare, haircare and bodycare,
               thoughtfully made in India.
             </p>
             <div className="flex gap-5 mt-6 text-sm text-[var(--milk-sage)]/80 font-medium">
