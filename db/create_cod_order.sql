@@ -26,6 +26,7 @@ declare
   v_product record;
   v_catalog_id integer;
   v_quantity integer;
+  v_customer_phone text;
 begin
   if jsonb_array_length(coalesce(p_lines, '[]'::jsonb)) = 0 then
     raise exception 'Order is empty';
@@ -71,14 +72,30 @@ begin
 
   v_total := greatest(v_subtotal - greatest(coalesce(p_discount, 0), 0), 0) + v_shipping + v_cod_charge;
 
+  -- The order owner is identified by p_shipping.email (set to the signed-in
+  -- account email by the API). The shipping phone belongs to the delivery recipient
+  -- and may already belong to a different customer, so never steal/reassign it.
+  v_customer_phone := trim(p_shipping->>'phone');
+  if exists (
+    select 1
+      from public.customers c
+     where c.phone = v_customer_phone
+       and lower(c.email) <> lower(trim(p_shipping->>'email'))
+  ) then
+    v_customer_phone := null;
+  end if;
+
   insert into public.customers (email, phone, full_name)
   values (
     lower(trim(p_shipping->>'email')),
-    trim(p_shipping->>'phone'),
+    v_customer_phone,
     trim(p_shipping->>'fullName')
   )
   on conflict (email) do update set
-    phone = excluded.phone,
+    phone = case
+      when excluded.phone is null then customers.phone
+      else excluded.phone
+    end,
     full_name = excluded.full_name
   returning id into v_customer_id;
 
