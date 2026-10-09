@@ -35,6 +35,27 @@ const mainImageOverrides: Record<string, string> = {
 };
 
 const productContentOverrides: Record<string, Partial<Product>> = {
+  "velvet-touch-face-wash": {
+    tagline: "Soft creamy-foam face wash for soft, smooth skin",
+    description: "A soap-based face wash that creates a soft, creamy foam to cleanse daily impurities and excess oil. Formulated with Coconut Milk, Liquorice, Aloe Vera Extract, Niacinamide, Pro-Vitamin B5, Fatty Acids and Betaine to help soften and smooth the feel of skin while supporting a fresh, balanced-looking complexion.",
+    key_benefits: [
+      "Soft, creamy foam for an enjoyable cleansing experience",
+      "Helps leave skin feeling soft, smooth and refreshed",
+      "Helps remove excess oil while maintaining skin comfort",
+    ],
+    key_ingredients: [
+      { name: "Coconut Milk", explanation: "Helps condition skin for a soft, nourished feel." },
+      { name: "Liquorice", explanation: "Helps improve the appearance of uneven-looking skin tone." },
+      { name: "Aloe Vera Extract", explanation: "Helps soothe and hydrate skin." },
+      { name: "Niacinamide", explanation: "Helps support the skin barrier and balance the look of oiliness." },
+      { name: "Pro-Vitamin B5", explanation: "Helps maintain moisture and skin comfort." },
+      { name: "Fatty Acids", explanation: "Help condition skin and support a smooth-feeling finish." },
+      { name: "Betaine", explanation: "Helps maintain hydration and comfort during cleansing." },
+    ],
+    full_ingredient_list: "Coconut Milk, Liquorice, Aloe Vera Extract, Niacinamide, Pro-Vitamin B5, Fatty Acids, Betaine.",
+    skin_hair_type: ["All Skin Types", "Oily Skin"],
+    concern_tags: ["Softening", "Smoothing", "Oil Control"],
+  },
   "fullmoon-face-wash": {
     tagline: "Brightening face wash for dull, uneven-looking skin",
     description: "A brightening cleanser designed to wash away daily impurities and help improve the look of dull, uneven skin tone. Aloe Vera Extract helps keep the cleansing experience feeling soothing and comfortable.",
