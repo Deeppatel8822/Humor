@@ -163,7 +163,7 @@ a {
 
 /* iPhone-inspired glass finish for buttons across the storefront.
    Preserve each button's existing brand color; add a translucent sheen instead. */
-:where(button, [role="button"], input[type="button"], input[type="submit"], input[type="reset"]) {
+:where(button, [role="button"], input[type="button"], input[type="submit"], input[type="reset"], a[class*="rounded-full"][class*="bg-"], a[class*="rounded-xl"][class*="bg-"], a[class*="rounded-2xl"][class*="bg-"]) {
   border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.48),
@@ -183,7 +183,7 @@ a {
     filter 180ms ease;
 }
 
-:where(button, [role="button"], input[type="button"], input[type="submit"], input[type="reset"]):hover:not(:disabled) {
+:where(button, [role="button"], input[type="button"], input[type="submit"], input[type="reset"], a[class*="rounded-full"][class*="bg-"], a[class*="rounded-xl"][class*="bg-"], a[class*="rounded-2xl"][class*="bg-"]):hover:not(:disabled) {
   transform: translateY(-1px);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.58),
@@ -191,21 +191,21 @@ a {
   filter: saturate(1.06);
 }
 
-:where(button, [role="button"], input[type="button"], input[type="submit"], input[type="reset"]):active:not(:disabled) {
+:where(button, [role="button"], input[type="button"], input[type="submit"], input[type="reset"], a[class*="rounded-full"][class*="bg-"], a[class*="rounded-xl"][class*="bg-"], a[class*="rounded-2xl"][class*="bg-"]):active:not(:disabled) {
   transform: translateY(0) scale(0.985);
   box-shadow:
     inset 0 1px 2px rgba(48, 35, 59, 0.12),
     0 2px 7px rgba(48, 35, 59, 0.10);
 }
 
-:where(button, [role="button"], input[type="button"], input[type="submit"], input[type="reset"]):disabled {
+:where(button, [role="button"], input[type="button"], input[type="submit"], input[type="reset"], a[class*="rounded-full"][class*="bg-"], a[class*="rounded-xl"][class*="bg-"], a[class*="rounded-2xl"][class*="bg-"]):disabled {
   cursor: not-allowed;
   filter: grayscale(0.15);
   opacity: 0.65;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :where(button, [role="button"], input[type="button"], input[type="submit"], input[type="reset"]) {
+  :where(button, [role="button"], input[type="button"], input[type="submit"], input[type="reset"], a[class*="rounded-full"][class*="bg-"], a[class*="rounded-xl"][class*="bg-"], a[class*="rounded-2xl"][class*="bg-"]) {
     transition: none;
   }
 }
