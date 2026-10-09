@@ -84,18 +84,15 @@ export async function POST(request: Request) {
     );
     const firstOrderDiscount = firstOrderDiscountInr ? Math.round(subtotalInr * 0.10) : 0;
     const combinedDiscount = firstOrderDiscount + partnerDiscountInr + bundleSavingsInr;
-    // The database has a unique constraint on customers.phone. If the shipping
-    // phone already belongs to a customer with another email, reuse that customer's
-    // email for the RPC insert; the order is linked to the signed-in account below.
+    // The account that is logged in owns the order. Shipping email/phone are
+    // delivery-contact details and must not decide which account sees the order.
     let rpcShipping = { ...shipping };
-    const { data: phoneOwner, error: phoneOwnerError } = await supabase
-      .from("customers")
-      .select("email")
-      .eq("phone", shipping.phone.trim())
-      .maybeSingle();
-    if (phoneOwnerError) throw phoneOwnerError;
-    if (phoneOwner?.email && String(phoneOwner.email).trim().toLowerCase() !== shipping.email.trim().toLowerCase()) {
-      rpcShipping = { ...rpcShipping, email: String(phoneOwner.email) };
+    if (token) {
+      const { data: accountData, error: accountError } = await supabase.auth.getUser(token);
+      if (accountError || !accountData.user?.email) {
+        return NextResponse.json({ error: "Your login session expired. Please log in again before ordering." }, { status: 401 });
+      }
+      rpcShipping.email = accountData.user.email.toLowerCase();
     }
 
     const { data, error } = await supabase.rpc("create_cod_order", {
