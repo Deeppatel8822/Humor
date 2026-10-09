@@ -12,19 +12,34 @@ export async function GET(request: Request) {
     const user = authData.user;
     if (authError || !user) return NextResponse.json({ error: "Your session has expired. Please log in again." }, { status: 401 });
 
-    let customerQuery = admin.from("customers").select("id,email,phone").limit(1);
-    if (user.email) customerQuery = customerQuery.eq("email", user.email);
-    else if (user.phone) customerQuery = customerQuery.eq("phone", user.phone);
-    else return NextResponse.json({ orders: [] });
-
-    const { data: customer, error: customerError } = await customerQuery.maybeSingle();
-    if (customerError) throw customerError;
-    if (!customer) return NextResponse.json({ orders: [] });
+    const customerIds: string[] = [];
+    if (user.email) {
+      const { data: emailCustomer, error: emailError } = await admin
+        .from("customers")
+        .select("id")
+        .eq("email", user.email)
+        .maybeSingle();
+      if (emailError) throw emailError;
+      if (emailCustomer?.id) customerIds.push(String(emailCustomer.id));
+    }
+    // COD orders may have been saved against the checkout phone or shipping email.
+    if (user.phone) {
+      const { data: phoneCustomer, error: phoneError } = await admin
+        .from("customers")
+        .select("id")
+        .eq("phone", user.phone)
+        .maybeSingle();
+      if (phoneError) throw phoneError;
+      if (phoneCustomer?.id && !customerIds.includes(String(phoneCustomer.id))) {
+        customerIds.push(String(phoneCustomer.id));
+      }
+    }
+    if (!customerIds.length) return NextResponse.json({ orders: [] });
 
     const { data: orders, error: ordersError } = await admin
       .from("orders")
       .select("id,order_number,status,subtotal_inr,discount_inr,shipping_inr,total_inr,payment_status,created_at")
-      .eq("customer_id", customer.id)
+      .in("customer_id", customerIds)
       .order("created_at", { ascending: false })
       .limit(20);
     if (ordersError) throw ordersError;
