@@ -6,7 +6,7 @@ export default function YourBusinessPage() {
       <section className="relative overflow-hidden border-b border-white/10 bg-[var(--ink)]">
         <div className="relative mx-auto max-w-7xl px-5 py-16 md:px-8 md:py-24">
           <div className="max-w-3xl">
-            <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-[var(--warm-gold)]/50 bg-[var(--warm-gold)]/10 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--warm-gold)]"><span className="h-2 w-2 rounded-full bg-[var(--warm-gold)]" aria-hidden="true" /> Humor Business Programme</p>
+            <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#D49A6A] bg-[#D49A6A] px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.22em] text-[#30233B] shadow-[0_6px_22px_rgba(212,154,106,0.22)]"><span className="h-2 w-2 rounded-full bg-[#30233B]" aria-hidden="true" /> Humor Business Programme</p>
             <h1 className="font-display text-4xl leading-[1.08] text-white md:text-6xl">Your Business.<br /><span className="text-[var(--warm-gold)]">Your Audience.</span><br />Your Opportunity.</h1>
             <p className="mt-5 max-w-2xl text-base leading-7 text-white/70 md:text-lg">
               A dedicated programme for influencers, salon and parlour owners, beauty professionals, and home-based beauty businesses.
