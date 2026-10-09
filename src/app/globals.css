@@ -90,3 +90,17 @@ body {
     padding-right: 1.5rem;
   }
 }
+
+
+/* Keep the homepage trust strip compact on mobile screens. */
+@media (max-width: 767px) {
+  .usp-marquee {
+    padding-block: 0 !important;
+  }
+
+  .usp-marquee-group > div > span:first-child {
+    width: 24px;
+    height: 24px;
+    font-size: 11px;
+  }
+}
