@@ -308,7 +308,7 @@ export const products: Product[] = [
     is_new: false,
     rating: 4.4,
     review_count: 133,
-  }
+  },
   {
     ...base,
     id: "10",
