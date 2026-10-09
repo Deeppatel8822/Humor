@@ -69,32 +69,6 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="bg-[var(--deep-wine)] text-white">
-        <div className="max-w-7xl mx-auto px-5 md:px-8 py-20">
-          <div className="max-w-2xl mb-12">
-            <p className="text-xs uppercase tracking-[0.18em] text-[var(--warm-gold)] mb-4">Our Standards</p>
-            <h2 className="font-display text-3xl md:text-4xl mb-4">Beauty with standards you can trust.</h2>
-            <p className="text-white/70 leading-7">We want you to know what you are putting into your routine and why each product belongs there.</p>
-          </div>
-          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-5">
-            {values.map((item) => (
-              <div key={item.number} className="border border-white/15 rounded-2xl p-6">
-                <div className="text-[11px] tracking-[0.16em] text-[var(--warm-gold)] font-semibold mb-5">{item.number}</div>
-                <h3 className="font-display text-xl mb-3">{item.title}</h3>
-                <p className="text-sm text-white/65 leading-6">{item.text}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="max-w-5xl mx-auto px-5 md:px-8 py-20 text-center">
-        <p className="text-xs uppercase tracking-[0.18em] text-[var(--warm-gold)] mb-4">The Humor Luxury Approach</p>
-        <h2 className="font-display text-3xl md:text-4xl text-[var(--deep-wine)] mb-6">Cleanse. Treat. Protect. Repeat.</h2>
-        <p className="text-[var(--muted)] leading-7 max-w-2xl mx-auto">We believe consistency beats complexity. Build a routine around your concern, use the right products in the right order, and give your skin and hair the time they need.</p>
-        <div className="mt-8"><Link href="/build-your-routine" className="inline-flex items-center rounded-full bg-[var(--deep-wine)] text-white px-7 py-3.5 text-sm font-medium hover:bg-[var(--ink)] transition-colors">Build Your Routine →</Link></div>
-      </section>
-
       <section className="bg-[var(--milk-sage)] border-y border-[var(--line)]">
         <div className="max-w-7xl mx-auto px-5 md:px-8 py-20">
           <div className="grid md:grid-cols-2 gap-12 items-center">
