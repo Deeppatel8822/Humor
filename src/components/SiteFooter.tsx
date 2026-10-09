@@ -123,7 +123,7 @@ export default function SiteFooter() {
 
         <div className="mt-8 pt-5 border-t border-[#6f168a]/30 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-[var(--milk-sage)]/70 font-medium">
           <p>© {new Date().getFullYear()} Humor Luxury. All rights reserved.</p>
-          <p>Made in India · Dermatologist Tested · Cruelty Free</p>
+          <p>Your Beauty. Your Ritual. Your Humor.</p>
         </div>
       </div>
     </footer>
