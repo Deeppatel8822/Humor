@@ -2,16 +2,16 @@
 @import "tailwindcss";
 
 :root {
-  --paper: #FFFFFF;
+  --paper: #FFFDFF;
   --milk-sage: #F7F2FA;       /* soft luxury lavender-ivory */
-  --deep-wine: #6E4A9A;       /* rich plum */
-  --wine-soft: #583A7D;       /* deep plum */
+  --deep-wine: #7047A0;       /* rich plum */
+  --wine-soft: #50336F;       /* deep plum */
   --warm-gold: #C58A62;       /* champagne accent */
   --dusty-rose: #C98AA8;      /* muted blush */
   --moss: #74A9A3;             /* muted aqua accent */
   --ink: #30233B;             /* deep plum text */
-  --line: #DED4E7;             /* readable lavender borders */
-  --muted: #514957;            /* readable plum-grey */
+  --line: #D9CDE3;             /* readable lavender borders */
+  --muted: #5B5062;            /* readable plum-grey */
 }
 
 body {
@@ -126,4 +126,36 @@ body {
     animation: none !important;
     transform: none;
   }
+}
+
+
+/* Unified Humor Luxury contrast system: the footer's deep plum is the anchor. */
+html {
+  background: var(--paper);
+  color: var(--ink);
+  color-scheme: light;
+}
+
+::selection {
+  color: #FFFFFF;
+  background: var(--deep-wine);
+}
+
+a {
+  text-underline-offset: 3px;
+}
+
+:where(input, select, textarea) {
+  border-color: var(--line);
+}
+
+:where(input, select, textarea):focus-visible {
+  outline: 2px solid var(--deep-wine);
+  outline-offset: 2px;
+}
+
+/* Consistent keyboard focus that remains visible on light and dark surfaces. */
+:where(a, button):focus-visible {
+  outline: 2px solid var(--warm-gold);
+  outline-offset: 3px;
 }
