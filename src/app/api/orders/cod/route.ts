@@ -94,6 +94,56 @@ export async function POST(request: Request) {
     const result = Array.isArray(data) ? data[0] : data;
     if (!result?.order_number) throw new Error("Could not create the COD order.");
 
+    // Ensure COD orders are linked to the signed-in account, even if the shipping
+    // email differs from the login email or the SQL function created a guest customer.
+    if (token) {
+      const { data: authData, error: authError } = await supabase.auth.getUser(token);
+      const user = authData.user;
+      if (!authError && user) {
+        let customerId: string | null = null;
+        if (user.email) {
+          const { data: customer, error: customerError } = await supabase
+            .from("customers")
+            .upsert(
+              {
+                email: user.email,
+                phone: user.phone || shipping.phone,
+                full_name: String(user.user_metadata?.full_name || user.user_metadata?.name || shipping.fullName),
+              },
+              { onConflict: "email" }
+            )
+            .select("id")
+            .single();
+          if (customerError) throw customerError;
+          customerId = customer.id;
+        } else if (user.phone) {
+          const { data: existingCustomer, error: lookupError } = await supabase
+            .from("customers")
+            .select("id")
+            .eq("phone", user.phone)
+            .maybeSingle();
+          if (lookupError) throw lookupError;
+          if (existingCustomer) customerId = existingCustomer.id;
+          else {
+            const { data: createdCustomer, error: createError } = await supabase
+              .from("customers")
+              .insert({ phone: user.phone, email: shipping.email, full_name: shipping.fullName })
+              .select("id")
+              .single();
+            if (createError) throw createError;
+            customerId = createdCustomer.id;
+          }
+        }
+        if (customerId) {
+          const { error: linkError } = await supabase
+            .from("orders")
+            .update({ customer_id: customerId })
+            .eq("order_number", String(result.order_number));
+          if (linkError) throw linkError;
+        }
+      }
+    }
+
     if (partnerMatch) {
       const billedProductAmount = Math.max(0, subtotalInr - combinedDiscount);
       try {
