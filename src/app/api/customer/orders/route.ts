@@ -23,11 +23,12 @@ export async function GET(request: Request) {
       if (emailCustomer?.id) customerIds.push(String(emailCustomer.id));
     }
     // COD orders may have been saved against the checkout phone or shipping email.
-    if (user.phone) {
+    const accountPhone = user.phone || String(user.user_metadata?.phone || "");
+    if (accountPhone) {
       const { data: phoneCustomer, error: phoneError } = await admin
         .from("customers")
         .select("id")
-        .eq("phone", user.phone)
+        .eq("phone", accountPhone)
         .maybeSingle();
       if (phoneError) throw phoneError;
       if (phoneCustomer?.id && !customerIds.includes(String(phoneCustomer.id))) {
