@@ -1,4 +1,5 @@
 import Link from "next/link";
+import HumorValues from "@/components/HumorValues";
 
 export const metadata = {
   title: "About Humor Luxury | Thoughtfully Made Beauty",
@@ -38,19 +39,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="bg-[var(--milk-sage)] border-y border-[var(--line)]">
-        <div className="max-w-5xl mx-auto px-5 md:px-8 py-16 md:py-20">
-          <div className="max-w-3xl">
-            <p className="text-xs uppercase tracking-[0.18em] text-[var(--warm-gold)] mb-4">Why Humor Luxury</p>
-            <h2 className="font-display text-3xl md:text-4xl text-[var(--deep-wine)] mb-6">We wanted beauty to feel simpler.</h2>
-            <div className="space-y-5 text-[var(--ink)]/75 leading-7">
-              <p>Beauty can sometimes feel overwhelming. Too many products, complicated routines and endless promises.</p>
-              <p>Humor Luxury takes a more considered approach. We create products around specific beauty needs and bring them together into routines that are easy to understand and easy to follow.</p>
-              <p>Every product has a purpose. Every step has a reason. And every routine is designed to fit naturally into everyday life.</p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <HumorValues />
 
       <section className="max-w-7xl mx-auto px-5 md:px-8 py-20">
         <div className="max-w-2xl mb-12">
