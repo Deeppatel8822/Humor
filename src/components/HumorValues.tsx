@@ -66,7 +66,7 @@ export default function HumorValues() {
     const timers: ReturnType<typeof setTimeout>[] = [];
     brandValues.forEach((item, index) => {
       const title = item.title;
-      const delay = index * 260;
+      const delay = index * 420;
       const startTimer = setTimeout(() => {
         let character = 0;
         const typeNext = () => {
@@ -77,7 +77,7 @@ export default function HumorValues() {
             )
           );
           if (character < title.length) {
-            const timer = setTimeout(typeNext, 42);
+            const timer = setTimeout(typeNext, 60);
             timers.push(timer);
           }
         };
@@ -118,11 +118,11 @@ export default function HumorValues() {
             return (
               <article
                 key={item.letter}
-                className="group relative min-h-[250px] overflow-hidden rounded-2xl border border-white/15 bg-white/[0.035] p-6 transition duration-500 hover:-translate-y-1 hover:border-[var(--warm-gold)]/70 hover:bg-white/[0.07] md:min-h-[300px] md:p-7"
+                className="group relative min-h-[250px] overflow-hidden rounded-2xl border border-white/15 bg-white/[0.035] p-6 transition duration-700 hover:-translate-y-1 hover:border-[var(--warm-gold)]/70 hover:bg-white/[0.07] md:min-h-[300px] md:p-7"
                 style={{
                   opacity: started ? 1 : 0,
                   transform: started ? "translateY(0)" : "translateY(18px)",
-                  transitionDelay: `${index * 110}ms`,
+                  transitionDelay: `${index * 180}ms`,
                 }}
               >
                 <div className="mb-7 flex items-start justify-between">
@@ -147,7 +147,7 @@ export default function HumorValues() {
                   )}
                 </h3>
                 <p
-                  className="mt-4 text-sm leading-6 text-white/60 transition-opacity duration-500"
+                  className="mt-4 text-sm leading-6 text-white/60 transition-opacity duration-700"
                   style={{ opacity: isTyped ? 1 : 0 }}
                 >
                   {item.description}
