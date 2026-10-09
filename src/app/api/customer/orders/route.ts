@@ -1,6 +1,70 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 
+export async function POST(request: Request) {
+  try {
+    const header = request.headers.get("authorization") || "";
+    const token = header.startsWith("Bearer ") ? header.slice(7) : "";
+    if (!token) return NextResponse.json({ error: "Please log in to link your order." }, { status: 401 });
+
+    const body = await request.json() as { orderNumber?: string; checkoutEmail?: string };
+    const orderNumber = String(body.orderNumber || "").trim();
+    const checkoutEmail = String(body.checkoutEmail || "").trim().toLowerCase();
+    if (!orderNumber || !checkoutEmail) {
+      return NextResponse.json({ error: "Enter your order number and the email used at checkout." }, { status: 400 });
+    }
+
+    const admin = supabaseAdmin();
+    const { data: authData, error: authError } = await admin.auth.getUser(token);
+    const user = authData.user;
+    if (authError || !user?.email) {
+      return NextResponse.json({ error: "Your account must have a verified email to link an order." }, { status: 401 });
+    }
+
+    const { data: order, error: orderError } = await admin
+      .from("orders")
+      .select("id,customer_id,order_number")
+      .eq("order_number", orderNumber)
+      .maybeSingle();
+    if (orderError) throw orderError;
+    if (!order?.customer_id) {
+      return NextResponse.json({ error: "We could not find that order. Check the order number and try again." }, { status: 404 });
+    }
+
+    const { data: checkoutCustomer, error: checkoutCustomerError } = await admin
+      .from("customers")
+      .select("id,email")
+      .eq("id", order.customer_id)
+      .maybeSingle();
+    if (checkoutCustomerError) throw checkoutCustomerError;
+    if (!checkoutCustomer?.email || String(checkoutCustomer.email).trim().toLowerCase() !== checkoutEmail) {
+      return NextResponse.json({ error: "The checkout email does not match this order. Please enter the email used when placing it." }, { status: 403 });
+    }
+
+    const { data: accountCustomer, error: accountCustomerError } = await admin
+      .from("customers")
+      .upsert({
+        email: user.email.toLowerCase(),
+        phone: user.phone || String(user.user_metadata?.phone || "") || null,
+        full_name: String(user.user_metadata?.full_name || user.user_metadata?.name || "") || null,
+      }, { onConflict: "email" })
+      .select("id")
+      .single();
+    if (accountCustomerError) throw accountCustomerError;
+
+    const { error: linkError } = await admin
+      .from("orders")
+      .update({ customer_id: accountCustomer.id })
+      .eq("id", order.id);
+    if (linkError) throw linkError;
+
+    return NextResponse.json({ success: true, message: "Order linked to your account." });
+  } catch (error) {
+    console.error("Order account linking error:", error);
+    return NextResponse.json({ error: "Could not link this order right now. Please try again." }, { status: 500 });
+  }
+}
+
 export async function GET(request: Request) {
   try {
     const header = request.headers.get("authorization") || "";
