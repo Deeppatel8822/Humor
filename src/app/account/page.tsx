@@ -21,6 +21,14 @@ export default function AccountPage() {
   const [partner, setPartner] = useState<Partner | null>(null);
   const [application, setApplication] = useState<any>(null);
   const [error, setError] = useState("");
+  const [profile, setProfile] = useState({ email: "", fullName: "", mobile: "", address: "" });
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileMessage, setProfileMessage] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
   async function load() {
     setLoading(true);
@@ -34,6 +42,16 @@ export default function AccountPage() {
         return;
       }
       setLoggedIn(true);
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData.user;
+      if (user) {
+        setProfile({
+          email: user.email || "",
+          fullName: String(user.user_metadata?.full_name || user.user_metadata?.name || ""),
+          mobile: String(user.user_metadata?.phone || user.phone || ""),
+          address: String(user.user_metadata?.address || ""),
+        });
+      }
       const response = await fetch("/api/marketing-partner/application", {
         headers: { Authorization: "Bearer " + data.session.access_token },
         cache: "no-store",
@@ -89,13 +107,75 @@ export default function AccountPage() {
           <Link href="/track-order" className="rounded-2xl bg-white border border-[var(--line)] p-5 hover:border-[var(--deep-wine)]">
             <p className="text-xs text-[var(--muted)]">Orders</p><p className="mt-2 font-medium text-[var(--ink)]">Track your orders →</p>
           </Link>
-          <div className="rounded-2xl bg-white border border-[var(--line)] p-5">
-            <p className="text-xs text-[var(--muted)]">Profile</p><p className="mt-2 font-medium text-[var(--ink)]">Your Humor Luxury account</p>
-          </div>
+          <Link href="#profile-settings" className="rounded-2xl bg-white border border-[var(--line)] p-5 hover:border-[var(--deep-wine)]">
+            <p className="text-xs text-[var(--muted)]">Profile</p><p className="mt-2 font-medium text-[var(--ink)]">View or edit your details →</p>
+          </Link>
           <Link href="/marketing-partner" className="rounded-2xl bg-white border border-[var(--line)] p-5 hover:border-[var(--deep-wine)]">
             <p className="text-xs text-[var(--muted)]">Partner</p><p className="mt-2 font-medium text-[var(--ink)]">{partner?.status === "approved" ? "Marketing Partner dashboard →" : "Become a Marketing Partner →"}</p>
           </Link>
         </div>
+
+        <section id="profile-settings" className="mt-8 grid gap-5 lg:grid-cols-2 scroll-mt-28">
+          <form onSubmit={async (event) => {
+            event.preventDefault();
+            setProfileSaving(true); setProfileMessage(""); setError("");
+            try {
+              const { getSupabase } = await import("@/lib/supabase");
+              const supabase = getSupabase();
+              const { data: current } = await supabase.auth.getUser();
+              const { error: updateError } = await supabase.auth.updateUser({
+                data: {
+                  ...(current.user?.user_metadata || {}),
+                  full_name: profile.fullName.trim(),
+                  phone: profile.mobile.trim(),
+                  address: profile.address.trim(),
+                },
+              });
+              if (updateError) throw updateError;
+              setProfileMessage("Your profile details have been saved.");
+            } catch (err) {
+              setError(err instanceof Error ? err.message : "Could not save profile details.");
+            } finally { setProfileSaving(false); }
+          }} className="rounded-3xl bg-white border border-[var(--line)] p-6 md:p-8">
+            <p className="text-xs uppercase tracking-[0.18em] text-[var(--warm-gold)]">Personal details</p>
+            <h2 className="font-display text-2xl text-[var(--deep-wine)] mt-2">Your Profile</h2>
+            <div className="mt-6 space-y-4">
+              <div><label className="text-xs font-medium text-[var(--ink)]">Email address</label><input value={profile.email} readOnly className="mt-2 w-full rounded-xl border border-[var(--line)] bg-gray-50 px-4 py-3 text-sm text-[var(--muted)]" /><p className="mt-1 text-[11px] text-[var(--muted)]">Your login email is shown here. Email changes require a separate verification flow.</p></div>
+              <div><label className="text-xs font-medium text-[var(--ink)]">Full name</label><input value={profile.fullName} onChange={(e) => setProfile({ ...profile, fullName: e.target.value })} className="mt-2 w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm" placeholder="Enter your full name" /></div>
+              <div><label className="text-xs font-medium text-[var(--ink)]">Mobile number</label><input value={profile.mobile} onChange={(e) => setProfile({ ...profile, mobile: e.target.value })} className="mt-2 w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm" placeholder="+91..." /></div>
+              <div><label className="text-xs font-medium text-[var(--ink)]">Delivery address</label><textarea value={profile.address} onChange={(e) => setProfile({ ...profile, address: e.target.value })} className="mt-2 min-h-28 w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm" placeholder="House/flat, street, area, city, state, PIN code" /></div>
+              {profileMessage && <p className="rounded-xl bg-green-50 px-4 py-3 text-sm text-green-700">{profileMessage}</p>}
+              <button disabled={profileSaving} className="w-full rounded-full bg-[var(--deep-wine)] px-5 py-3.5 text-sm font-semibold text-white disabled:opacity-50">{profileSaving ? "Saving…" : "Save Profile Details"}</button>
+            </div>
+          </form>
+
+          <form onSubmit={async (event) => {
+            event.preventDefault(); setPasswordError(""); setPasswordMessage("");
+            if (newPassword.length < 8) { setPasswordError("Password must be at least 8 characters."); return; }
+            if (newPassword !== confirmPassword) { setPasswordError("Passwords do not match."); return; }
+            setPasswordSaving(true);
+            try {
+              const { getSupabase } = await import("@/lib/supabase");
+              const { error: updateError } = await getSupabase().auth.updateUser({ password: newPassword });
+              if (updateError) throw updateError;
+              setNewPassword(""); setConfirmPassword("");
+              setPasswordMessage("Password changed successfully.");
+            } catch (err) {
+              setPasswordError(err instanceof Error ? err.message : "Could not change password.");
+            } finally { setPasswordSaving(false); }
+          }} className="rounded-3xl bg-white border border-[var(--line)] p-6 md:p-8">
+            <p className="text-xs uppercase tracking-[0.18em] text-[var(--warm-gold)]">Security</p>
+            <h2 className="font-display text-2xl text-[var(--deep-wine)] mt-2">Change Password</h2>
+            <p className="mt-2 text-sm leading-6 text-[var(--muted)]">Choose a strong password with at least 8 characters.</p>
+            <div className="mt-6 space-y-4">
+              <div><label className="text-xs font-medium text-[var(--ink)]">New password</label><input type="password" autoComplete="new-password" required minLength={8} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="mt-2 w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm" placeholder="Enter new password" /></div>
+              <div><label className="text-xs font-medium text-[var(--ink)]">Confirm new password</label><input type="password" autoComplete="new-password" required minLength={8} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="mt-2 w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm" placeholder="Re-enter new password" /></div>
+              {passwordError && <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{passwordError}</p>}
+              {passwordMessage && <p className="rounded-xl bg-green-50 px-4 py-3 text-sm text-green-700">{passwordMessage}</p>}
+              <button disabled={passwordSaving} className="w-full rounded-full border border-[var(--deep-wine)] px-5 py-3.5 text-sm font-semibold text-[var(--deep-wine)] disabled:opacity-50">{passwordSaving ? "Updating…" : "Change Password"}</button>
+            </div>
+          </form>
+        </section>
 
         {error && <p className="mt-5 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
 
