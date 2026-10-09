@@ -171,12 +171,12 @@ const productContentOverrides: Record<string, Partial<Product>> = {
     concern_tags: ["Acne", "Blemishes", "Oil Control"],
   },
   "velvet-touch-face-serum": {
-    tagline: "AHA, BHA & PHA exfoliating serum for uneven tone",
-    description: "An exfoliating AHA, BHA and PHA serum formulated with 2% Glycolic Acid, 5% Lactic Acid, 2% Citric Acid, 1% Salicylic Acid and Gluconolactone. Designed to help exfoliate dead surface skin cells, smooth rough texture and improve the appearance of uneven tone and pigmentation for a brighter-looking complexion.",
+    tagline: "Weekly AHA, BHA & PHA exfoliating serum for smoother, brighter-looking skin",
+    description: "An exfoliating AHA, BHA and PHA serum formulated with 2% Glycolic Acid, 5% Lactic Acid, 2% Citric Acid, 1% Salicylic Acid and Gluconolactone. Use 2–3 times per week at night to help exfoliate dead surface skin cells, smooth rough texture and improve the appearance of uneven tone and dullness. Daily sunscreen is essential while using exfoliating acids: use Humor Luxury Light & Shade Sunscreen SPF 50 or another broad-spectrum SPF 30+ sunscreen every morning, and reapply as directed.",
     key_benefits: [
-      "Helps exfoliate dead surface skin cells",
-      "Helps smooth rough texture and improve the look of uneven tone",
-      "Helps reduce the appearance of pigmentation and dullness",
+      "Helps exfoliate dead surface skin cells and smooth rough texture",
+      "Helps improve the appearance of uneven tone, pigmentation and dullness",
+      "Use 2–3 nights weekly and pair with daily broad-spectrum sunscreen",
     ],
     key_ingredients: [
       { name: "Glycolic Acid 2% (AHA)", explanation: "Helps exfoliate the skin surface and smooth the look of rough texture." },
