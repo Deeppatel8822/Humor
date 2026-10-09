@@ -53,6 +53,24 @@ const productContentOverrides: Record<string, Partial<Product>> = {
     skin_hair_type: ["Dull Skin", "Uneven Skin Tone"],
     concern_tags: ["Brightening", "Uneven Skin Tone"],
   },
+  "blemish-block-face-serum": {
+    tagline: "Anti-acne serum for blemish-prone skin",
+    description: "A targeted anti-acne serum formulated with 0.5% Salicylic Acid, 0.5% Succinic Acid, 5% Niacinamide and 2% Allantoin. Designed to help unclog pores, reduce the appearance of blemishes and excess oil, and support calmer-looking skin.",
+    key_benefits: [
+      "Helps reduce the appearance of acne and blemishes",
+      "Helps manage excess oil and the look of congested pores",
+      "Helps soothe skin and improve the appearance of post-blemish marks",
+    ],
+    key_ingredients: [
+      { name: "Salicylic Acid 0.5%", explanation: "Helps exfoliate inside pores and reduce the look of congestion." },
+      { name: "Succinic Acid 0.5%", explanation: "Helps support blemish-prone skin and improve the look of imperfections." },
+      { name: "Niacinamide 5%", explanation: "Helps balance the appearance of oiliness and improve uneven-looking tone." },
+      { name: "Allantoin 2%", explanation: "Helps soothe and condition skin for a more comfortable feel." },
+    ],
+    full_ingredient_list: "0.5% Salicylic Acid, 0.5% Succinic Acid, 5% Niacinamide, 2% Allantoin.",
+    skin_hair_type: ["Oily Skin", "Acne-Prone Skin", "Combination Skin"],
+    concern_tags: ["Acne", "Blemishes", "Oil Control"],
+  },
   "fullmoon-face-serum": {
     tagline: "Whitening and brightening serum for uneven-looking skin tone",
     description: "A targeted skin-brightening serum formulated with 1% Kojic Acid, 1% Hyaluronic Acid and 1% Pro-Vitamin B5. Designed to help reduce the appearance of dark spots and uneven tone while hydrating skin for a smoother, more radiant-looking complexion.",
