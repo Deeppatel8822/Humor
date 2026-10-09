@@ -104,3 +104,26 @@ body {
     font-size: 11px;
   }
 }
+
+
+/* Cinematic but subtle movement for the homepage hero banners. */
+.humor-banner-image {
+  transform: scale(1.035);
+  transform-origin: center;
+}
+
+.humor-banner-image-active {
+  animation: humorBannerKenBurns 5.6s ease-out both;
+}
+
+@keyframes humorBannerKenBurns {
+  from { transform: scale(1.035); }
+  to { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .humor-banner-image-active {
+    animation: none !important;
+    transform: none;
+  }
+}
