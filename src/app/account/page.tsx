@@ -107,13 +107,16 @@ export default function AccountPage() {
           Logout
         </button>
 
-        <div className="grid sm:grid-cols-2 gap-4 mt-8">
+        <div className="grid sm:grid-cols-3 gap-4 mt-8">
           <button type="button" onClick={() => setActiveAccountSection("orders")} aria-pressed={activeAccountSection === "orders"} className={`text-left rounded-2xl border p-5 transition-colors ${activeAccountSection === "orders" ? "border-[var(--deep-wine)] bg-white shadow-sm" : "border-[var(--line)] bg-white/70 hover:border-[var(--deep-wine)]"}`}>
             <p className="text-xs text-[var(--muted)]">Orders</p><p className="mt-2 font-medium text-[var(--ink)]">Track orders & order history →</p>
           </button>
           <button type="button" onClick={() => setActiveAccountSection("profile")} aria-pressed={activeAccountSection === "profile"} className={`text-left rounded-2xl border p-5 transition-colors ${activeAccountSection === "profile" ? "border-[var(--deep-wine)] bg-white shadow-sm" : "border-[var(--line)] bg-white/70 hover:border-[var(--deep-wine)]"}`}>
             <p className="text-xs text-[var(--muted)]">Profile</p><p className="mt-2 font-medium text-[var(--ink)]">View or edit your details →</p>
           </button>
+          <Link href="/marketing-partner" className="text-left rounded-2xl border border-[var(--line)] bg-white/70 p-5 transition-colors hover:border-[var(--deep-wine)]">
+            <p className="text-xs text-[var(--muted)]">Partner</p><p className="mt-2 font-medium text-[var(--ink)]">Become a Marketing Partner →</p>
+          </Link>
         </div>
 
         {activeAccountSection === "orders" && (
