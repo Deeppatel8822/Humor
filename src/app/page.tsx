@@ -140,12 +140,18 @@ export default async function Home() {
           <div className="absolute -bottom-28 left-1/4 h-72 w-72 rounded-full bg-[var(--warm-gold)]/10 blur-3xl" aria-hidden="true" />
           <div className="relative grid items-center gap-8 px-6 py-9 md:grid-cols-[1fr_auto] md:px-12 md:py-12">
             <div className="max-w-3xl">
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/[0.06] px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--warm-gold)]">
-                <span className="h-1.5 w-1.5 rounded-full bg-[var(--warm-gold)]" aria-hidden="true" />
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[var(--warm-gold)]/60 bg-[var(--warm-gold)]/10 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.24em] text-[var(--warm-gold)] shadow-[0_0_24px_rgba(212,154,106,0.12)]">
+                <span className="h-2 w-2 rounded-full bg-[var(--warm-gold)] shadow-[0_0_10px_rgba(212,154,106,0.8)]" aria-hidden="true" />
                 HUMOR BUSINESS PROGRAMME
               </div>
-              <h2 className="font-display text-3xl leading-tight text-white md:text-5xl">
-                Start Your Beauty Business.
+              <h2 className="font-display text-3xl font-semibold leading-[1.08] text-white sm:text-4xl md:text-5xl lg:text-6xl">
+                START YOUR BEAUTY BUSINESS
+                <span className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <span className="text-white">WITH JUST</span>
+                  <span className="inline-flex items-center gap-2 rounded-xl border border-[var(--warm-gold)]/70 bg-[var(--warm-gold)]/10 px-3 py-1.5 align-middle shadow-[0_0_28px_rgba(212,154,106,0.18)]">
+                    <span className="text-4xl font-bold leading-none text-[var(--warm-gold)] sm:text-5xl md:text-6xl">₹9</span>
+                  </span>
+                </span>
               </h2>
               <p className="mt-3 text-lg font-semibold text-[var(--milk-sage)] md:text-xl">
                 Register in 2 Minutes. Start Selling. Start Earning.
