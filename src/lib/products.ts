@@ -197,7 +197,7 @@ export const products: Product[] = [
     ],
     full_ingredient_list: "2% Glycolic Acid, 5% Lactic Acid, 2% Citric Acid, 1% Salicylic Acid, Gluconolactone.",
     skin_hair_type: ["Uneven Skin Tone", "Dull Skin", "Textured Skin"],
-    how_to_use: "Apply 3–4 drops every morning before moisturiser and SPF.",
+    how_to_use: "Use 2–3 nights per week. Apply 3–4 drops to clean, dry skin at night and follow with moisturiser. Every morning, apply a broad-spectrum SPF 30+ sunscreen and reapply as directed.",
     category: "skincare",
     subrange: "Velvet Touch",
     concern_tags: ["Pigmentation"],
