@@ -144,16 +144,16 @@ export default async function Home() {
                 <span className="h-2 w-2 rounded-full bg-[var(--warm-gold)] shadow-[0_0_10px_rgba(212,154,106,0.8)]" aria-hidden="true" />
                 HUMOR BUSINESS PROGRAMME
               </div>
-              <h2 className="font-display text-3xl font-semibold leading-[1.08] text-white sm:text-4xl md:text-5xl lg:text-6xl">
+              <h2 className="font-display text-2xl font-semibold leading-[1.12] text-white sm:text-3xl md:text-4xl lg:text-5xl">
                 START YOUR BEAUTY BUSINESS
                 <span className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
                   <span className="text-white">WITH JUST</span>
                   <span className="inline-flex items-center gap-2 rounded-xl border border-[var(--warm-gold)]/70 bg-[var(--warm-gold)]/10 px-3 py-1.5 align-middle shadow-[0_0_28px_rgba(212,154,106,0.18)]">
-                    <span className="text-4xl font-bold leading-none text-[var(--warm-gold)] sm:text-5xl md:text-6xl">₹9</span>
+                    <span className="text-3xl font-bold leading-none text-[var(--warm-gold)] sm:text-4xl md:text-5xl">₹9</span>
                   </span>
                 </span>
               </h2>
-              <p className="mt-3 text-lg font-semibold text-[var(--milk-sage)] md:text-xl">
+              <p className="mt-3 text-base font-semibold text-[var(--milk-sage)] md:text-lg">
                 Register in 2 Minutes. Start Selling. Start Earning.
               </p>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-white/70 md:text-base">
