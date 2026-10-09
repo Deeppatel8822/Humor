@@ -32,6 +32,7 @@ export default function AccountPage() {
   const [activeAccountSection, setActiveAccountSection] = useState<"orders" | "profile">("orders");
   const [orderNumber, setOrderNumber] = useState("");
   const [orderEmail, setOrderEmail] = useState("");
+  const [orderStatus, setOrderStatus] = useState("");
 
   async function load() {
     setLoading(true);
@@ -122,12 +123,13 @@ export default function AccountPage() {
             <p className="mt-2 text-sm text-[var(--muted)]">Enter your order number and the email used at checkout.</p>
             <form onSubmit={(event) => {
               event.preventDefault();
-              window.location.href = "/track-order?order=" + encodeURIComponent(orderNumber) + "&email=" + encodeURIComponent(orderEmail);
+              setOrderStatus("Order tracking will be available once your order database is connected. Please check your order confirmation email in the meantime.");
             }} className="mt-5 grid gap-4 md:grid-cols-2">
               <input required value={orderNumber} onChange={(event) => setOrderNumber(event.target.value)} placeholder="Order number (e.g. HL-10234)" className="w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm" />
               <input required type="email" value={orderEmail} onChange={(event) => setOrderEmail(event.target.value)} placeholder="Email used at checkout" className="w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm" />
               <button type="submit" className="md:col-span-2 rounded-full bg-[var(--deep-wine)] px-6 py-3.5 text-sm font-medium text-white hover:bg-[var(--ink)] transition-colors">Track order</button>
             </form>
+            {orderStatus && <p className="mt-5 rounded-xl bg-[var(--milk-sage)] border border-[var(--line)] px-5 py-4 text-sm text-[var(--muted)]">{orderStatus}</p>}
             <div className="mt-8 border-t border-[var(--line)] pt-6">
               <h3 className="font-display text-xl text-[var(--deep-wine)]">Your Recent Orders</h3>
               <p className="mt-2 text-sm text-[var(--muted)]">Your latest orders and purchased products will appear here once order history is connected to your account.</p>
