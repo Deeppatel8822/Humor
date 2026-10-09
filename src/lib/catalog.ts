@@ -35,6 +35,45 @@ const mainImageOverrides: Record<string, string> = {
 };
 
 const productContentOverrides: Record<string, Partial<Product>> = {
+  "repair-conditioner": {
+    tagline: "Silky-smooth shine and easy detangling for everyday hair care",
+    description: "A smoothing conditioner formulated with Keratin, Sodium Hyaluronate, Glycerin, Bee Pollen and Betaine. It helps detangle lengths, soften rough-feeling strands and tame the look of frizz, leaving hair smoother, shinier and easier to manage without a heavy finish.",
+    key_benefits: [
+      "Helps detangle hair and improve manageability",
+      "Leaves hair feeling soft and looking silky-smooth",
+      "Helps tame frizz and enhance the appearance of shine",
+    ],
+    key_ingredients: [
+      { name: "Keratin", explanation: "Helps smooth the feel of damaged, rough hair and improve manageability." },
+      { name: "Sodium Hyaluronate", explanation: "Helps attract and retain moisture for softer-feeling hair." },
+      { name: "Glycerin", explanation: "Helps draw in moisture and reduce the feel of dryness." },
+      { name: "Bee Pollen", explanation: "Provides conditioning support for a nourished-feeling finish." },
+      { name: "Betaine", explanation: "Helps condition hair and improve softness and combability." },
+    ],
+    full_ingredient_list: "Keratin, Sodium Hyaluronate, Glycerin, Bee Pollen, Betaine.",
+    skin_hair_type: ["Dry Hair", "Frizzy Hair", "Tangled Hair"],
+    concern_tags: ["Smoothing", "Shine", "Detangling", "Frizz Control"],
+  },
+  "repair-hair-mask": {
+    tagline: "Premium deep-conditioning mask for silky, smooth, bouncy hair",
+    description: "A premium intensive hair mask formulated with Keratin, Sodium Hyaluronate, Glycerin, Bee Pollen and Betaine. Created for dry, dull or damage-prone lengths, this rich treatment helps deeply condition hair, improve the feel of roughness, reduce the appearance of frizz and leave strands silky-smooth, glossy and full of bounce.",
+    key_benefits: [
+      "Intensive conditioning for dry and damage-prone lengths",
+      "Helps hair feel silky-smooth, soft and more elastic",
+      "Helps control the appearance of frizz and improve shine",
+      "Leaves hair feeling bouncy, nourished and easier to style",
+    ],
+    key_ingredients: [
+      { name: "Keratin", explanation: "Helps smooth the feel of damaged hair and improve the look of strength and manageability." },
+      { name: "Sodium Hyaluronate", explanation: "Helps attract and retain moisture so hair feels softer and less dry." },
+      { name: "Glycerin", explanation: "Helps draw in moisture to support a supple, conditioned feel." },
+      { name: "Bee Pollen", explanation: "Provides conditioning support as part of the mask's premium care blend." },
+      { name: "Betaine", explanation: "Helps soften hair and improve slip for easier detangling." },
+    ],
+    full_ingredient_list: "Keratin, Sodium Hyaluronate, Glycerin, Bee Pollen, Betaine.",
+    skin_hair_type: ["Dry Hair", "Damaged Hair", "Frizzy Hair", "Dull Hair"],
+    concern_tags: ["Deep Conditioning", "Damage Care", "Smoothness", "Bounce", "Shine"],
+  },
   "repair-shampoo": {
     tagline: "Anti-hair fall shampoo with plant and protein care",
     description: "A daily shampoo formulated with Aloe Vera, Oat, Corn, Algae, Silk Protein, Pea Protein and Soybean. Designed to cleanse the scalp and hair while helping reduce the appearance of hair fall due to breakage and leaving hair feeling softer and stronger.",
