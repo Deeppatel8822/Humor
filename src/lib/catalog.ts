@@ -34,6 +34,45 @@ const mainImageOverrides: Record<string, string> = {
   "shower-gel": "/products/shower-gel-main.webp",
 };
 
+const productContentOverrides: Record<string, Partial<Product>> = {
+  "fullmoon-face-wash": {
+    tagline: "Brightening face wash for dull, uneven-looking skin",
+    description: "A brightening cleanser designed to wash away daily impurities and help improve the look of dull, uneven skin tone. Aloe Vera Extract helps keep the cleansing experience feeling soothing and comfortable.",
+    key_benefits: [
+      "Helps skin look brighter and fresher",
+      "Helps improve the appearance of uneven skin tone",
+      "Cleanses while supporting a comfortable skin feel",
+    ],
+    key_ingredients: [
+      { name: "Seaweed", explanation: "Helps condition skin and support a fresh-looking complexion." },
+      { name: "Glycolic Acid", explanation: "An exfoliating AHA that helps smooth the look of rough texture and dullness." },
+      { name: "Aloe Vera Extract", explanation: "Helps soothe and hydrate the skin." },
+      { name: "Niacinamide", explanation: "Helps improve the look of uneven tone and supports the skin barrier." },
+    ],
+    full_ingredient_list: "Seaweed, Glycolic Acid, Aloe Vera Extract, Niacinamide.",
+    skin_hair_type: ["Dull Skin", "Uneven Skin Tone"],
+    concern_tags: ["Brightening", "Uneven Skin Tone"],
+  },
+  "fullmoon-face-serum": {
+    tagline: "Brightening serum for dull, uneven-looking skin",
+    description: "A targeted brightening serum designed to help reduce the look of dullness and uneven skin tone. Its selected ingredients support smoother-looking skin and a fresher, more radiant appearance with consistent use.",
+    key_benefits: [
+      "Helps visibly brighten dull-looking skin",
+      "Helps improve the appearance of uneven skin tone",
+      "Supports smoother-looking skin texture",
+    ],
+    key_ingredients: [
+      { name: "Seaweed", explanation: "Helps condition skin and support a fresh-looking complexion." },
+      { name: "Glycolic Acid", explanation: "An exfoliating AHA that helps smooth the look of rough texture and dullness." },
+      { name: "Aloe Vera Extract", explanation: "Helps soothe and hydrate the skin." },
+      { name: "Niacinamide", explanation: "Helps improve the look of uneven tone and supports the skin barrier." },
+    ],
+    full_ingredient_list: "Seaweed, Glycolic Acid, Aloe Vera Extract, Niacinamide.",
+    skin_hair_type: ["Dull Skin", "Uneven Skin Tone"],
+    concern_tags: ["Brightening", "Uneven Skin Tone"],
+  },
+};
+
 const galleryImageOverrides: Record<string, string[]> = {
   "repair-shampoo": ["/products/protein-shake-shampoo-model-1.webp"],
   "repair-hair-mask": ["/products/milk-shake-hair-mask-model-1.webp"],
@@ -72,6 +111,7 @@ function withMainImage(product: Product): Product {
 
   return {
     ...product,
+    ...(productContentOverrides[product.slug] ?? {}),
     ...(finalProductNames[product.slug] ? { name: finalProductNames[product.slug] } : {}),
     ...(legacyRating ?? { rating: 0, review_count: 0 }),
     images,
