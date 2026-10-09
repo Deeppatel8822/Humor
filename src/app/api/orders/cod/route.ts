@@ -168,6 +168,12 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("COD order error:", error);
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Could not place your order." }, { status: 400 });
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : error && typeof error === "object" && "message" in error && typeof error.message === "string"
+          ? error.message
+          : "Could not place your order. Please try again.";
+    return NextResponse.json({ error: errorMessage }, { status: 400 });
   }
 }
