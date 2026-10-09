@@ -110,6 +110,25 @@ const productContentOverrides: Record<string, Partial<Product>> = {
     skin_hair_type: ["Oily Skin", "Acne-Prone Skin", "Combination Skin"],
     concern_tags: ["Acne", "Blemishes", "Oil Control"],
   },
+  "velvet-touch-face-serum": {
+    tagline: "AHA, BHA & PHA exfoliating serum for uneven tone",
+    description: "An exfoliating AHA, BHA and PHA serum formulated with 2% Glycolic Acid, 5% Lactic Acid, 2% Citric Acid, 1% Salicylic Acid and Gluconolactone. Designed to help exfoliate dead surface skin cells, smooth rough texture and improve the appearance of uneven tone and pigmentation for a brighter-looking complexion.",
+    key_benefits: [
+      "Helps exfoliate dead surface skin cells",
+      "Helps smooth rough texture and improve the look of uneven tone",
+      "Helps reduce the appearance of pigmentation and dullness",
+    ],
+    key_ingredients: [
+      { name: "Glycolic Acid 2% (AHA)", explanation: "Helps exfoliate the skin surface and smooth the look of rough texture." },
+      { name: "Lactic Acid 5% (AHA)", explanation: "Helps exfoliate and support a smoother, brighter-looking complexion." },
+      { name: "Citric Acid 2% (AHA)", explanation: "Helps exfoliate the surface and improve the look of dullness." },
+      { name: "Salicylic Acid 1% (BHA)", explanation: "Helps clear pore buildup and smooth the look of congested skin." },
+      { name: "Gluconolactone (PHA)", explanation: "A gentle exfoliating polyhydroxy acid that helps refine skin texture." },
+    ],
+    full_ingredient_list: "2% Glycolic Acid, 5% Lactic Acid, 2% Citric Acid, 1% Salicylic Acid, Gluconolactone.",
+    skin_hair_type: ["Uneven Skin Tone", "Dull Skin", "Textured Skin"],
+    concern_tags: ["Exfoliation", "Pigmentation", "Uneven Skin Tone", "AHA BHA PHA"],
+  },
   "fullmoon-face-serum": {
     tagline: "Whitening and brightening serum for uneven-looking skin tone",
     description: "A targeted skin-brightening serum formulated with 1% Kojic Acid, 1% Hyaluronic Acid and 1% Pro-Vitamin B5. Designed to help reduce the appearance of dark spots and uneven tone while hydrating skin for a smoother, more radiant-looking complexion.",
