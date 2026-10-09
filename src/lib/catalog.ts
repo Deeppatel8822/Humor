@@ -171,6 +171,7 @@ const productContentOverrides: Record<string, Partial<Product>> = {
     concern_tags: ["Acne", "Blemishes", "Oil Control"],
   },
   "velvet-touch-face-serum": {
+    how_to_use: "Use 2–3 nights per week. Apply 3–4 drops to clean, dry skin at night and follow with moisturiser. Every morning, apply broad-spectrum SPF 30+ sunscreen.",
     tagline: "Weekly AHA, BHA & PHA exfoliating serum for smoother, brighter-looking skin",
     description: "An exfoliating AHA, BHA and PHA serum formulated with 2% Glycolic Acid, 5% Lactic Acid, 2% Citric Acid, 1% Salicylic Acid and Gluconolactone. Use 2–3 times per week at night to help exfoliate dead surface skin cells, smooth rough texture and improve the appearance of uneven tone and dullness. Daily sunscreen is essential while using exfoliating acids: use Humor Luxury Light & Shade Sunscreen SPF 50 or another broad-spectrum SPF 30+ sunscreen every morning, and reapply as directed.",
     key_benefits: [
