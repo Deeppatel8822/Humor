@@ -35,6 +35,27 @@ const mainImageOverrides: Record<string, string> = {
 };
 
 const productContentOverrides: Record<string, Partial<Product>> = {
+  "repair-shampoo": {
+    tagline: "Anti-hair fall shampoo with plant and protein care",
+    description: "A daily shampoo formulated with Aloe Vera, Oat, Corn, Algae, Silk Protein, Pea Protein and Soybean. Designed to cleanse the scalp and hair while helping reduce the appearance of hair fall due to breakage and leaving hair feeling softer and stronger.",
+    key_benefits: [
+      "Helps reduce hair fall caused by breakage",
+      "Gently cleanses the scalp and hair",
+      "Helps leave hair feeling smoother, softer and stronger",
+    ],
+    key_ingredients: [
+      { name: "Aloe Vera", explanation: "Helps condition the scalp and maintain moisture." },
+      { name: "Oat", explanation: "Helps soothe and condition the scalp and hair." },
+      { name: "Corn", explanation: "Provides plant-derived conditioning support for hair." },
+      { name: "Algae", explanation: "Helps condition hair and support a healthy-looking finish." },
+      { name: "Silk Protein", explanation: "Helps smooth the hair surface and improve softness." },
+      { name: "Pea Protein", explanation: "Helps strengthen the feel of hair and improve manageability." },
+      { name: "Soybean", explanation: "Provides plant-derived protein and conditioning support." },
+    ],
+    full_ingredient_list: "Aloe Vera, Oat, Corn, Algae, Silk Protein, Pea Protein, Soybean.",
+    skin_hair_type: ["Weak Hair", "Breakage-Prone Hair", "Dry Hair"],
+    concern_tags: ["Hair Fall", "Hair Strength", "Hair Care"],
+  },
   "velvet-touch-face-wash": {
     tagline: "Soft creamy-foam face wash for soft, smooth skin",
     description: "A soap-based face wash that creates a soft, creamy foam to cleanse daily impurities and excess oil. Formulated with Coconut Milk, Liquorice, Aloe Vera Extract, Niacinamide, Pro-Vitamin B5, Fatty Acids and Betaine to help soften and smooth the feel of skin while supporting a fresh, balanced-looking complexion.",
