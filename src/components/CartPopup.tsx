@@ -56,9 +56,9 @@ export default function CartPopup({ open, onClose }: { open: boolean; onClose: (
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto p-3 sm:items-center sm:p-6" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-      <div className="absolute inset-0 bg-[#21172b]/55 backdrop-blur-md cart-popup-backdrop" />
-      <section role="dialog" aria-modal="true" aria-labelledby="cart-popup-title" className="cart-glass-panel relative my-0 flex h-[min(calc(100dvh-24px),760px)] w-full max-w-xl translate-x-0 flex-col overflow-hidden rounded-[28px] border border-white/70 bg-white/95 shadow-[0_30px_100px_rgba(28,14,43,0.32)] sm:my-auto sm:h-[min(calc(100dvh-48px),760px)] sm:translate-x-[3vw] sm:rounded-[32px]">
+    <div className="fixed inset-0 z-[2147483000] flex items-center justify-center overflow-y-auto p-3 sm:p-6" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+      <div className="fixed inset-0 bg-[#21172b]/55 backdrop-blur-md cart-popup-backdrop" />
+      <section role="dialog" aria-modal="true" aria-labelledby="cart-popup-title" className="cart-glass-panel relative my-auto flex h-[min(calc(100dvh-24px),760px)] w-full max-w-xl translate-x-0 flex-col overflow-hidden rounded-[28px] border border-white/70 bg-white/95 shadow-[0_30px_100px_rgba(28,14,43,0.32)] sm:h-[min(calc(100dvh-48px),760px)] sm:translate-x-[3vw] sm:rounded-[32px]">
         <header className="flex items-start justify-between border-b border-[#E9DFEF] bg-gradient-to-br from-[#FBF8FD] via-white to-[#F5EDF9] px-5 py-5 sm:px-7 sm:py-6">
           <div>
             <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#A47A55]">HUMOR LUXURY</p>
