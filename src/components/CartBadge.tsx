@@ -86,7 +86,7 @@ export default function CartBadge() {
                     {lines.length > 4 && <p className="mt-3 text-center text-[11px] text-[#776981]">+ {lines.length - 4} more products</p>}
                   </div>
                   <div className="border-t border-[#F0E8F4] bg-[#FCFAFD] p-3">
-                    <button type="button" onClick={() => { setHoverOpen(false); setOpen(true); }} className="w-full rounded-full bg-gradient-to-r from-[#7047A0] to-[#50336F] px-4 py-3 text-xs font-semibold text-white shadow-md shadow-[#7047A0]/20 transition hover:brightness-110">View cart & checkout</button>
+                    <button type="button" onClick={() => { setHoverOpen(false); setOpen(true); }} style={{ background: "linear-gradient(100deg, #7047A0 0%, #50336F 100%)", color: "#FFFFFF", WebkitTextFillColor: "#FFFFFF", opacity: 1 }} className="w-full rounded-full border border-[#7047A0] px-4 py-3 text-xs font-bold text-white shadow-md shadow-[#7047A0]/20 transition hover:brightness-110">View cart & checkout</button>
                     <p className="mt-2 text-center text-[10px] text-[#8B7D92]">Secure checkout · HUMOR LUXURY</p>
                   </div>
                 </>
