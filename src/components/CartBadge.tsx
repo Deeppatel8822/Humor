@@ -2,14 +2,21 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import CartPopup from "@/components/CartPopup";
 
 export default function CartBadge() {
   const { lines, itemCount, subtotalInr } = useCart();
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [hoverOpen, setHoverOpen] = useState(false);
   const close = useCallback(() => setOpen(false), []);
+
+  useEffect(() => {
+    setOpen(false);
+    setHoverOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     const openCart = () => setOpen(true);
