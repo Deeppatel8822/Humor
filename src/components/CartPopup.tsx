@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
@@ -23,6 +24,9 @@ export default function CartPopup({ open, onClose }: { open: boolean; onClose: (
   const { lines, updateQuantity, removeItem, subtotalInr, bundleSavingsInr, startCheckout } = useCart();
   const router = useRouter();
   const [checkingOut, setCheckingOut] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
   const threshold = 299;
   const netSubtotal = Math.max(0, subtotalInr - bundleSavingsInr);
   const shipping = netSubtotal >= threshold ? 0 : 50;
@@ -53,9 +57,9 @@ export default function CartPopup({ open, onClose }: { open: boolean; onClose: (
     }
   }
 
-  if (!open) return null;
+  if (!open || !mounted) return null;
 
-  return (
+  return createPortal((
     <div className="fixed inset-0 z-[2147483000] flex items-center justify-center overflow-y-auto p-3 sm:p-6" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
       <div className="fixed inset-0 bg-[#21172b]/55 backdrop-blur-md cart-popup-backdrop" />
       <section role="dialog" aria-modal="true" aria-labelledby="cart-popup-title" className="cart-glass-panel relative my-auto flex h-[min(calc(100dvh-24px),760px)] w-full max-w-xl translate-x-0 flex-col overflow-hidden rounded-[28px] border border-white/70 bg-white/95 shadow-[0_30px_100px_rgba(28,14,43,0.32)] sm:h-[min(calc(100dvh-48px),760px)] sm:translate-x-[3vw] sm:rounded-[32px]">
@@ -136,5 +140,5 @@ export default function CartPopup({ open, onClose }: { open: boolean; onClose: (
         @media (prefers-reduced-motion: reduce) { .cart-popup-backdrop, .cart-glass-panel { animation: none; } }
       `}</style>
     </div>
-  );
+  ), document.body);
 }
