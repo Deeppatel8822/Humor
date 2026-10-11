@@ -56,9 +56,9 @@ export default function CartPopup({ open, onClose }: { open: boolean; onClose: (
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto p-3 sm:p-6" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+    <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto p-3 sm:items-center sm:p-6" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
       <div className="absolute inset-0 bg-[#21172b]/55 backdrop-blur-md cart-popup-backdrop" />
-      <section role="dialog" aria-modal="true" aria-labelledby="cart-popup-title" className="cart-glass-panel relative my-auto flex h-[min(88dvh,760px)] w-full max-w-xl translate-x-0 flex-col overflow-hidden rounded-[28px] border border-white/70 bg-white/95 shadow-[0_30px_100px_rgba(28,14,43,0.32)] sm:translate-x-[3vw] sm:rounded-[32px]">
+      <section role="dialog" aria-modal="true" aria-labelledby="cart-popup-title" className="cart-glass-panel relative my-0 flex h-[min(calc(100dvh-24px),760px)] w-full max-w-xl translate-x-0 flex-col overflow-hidden rounded-[28px] border border-white/70 bg-white/95 shadow-[0_30px_100px_rgba(28,14,43,0.32)] sm:my-auto sm:h-[min(calc(100dvh-48px),760px)] sm:translate-x-[3vw] sm:rounded-[32px]">
         <header className="flex items-start justify-between border-b border-[#E9DFEF] bg-gradient-to-br from-[#FBF8FD] via-white to-[#F5EDF9] px-5 py-5 sm:px-7 sm:py-6">
           <div>
             <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#A47A55]">HUMOR LUXURY</p>
@@ -121,7 +121,7 @@ export default function CartPopup({ open, onClose }: { open: boolean; onClose: (
               {bundleSavingsInr > 0 && <div className="mb-3 flex items-center justify-between text-sm"><span className="text-[#776981]">Bundle savings</span><span className="font-medium text-green-700">−₹{bundleSavingsInr.toLocaleString("en-IN")}</span></div>}
               <div className="mb-3 flex items-center justify-between text-sm"><span className="text-[#776981]">Shipping</span><span className={shipping === 0 ? "font-medium text-green-700" : "text-[#35243F]"}>{shipping === 0 ? "Free" : "₹50"}</span></div>
               <div className="mb-4 flex items-center justify-between border-t border-dashed border-[#E4D8EC] pt-3"><span className="font-semibold text-[#35243F]">Estimated total</span><span className="font-display text-2xl text-[#50336F]">₹{(netSubtotal + shipping).toLocaleString("en-IN")}</span></div>
-              <button type="button" onClick={checkout} disabled={checkingOut} className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#7047A0] to-[#50336F] px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#7047A0]/25 transition hover:brightness-110 disabled:cursor-wait disabled:opacity-70">{checkingOut ? "Preparing checkout…" : "Proceed to checkout"}<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+              <button type="button" onClick={checkout} disabled={checkingOut} style={{ background: "linear-gradient(100deg, #7047A0 0%, #50336F 100%)", color: "#FFFFFF", borderColor: "#7047A0" }} className="flex w-full items-center justify-center gap-2 rounded-full px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#7047A0]/25 transition hover:brightness-110 disabled:cursor-wait disabled:opacity-70">{checkingOut ? "Preparing checkout…" : "Proceed to checkout"}<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
               <button type="button" onClick={onClose} className="mt-2 w-full rounded-full px-4 py-2.5 text-xs font-medium text-[#6E5C79] hover:bg-[#F8F3FA]">Continue shopping</button>
               <p className="mt-1 text-center text-[10px] tracking-wide text-[#8B7D92]">A little luxury, just for you</p>
             </footer>
