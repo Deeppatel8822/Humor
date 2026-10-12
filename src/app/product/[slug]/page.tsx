@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { Droplet, Sparkles, Waves, Sprout, ShieldCheck, Sun, Heart, Leaf } from "lucide-react";
 import { getProduct, getAllProducts } from "@/lib/catalog";
 import { getProducts as getLocalProducts } from "@/lib/products";
 import AddToCartForm from "@/components/AddToCartForm";
@@ -30,6 +31,67 @@ const sunscreenImages = [
   { src: "/products/sunscreen-benefits.webp", alt: "Humor Luxury Sunscreen benefits" },
 ];
 
+
+const productVolumes: Record<string, string> = {
+  "HL-SKC-FMW-100": "100 ml",
+  "HL-SKC-FMS-30": "30 ml",
+  "HL-SKC-BBW-100": "100 ml",
+  "HL-SKC-BBS-30": "30 ml",
+  "HL-SKC-VTW-100": "100 ml",
+  "HL-SKC-VTS-30": "30 ml",
+  "HL-SKC-SUN-50": "50 ml",
+  "HL-HRC-SHM-250": "250 ml",
+  "HL-HRC-CND-250": "250 ml",
+  "HL-HRC-MSK-200": "200 ml",
+  "HL-HRC-SHM-SS-500": "500 ml",
+  "HL-BDC-SHG-300": "300 ml",
+};
+
+function getProductHighlights(product: { sku: string; category: string; name: string }) {
+  if (product.sku === "HL-SKC-SUN-50") return [
+    { label: "Broad Spectrum", Icon: Sun },
+    { label: "Daily Protection", Icon: ShieldCheck },
+    { label: "Lightweight Feel", Icon: Droplet },
+    { label: "UVA + UVB Care", Icon: Sparkles },
+  ];
+  if (product.category === "haircare" && product.sku.includes("SHM-SS")) return [
+    { label: "Cleanses Gently", Icon: Droplet },
+    { label: "Smooth & Glossy Hair", Icon: Waves },
+    { label: "Strengthens Hair Fiber", Icon: Sprout },
+    { label: "Deep Hydration", Icon: Sparkles },
+  ];
+  if (product.category === "haircare" && product.sku.includes("CND")) return [
+    { label: "Smooth & Detangle", Icon: Waves },
+    { label: "Silky Shine", Icon: Sparkles },
+    { label: "Soft-Feeling Hair", Icon: Sprout },
+    { label: "Everyday Hair Care", Icon: Heart },
+  ];
+  if (product.category === "haircare") return [
+    { label: "Deep Conditioning", Icon: Droplet },
+    { label: "Smooth Hair", Icon: Waves },
+    { label: "Soft & Bouncy", Icon: Sparkles },
+    { label: "Hair Fiber Care", Icon: Sprout },
+  ];
+  if (product.category === "bodycare") return [
+    { label: "Gentle Cleansing", Icon: Droplet },
+    { label: "Moisture Care", Icon: Waves },
+    { label: "Soft-Feeling Skin", Icon: Heart },
+    { label: "Everyday Care", Icon: Leaf },
+  ];
+  if (product.name.toLowerCase().includes("serum")) return [
+    { label: "Targeted Care", Icon: Sparkles },
+    { label: "Smoother Texture", Icon: Waves },
+    { label: "Hydration Support", Icon: Droplet },
+    { label: "Skin Barrier Care", Icon: ShieldCheck },
+  ];
+  return [
+    { label: "Gentle Cleansing", Icon: Droplet },
+    { label: "Fresh-Feeling Skin", Icon: Sparkles },
+    { label: "Skin Comfort", Icon: Heart },
+    { label: "Everyday Care", Icon: Leaf },
+  ];
+}
+
 function RatingStars({ rating }: { rating: number }) {
   return (
     <div className="flex items-center gap-0.5 text-star" aria-label={rating > 0 ? `${rating} out of 5 stars` : "No reviews yet"}>
@@ -48,6 +110,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const related = allProducts.filter((p) => p.id !== product.id && p.category === product.category).slice(0, 4);
   const onSale = product.compare_at_price_inr && product.compare_at_price_inr > product.price_inr;
   const gallery = slug === "sunscreen-spf-50" ? sunscreenImages : product.images.map((src) => ({ src, alt: product.name }));
+  const volume = productVolumes[product.sku];
+  const highlights = getProductHighlights(product);
 
   return (
     <div className="max-w-7xl mx-auto px-5 md:px-8 py-14">
@@ -66,7 +130,15 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               <span className="text-sm text-[var(--muted)]">No reviews yet</span>
             )}
           </div>
-          <div className="flex items-center gap-3 mb-6"><span className="text-2xl font-medium text-[var(--deep-wine)]">&#8377;{product.price_inr}</span>{onSale && <span className="text-base text-[var(--ink)]/40 line-through">&#8377;{product.compare_at_price_inr}</span>}</div>
+          <div className="flex items-center gap-3 mb-5"><span className="text-2xl md:text-3xl font-semibold text-[var(--deep-wine)]">&#8377;{product.price_inr}</span>{onSale && <span className="text-base text-[var(--ink)]/40 line-through">&#8377;{product.compare_at_price_inr}</span>}{onSale && <span className="rounded-full bg-pink-100 text-pink-700 px-3 py-1 text-xs font-semibold">{Math.round((1 - product.price_inr / product.compare_at_price_inr!) * 100)}% OFF</span>}<span className="ml-auto whitespace-nowrap text-sm md:text-base text-[var(--ink)]/75">{volume || ""}</span></div>
+          <div className="grid grid-cols-4 gap-2 md:gap-3 mb-6">
+            {highlights.map(({ label, Icon }) => <div key={label} className="flex flex-col items-center text-center gap-2 min-w-0">
+              <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-[#f8eefa] text-[#6d1878] flex items-center justify-center">
+                <Icon aria-hidden="true" className="w-6 h-6 md:w-8 md:h-8" strokeWidth={1.7} />
+              </div>
+              <span className="text-[10px] md:text-xs leading-tight text-[var(--ink)] font-medium">{label}</span>
+            </div>)}
+          </div>
           <p className="text-sm text-[var(--ink)]/85 mb-6 leading-relaxed">{product.description}</p>
           <RoutineUpsell product={product} products={allProducts} />
           <AddToCartForm product={product} />
