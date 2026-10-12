@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const canonical = `/product/${encodeURIComponent(product.slug)}`;
   const image = product.images?.[0];
   return {
-    title: product.name,
+    title: `${product.name} | Humor Luxury`,
     description,
     alternates: { canonical },
     robots: product.status === "live" ? { index: true, follow: true } : { index: false, follow: false },
@@ -160,7 +160,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   if (slug === "smooth-shake-daily-shampoo") gallery.splice(3, 1);
   const volume = productVolumes[product.sku];
   const highlights = getProductHighlights({ ...product, slug });
-  const siteUrl = "https://humorluxury.com";
+  const siteUrl = "https://www.humorluxury.com";
   const productUrl = `${siteUrl}/product/${encodeURIComponent(product.slug)}`;
   const productImages = (product.images || []).map((image) =>
     image.startsWith("http://") || image.startsWith("https://") ? image : `${siteUrl}${image.startsWith("/") ? "" : "/"}${image}`
