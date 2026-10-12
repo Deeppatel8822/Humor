@@ -34,7 +34,8 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
             <img
               src={image.src}
               alt={image.alt}
-              className="w-full h-full object-contain p-1 rounded-xl md:rounded-2xl"
+              style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "center" }}
+              className="block max-w-full max-h-full object-contain p-1 rounded-xl md:rounded-2xl"
             />
           </button>
         ))}
@@ -44,7 +45,8 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
         <img
           src={active.src}
           alt={active.alt}
-          className="block w-full h-full object-contain p-2 sm:p-3 md:p-5 rounded-2xl md:rounded-[28px] transition-opacity duration-200"
+          style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "center" }}
+          className="block max-w-full max-h-full object-contain p-2 sm:p-3 md:p-5 rounded-2xl md:rounded-[28px] transition-opacity duration-200"
         />
       </div>
     </div>
