@@ -42,13 +42,15 @@ export async function POST(req: NextRequest) {
     const mobile = String(registration.mobile || "").trim();
     const address = String(registration.address || "").trim();
     const proofPath = String(registration.proofPath || "").trim();
+    const termsAccepted = registration.termsAccepted === true;
+    const termsVersion = String(registration.termsVersion || "");
 
-    if (!businessType || !businessName || !mobile || !address || !proofPath || !proofPath.startsWith(authData.user.id + "/")) {
+    if (!businessType || !businessName || !mobile || !address || !proofPath || !proofPath.startsWith(authData.user.id + "/") || !termsAccepted || !termsVersion) {
       return NextResponse.json({ error: "Registration details are incomplete." }, { status: 400 });
     }
 
     const programme = {
-      status: "active",
+      status: "pending_verification",
       businessType,
       businessName,
       mobile,
@@ -57,6 +59,9 @@ export async function POST(req: NextRequest) {
       registrationFeeInr: 9,
       razorpayOrderId,
       razorpayPaymentId,
+      termsAccepted: true,
+      termsVersion,
+      termsAcceptedAt: new Date().toISOString(),
       registeredAt: new Date().toISOString(),
     };
 
