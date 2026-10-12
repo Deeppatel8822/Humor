@@ -2,7 +2,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 
 export const PARTNER_REWARD_RATE = 0.25;
 export const PARTNER_CUSTOMER_DISCOUNT_RATE = 0.10;
-export const PARTNER_MAX_DISCOUNT_PER_UNIT = 25;
+export const PARTNER_MAX_DISCOUNT_PER_UNIT = 0; // No per-unit cap on the approved 10% coupon discount.
 export const PARTNER_CODE_VALIDITY_DAYS = 0; // Partner codes do not have a fixed expiry.
 export const PARTNER_USAGE_LIMIT = Number.POSITIVE_INFINITY; // No fixed coupon-use cap.
 export const PARTNER_MIN_WITHDRAWAL = 1000;
@@ -55,8 +55,8 @@ export async function findPartnerByCode(code: string) {
 
 export function calculatePartnerDiscount(lines: { quantity: number; priceInr: number }[]) {
   return lines.reduce((sum, line) => {
-    const perUnit = Math.min(Math.round(line.priceInr * PARTNER_CUSTOMER_DISCOUNT_RATE), PARTNER_MAX_DISCOUNT_PER_UNIT);
-    return sum + Math.max(0, perUnit) * line.quantity;
+    const perUnit = Math.round(Math.max(0, line.priceInr) * PARTNER_CUSTOMER_DISCOUNT_RATE);
+    return sum + perUnit * Math.max(0, line.quantity);
   }, 0);
 }
 
