@@ -183,7 +183,7 @@ function CustomersSection({ customers, orders }: { customers: Customer[]; orders
       <div className="mt-5 flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
         <div className="flex flex-wrap gap-2">
           <button onClick={() => setView("registered")} className={`rounded-full px-4 py-2.5 text-sm font-medium ${view === "registered" ? "bg-[var(--deep-wine)] text-white" : "border border-[var(--line)] bg-white"}`}>Registered Customers ({registered.length})</button>
-          <button onClick={() => setView("guest")} className={`rounded-full px-4 py-2.5 text-sm font-medium ${view === "guest" ? "bg-[var(--deep-wine)] text-white" : "border border-[var(--line)] bg-white"}`}>Guest Purchases ({guestOrders.length})</button>
+          <button onClick={() => setView("guest")} className={`rounded-full px-4 py-2.5 text-sm font-medium ${view === "guest" ? "bg-[var(--deep-wine)] text-white" : "border border-[var(--line)] bg-white"}`}>Guest Customers ({allGuestCustomers.length})</button>
         </div>
         <input value={customerSearch} onChange={(event) => setCustomerSearch(event.target.value)} placeholder="Search name, email, phone, order…" className="w-full md:w-80 rounded-full border border-[var(--line)] bg-white px-4 py-3 text-sm outline-none" />
       </div>
