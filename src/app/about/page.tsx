@@ -60,8 +60,8 @@ export default function AboutPage() {
 
       <section className="max-w-7xl mx-auto px-5 md:px-8 pb-20">
         <div className="grid md:grid-cols-2 gap-5">
-          <div className="aspect-[4/3] rounded-3xl bg-[var(--dusty-rose)]/20 border border-[var(--line)] flex items-center justify-center">
-            <div className="text-center"><div className="text-[10px] uppercase tracking-[0.18em] text-[var(--warm-gold)] mb-2">Photography</div><p className="font-display text-lg text-[var(--deep-wine)]/35">Model / Lifestyle Image</p></div>
+          <div className="aspect-[4/3] rounded-3xl bg-[var(--dusty-rose)]/20 border border-[var(--line)] overflow-hidden">
+            <img src="https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/8e7d822f-6205-4179-8694-f4b21768cdf4.jpg" alt="Happy, confident model for Humor Luxury skincare lifestyle" className="w-full h-full object-cover object-center" loading="lazy" />
           </div>
           <div className="aspect-[4/3] rounded-3xl bg-[var(--warm-gold)]/10 border border-[var(--line)] flex items-center justify-center">
             <div className="text-center"><div className="text-[10px] uppercase tracking-[0.18em] text-[var(--warm-gold)] mb-2">Photography</div><p className="font-display text-lg text-[var(--deep-wine)]/35">Product / Lifestyle Image</p></div>
