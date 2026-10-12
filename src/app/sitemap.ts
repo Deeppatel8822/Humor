@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getAllProducts } from "@/lib/catalog";
 
-const siteUrl = "https://humorluxury.com";
+const siteUrl = "https://www.humorluxury.com";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
