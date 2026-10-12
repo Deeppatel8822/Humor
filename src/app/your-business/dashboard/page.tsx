@@ -50,7 +50,23 @@ export default function PartnerDashboardPage() {
     return () => { active = false; };
   }, []);
 
-  async function requestWithdrawal() {\n    setWithdrawalMessage("");\n    setWithdrawing(true);\n    try {\n      const { data: sessionData } = await getSupabase().auth.getSession();\n      const token = sessionData.session?.access_token;\n      if (!token) throw new Error("Please log in again.");\n      const res = await fetch("/api/business-programme/withdraw", { method: "POST", headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" }, body: JSON.stringify({ amount: Number(withdrawalAmount) }) });\n      const json = await res.json();\n      if (!res.ok) throw new Error(json.error || "Could not submit request.");\n      setWithdrawalMessage(json.message || "Request submitted.");\n      setData((current) => current ? { ...current, walletBalance: json.walletBalance, history: [{ amount: Number(withdrawalAmount), status: "withdrawal:pending", requestedAt: new Date().toISOString(), kind: "withdrawal" }, ...current.history].slice(0, 100) } : current);\n    } catch (e) { setWithdrawalMessage(e instanceof Error ? e.message : "Could not submit request."); }\n    finally { setWithdrawing(false); }\n  }\n\n  async function copyCode() {
+  async function requestWithdrawal() {
+    setWithdrawalMessage("");
+    setWithdrawing(true);
+    try {
+      const { data: sessionData } = await getSupabase().auth.getSession();
+      const token = sessionData.session?.access_token;
+      if (!token) throw new Error("Please log in again.");
+      const res = await fetch("/api/business-programme/withdraw", { method: "POST", headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" }, body: JSON.stringify({ amount: Number(withdrawalAmount) }) });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Could not submit request.");
+      setWithdrawalMessage(json.message || "Request submitted.");
+      setData((current) => current ? { ...current, walletBalance: json.walletBalance, history: [{ amount: Number(withdrawalAmount), status: "withdrawal:pending", requestedAt: new Date().toISOString(), kind: "withdrawal" }, ...current.history].slice(0, 100) } : current);
+    } catch (e) { setWithdrawalMessage(e instanceof Error ? e.message : "Could not submit request."); }
+    finally { setWithdrawing(false); }
+  }
+
+  async function copyCode() {
     if (!data?.code) return;
     try {
       await navigator.clipboard.writeText(data.code);
