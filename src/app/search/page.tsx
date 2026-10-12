@@ -1,11 +1,17 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { products } from "@/lib/products";
 
 export default function SearchPage() {
   const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const initialQuery = params.get("q");
+    if (initialQuery) setQuery(initialQuery);
+  }, []);
 
   const results = useMemo(() => {
     const term = query.trim().toLowerCase();
