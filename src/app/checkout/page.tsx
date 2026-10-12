@@ -17,7 +17,7 @@ declare global {
 }
 
 export default function CheckoutPage() {
-  const { lines, subtotalInr, bundleSavingsInr, clearCart } = useCart();
+  const { lines, subtotalInr, bundleSavingsInr, clearCart, trackCartActivity } = useCart();
   const router = useRouter();
 
   const [paymentMethod, setPaymentMethod] = useState<"online" | "cod">("online");
@@ -115,6 +115,7 @@ export default function CheckoutPage() {
   }
 
   async function handleCodOrder() {
+    trackCartActivity("checkout_started", lines, form);
     const response = await fetch("/api/orders/cod", {
       method: "POST",
       headers: { "Content-Type": "application/json", ...(await authHeaders()) },
@@ -135,6 +136,7 @@ export default function CheckoutPage() {
   }
 
   async function handleOnlinePayment() {
+    trackCartActivity("checkout_started", lines, form);
     const createRes = await fetch("/api/razorpay/create-order", {
       method: "POST",
       headers: { "Content-Type": "application/json", ...(await authHeaders()) },
