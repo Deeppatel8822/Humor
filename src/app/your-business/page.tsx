@@ -32,6 +32,7 @@ export default function YourBusinessPage() {
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href="/your-business/register" className="inline-flex items-center gap-2 rounded-full bg-[var(--warm-gold)] px-7 py-3.5 text-sm font-bold text-[var(--ink)] transition hover:-translate-y-0.5">Apply for ₹9 <span>→</span></Link>
             <a href="/start-your-business-terms.html" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full border border-white/25 px-6 py-3.5 text-sm font-semibold text-white hover:bg-white/10">Read full programme terms ↗</a>
+            <Link href="/your-business/dashboard" className="inline-flex items-center gap-2 rounded-full border border-[#D49A6A]/50 px-6 py-3.5 text-sm font-semibold text-[var(--warm-gold)] hover:bg-white/10">Partner Dashboard ↗</Link>
           </div>
           <p className="mt-4 text-xs text-white/50">Application is subject to document verification and programme approval. Rewards are not guaranteed income.</p>
         </div>
