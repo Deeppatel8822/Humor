@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
       const wallet = await postWalletTransaction({
         partnerUserId: userId,
         type: decision === "approve" ? "withdrawal_paid" : "withdrawal_rejected",
-        amountInr: Math.max(0.01, Number(request.amount || 0)),
+        amountInr: Number(request.amount || 0),
         referenceId,
         description: decision === "approve" ? "Withdrawal approved for payout" : "Withdrawal rejected; reserved funds returned",
         metadata: { requestedAt, decision },
