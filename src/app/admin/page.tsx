@@ -389,10 +389,12 @@ function CartActivitySection() {
     }
     return Array.from(map.values()).map((group) => {
       const sorted = [...group.events].sort((a,b) => new Date(a.created_at).getTime()-new Date(b.created_at).getTime());
-      const lastPurchase = sorted.filter((e) => e.event_type === "purchase_completed").at(-1);
-      const latestNonPurchase = sorted.filter((e) => e.event_type !== "purchase_completed").at(-1);
+      const purchases = sorted.filter((e) => e.event_type === "purchase_completed");
+      const lastPurchase = purchases[purchases.length - 1];
+      const nonPurchases = sorted.filter((e) => e.event_type !== "purchase_completed");
+      const latestNonPurchase = nonPurchases[nonPurchases.length - 1];
       const purchased = Boolean(lastPurchase && (!latestNonPurchase || new Date(lastPurchase.created_at) >= new Date(latestNonPurchase.created_at)));
-      return { ...group, latest: sorted.at(-1) || group.latest, purchased };
+      return { ...group, latest: sorted[sorted.length - 1] || group.latest, purchased };
     }).sort((a,b) => new Date(b.latest.created_at).getTime()-new Date(a.latest.created_at).getTime());
   }, [events]);
 
