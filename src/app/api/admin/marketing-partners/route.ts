@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import crypto from "crypto";
 import { supabaseAdmin } from "@/lib/supabase";
-import { PARTNER_CODE_VALIDITY_DAYS, PARTNER_USAGE_LIMIT } from "@/lib/marketingPartner";
+
 
 async function authorized() {
   const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
@@ -53,14 +53,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, status: "rejected" });
     }
 
-    const code = "HUMOR-" + crypto.randomBytes(4).toString("hex").toUpperCase();
-    const expiresAt = new Date(Date.now() + PARTNER_CODE_VALIDITY_DAYS * 86400000).toISOString();
+    const code = "HL" + crypto.randomBytes(5).toString("hex").toUpperCase();
+    const partnerId = "HLP" + crypto.randomBytes(6).toString("hex").toUpperCase();
     const partner = {
       status: "approved",
+      partnerId,
       code,
-      expiresAt,
       usageCount: 0,
-      usageLimit: PARTNER_USAGE_LIMIT,
       walletBalance: 0,
       totalRewards: 0,
       totalSales: 0,
