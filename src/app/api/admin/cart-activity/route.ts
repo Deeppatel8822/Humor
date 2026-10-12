@@ -10,7 +10,7 @@ async function authorized() {
   if (!email || !value || !secret) return false;
   return value === crypto.createHmac("sha256", secret).update(email).digest("hex");
 }
-const eventTypes = ["add_to_cart","remove_from_cart","quantity_updated","checkout_started","purchase_completed","cart_cleared"];
+const eventTypes = ["product_view","add_to_cart","remove_from_cart","quantity_updated","checkout_started","purchase_completed","cart_cleared"];
 function safeString(v: unknown, max = 200) { return String(v ?? "").trim().slice(0, max); }
 function normalizePhone(v: unknown) { let digits = String(v ?? "").replace(/\\D/g, ""); if (digits.length === 10) digits = "91" + digits; if (digits.startsWith("0") && digits.length === 11) digits = "91" + digits.slice(1); return digits.length >= 11 && digits.length <= 15 ? "+" + digits : ""; }
 
