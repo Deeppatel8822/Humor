@@ -30,7 +30,9 @@ export async function POST(req: NextRequest) {
     if (!/^\d{10}$/.test(mobile)) return NextResponse.json({ error: "Enter a valid 10-digit mobile number." }, { status: 400 });
 
     const existing = user.user_metadata?.business_programme;
-    if (existing?.status === "active") return NextResponse.json({ error: "Your business programme is already active." }, { status: 409 });
+    if (existing?.status === "pending_verification" || existing?.status === "approved") {
+      return NextResponse.json({ error: "Your application is already submitted and is awaiting or has completed verification." }, { status: 409 });
+    }
 
     const order = await razorpayClient().orders.create({
       amount: REGISTRATION_FEE_INR * 100,
