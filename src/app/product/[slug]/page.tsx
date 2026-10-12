@@ -116,7 +116,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const onSale = product.compare_at_price_inr && product.compare_at_price_inr > product.price_inr;
   const gallery = slug === "sunscreen-spf-50" ? sunscreenImages : product.images.map((src) => ({ src, alt: product.name }));
   const serumSlugs = ["fullmoon-face-serum", "blemish-block-face-serum", "velvet-touch-face-serum"];
-  if (serumSlugs.includes(slug)) gallery.push({ src: "/products/serum-application-steps.svg", alt: "Four steps for applying skincare serum" });
+  if (serumSlugs.includes(slug)) gallery.splice(2, 0, { src: "/products/serum-application-steps.svg", alt: "Four steps for applying skincare serum" });
   const volume = productVolumes[product.sku];
   const highlights = getProductHighlights({ ...product, slug });
 
