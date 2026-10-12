@@ -131,7 +131,26 @@ function CustomersSection({ customers, orders }: { customers: Customer[]; orders
   const guestOrders = orders.filter((order) => !order.customer?.id || !registeredIds.has(order.customer.id));
   const matches = (value: string) => value.toLowerCase().includes(customerSearch.toLowerCase().trim());
   const visibleCustomers = registered.filter((customer) => matches(`${customer.full_name || ""} ${customer.email || ""} ${customer.phone || ""}`));
-  const visibleGuestOrders = guestOrders.filter((order) => matches(`${order.order_number} ${order.customer?.full_name || ""} ${order.customer?.email || ""} ${order.customer?.phone || ""} ${order.address?.phone || ""} ${order.address?.city || ""}`));
+  const guestGroups = new Map<string, { key: string; name: string; email: string; phone: string; orders: Order[] }>();
+  for (const order of guestOrders) {
+    const email = (order.customer?.email || "").trim().toLowerCase();
+    const phone = (order.customer?.phone || order.address?.phone || "").replace(/\\D/g, "");
+    const key = email ? `email:${email}` : phone ? `phone:${phone}` : `order:${order.id}`;
+    const existing = guestGroups.get(key);
+    if (existing) existing.orders.push(order);
+    else guestGroups.set(key, {
+      key,
+      name: order.customer?.full_name || "Guest Customer",
+      email: order.customer?.email || "",
+      phone: order.customer?.phone || order.address?.phone || "",
+      orders: [order],
+    });
+  }
+  const allGuestCustomers = Array.from(guestGroups.values()).map((group) => ({
+    ...group,
+    orders: group.orders.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
+  }));
+  const visibleGuestCustomers = allGuestCustomers.filter((group) => matches(`${group.name} ${group.email} ${group.phone} ${group.orders.map((order) => order.order_number).join(" ")} ${group.orders.map((order) => order.address?.city || "").join(" ")}`));
   const ordersForCustomer = (customerId: string) => registeredOrders.filter((order) => order.customer?.id === customerId);
   const registeredCsv = () => downloadCsv("humor-registered-customers.csv",
     ["Customer ID", "Name", "Email", "Mobile", "Joined", "Order Count", "Total Purchase INR", "Order Numbers", "Order Dates", "Order Statuses", "Products Purchased", "Payment Statuses"],
@@ -145,13 +164,18 @@ function CustomersSection({ customers, orders }: { customers: Customer[]; orders
         customerOrders.map((order) => order.order_items?.map((item) => `${item.product?.name || "Product"} x${item.quantity}`).join(", ")).join(" | "),
         customerOrders.map((order) => order.payment_status).join(" | ")];
     }));
-  const guestCsv = () => downloadCsv("humor-guest-checkout-orders.csv",
-    ["Order Number", "Order Date", "Customer Name", "Email", "Mobile", "Address", "Products", "Subtotal INR", "Discount INR", "Shipping INR", "Total INR", "Payment Status", "Order Status", "Tracking Number"],
-    visibleGuestOrders.map((order) => [order.order_number, order.created_at, order.customer?.full_name || "Guest Customer", order.customer?.email,
-      order.customer?.phone || order.address?.phone,
-      [order.address?.line1, order.address?.line2, order.address?.city, order.address?.state, order.address?.pincode, order.address?.country || "India"].filter(Boolean).join(", "),
-      order.order_items?.map((item) => `${item.product?.name || "Product"} x${item.quantity} @ ₹${item.unit_price_inr}`).join(" | "),
-      order.subtotal_inr, order.discount_inr, order.shipping_inr, order.total_inr, order.payment_status, order.status, order.tracking_number]));
+  const guestCsv = () => downloadCsv("humor-guest-customers-purchase-history.csv",
+    ["Customer Name", "Email", "Mobile", "Order Count", "Lifetime Purchase INR", "Order Numbers", "Purchase Dates", "Products Purchased", "Order Totals INR", "Payment Statuses", "Order Statuses", "Delivery Addresses", "Tracking Numbers"],
+    visibleGuestCustomers.map((group) => [group.name, group.email, group.phone, group.orders.length,
+      group.orders.reduce((sum, order) => sum + Number(order.total_inr || 0), 0),
+      group.orders.map((order) => order.order_number).join(" | "),
+      group.orders.map((order) => formatDate(order.created_at)).join(" | "),
+      group.orders.map((order) => order.order_items?.map((item) => `${item.product?.name || "Product"} x${item.quantity}`).join(", ")).join(" | "),
+      group.orders.map((order) => order.total_inr).join(" | "),
+      group.orders.map((order) => order.payment_status).join(" | "),
+      group.orders.map((order) => order.status).join(" | "),
+      group.orders.map((order) => [order.address?.line1, order.address?.line2, order.address?.city, order.address?.state, order.address?.pincode, order.address?.country || "India"].filter(Boolean).join(", ")).join(" | "),
+      group.orders.map((order) => order.tracking_number || "").join(" | ")]);
   return <div className="space-y-5">
     <div className="bg-white rounded-2xl border border-[var(--line)] p-5">
       <h2 className="font-display text-2xl text-[var(--deep-wine)]">Customer Purchase Records</h2>
@@ -172,10 +196,10 @@ function CustomersSection({ customers, orders }: { customers: Customer[]; orders
       <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b border-[var(--line)] bg-[var(--milk-sage)] text-left text-xs uppercase tracking-wide text-[var(--muted)]"><th className="p-4">Customer</th><th className="p-4">Contact</th><th className="p-4">Joined</th><th className="p-4">Orders</th><th className="p-4">Total Spend</th><th className="p-4">Purchase History</th></tr></thead><tbody>{visibleCustomers.map((customer) => { const customerOrders = ordersForCustomer(customer.id); const spend = customerOrders.reduce((sum, order) => sum + Number(order.total_inr || 0), 0); return <tr key={customer.id} className="border-b border-[var(--line)] last:border-0 align-top"><td className="p-4"><p className="font-medium">{customer.full_name || "—"}</p>{customer.marketingPartner?.status === "approved" && <span className="mt-1 inline-flex rounded-full bg-purple-100 px-2 py-1 text-[10px] font-semibold text-purple-700">Marketing Partner</span>}</td><td className="p-4"><p>{customer.email || "—"}</p><p className="mt-1 text-xs text-[var(--muted)]">{customer.phone || "No mobile"}</p></td><td className="p-4 whitespace-nowrap text-[var(--muted)]">{formatDate(customer.created_at)}</td><td className="p-4 font-semibold">{customerOrders.length}</td><td className="p-4 font-semibold text-[var(--deep-wine)]">₹{spend.toLocaleString("en-IN")}</td><td className="p-4 min-w-64">{customerOrders.length ? <div className="space-y-2">{customerOrders.map((order) => <div key={order.id} className="rounded-xl border border-[var(--line)] p-3"><div className="flex flex-wrap justify-between gap-2"><span className="font-semibold">#{order.order_number}</span><span>₹{order.total_inr}</span></div><p className="mt-1 text-xs text-[var(--muted)]">{formatDate(order.created_at)} · {order.status} · {order.payment_status}</p><p className="mt-2 text-xs">{order.order_items?.map((item) => `${item.product?.name || "Product"} × ${item.quantity}`).join(", ")}</p></div>)}</div> : <span className="text-xs text-[var(--muted)]">No purchases yet</span>}</td></tr>; })}{!visibleCustomers.length && <tr><td colSpan={6} className="p-10 text-center text-sm text-[var(--muted)]">No registered customers match this search.</td></tr>}</tbody></table></div>
     </div> : <div className="bg-white rounded-2xl border border-[var(--line)] overflow-hidden">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-5 border-b border-[var(--line)]">
-        <div><h3 className="font-display text-xl text-[var(--deep-wine)]">Guest Checkout Purchases</h3><p className="text-xs text-[var(--muted)] mt-1">Each guest order is listed with contact, delivery, products and payment details.</p></div>
-        <button onClick={guestCsv} className="rounded-full bg-[var(--deep-wine)] px-5 py-2.5 text-sm font-semibold text-white">Download Guest Orders CSV</button>
+        <div><h3 className="font-display text-xl text-[var(--deep-wine)]">Guest Checkout Purchases</h3><p className="text-xs text-[var(--muted)] mt-1">One row per customer, grouped by email or mobile, with their complete purchase history.</p></div>
+        <button onClick={guestCsv} className="rounded-full bg-[var(--deep-wine)] px-5 py-2.5 text-sm font-semibold text-white">Download Customer-wise CSV</button>
       </div>
-      <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b border-[var(--line)] bg-[var(--milk-sage)] text-left text-xs uppercase tracking-wide text-[var(--muted)]"><th className="p-4">Order</th><th className="p-4">Customer / Contact</th><th className="p-4">Delivery Address</th><th className="p-4">Products</th><th className="p-4">Payment / Status</th><th className="p-4">Total</th></tr></thead><tbody>{visibleGuestOrders.map((order) => <tr key={order.id} className="border-b border-[var(--line)] last:border-0 align-top"><td className="p-4 whitespace-nowrap"><p className="font-semibold">#{order.order_number}</p><p className="mt-1 text-xs text-[var(--muted)]">{formatDate(order.created_at)}</p></td><td className="p-4"><p className="font-medium">{order.customer?.full_name || "Guest Customer"}</p><p className="mt-1">{order.customer?.email || "—"}</p><p className="mt-1 text-xs text-[var(--muted)]">{order.customer?.phone || order.address?.phone || "—"}</p></td><td className="p-4 min-w-48 text-[var(--muted)]">{[order.address?.line1, order.address?.line2, order.address?.city, order.address?.state, order.address?.pincode, order.address?.country || "India"].filter(Boolean).join(", ") || "—"}</td><td className="p-4 min-w-52">{order.order_items?.map((item, index) => <p key={index}>{item.product?.name || "Product"} × {item.quantity} · ₹{item.unit_price_inr * item.quantity}</p>)}</td><td className="p-4"><p>{order.payment_status}</p><p className="mt-1 text-xs text-[var(--muted)]">{order.status}</p><p className="mt-1 text-xs text-[var(--muted)]">{order.tracking_number || "No tracking yet"}</p></td><td className="p-4 font-semibold text-[var(--deep-wine)]">₹{order.total_inr}</td></tr>)}{!visibleGuestOrders.length && <tr><td colSpan={6} className="p-10 text-center text-sm text-[var(--muted)]">No guest purchases match this search.</td></tr>}</tbody></table></div>
+      <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b border-[var(--line)] bg-[var(--milk-sage)] text-left text-xs uppercase tracking-wide text-[var(--muted)]"><th className="p-4">Customer / Contact</th><th className="p-4">Orders</th><th className="p-4">Total Spend</th><th className="p-4">Full Purchase History</th></tr></thead><tbody>{visibleGuestCustomers.map((group) => <tr key={group.key} className="border-b border-[var(--line)] last:border-0 align-top"><td className="p-4 min-w-48"><p className="font-semibold">{group.name}</p><p className="mt-1 break-all">{group.email || "No email"}</p><p className="mt-1 text-xs text-[var(--muted)]">{group.phone || "No mobile"}</p></td><td className="p-4 font-semibold">{group.orders.length}</td><td className="p-4 font-semibold text-[var(--deep-wine)]">₹{group.orders.reduce((sum, order) => sum + Number(order.total_inr || 0), 0).toLocaleString("en-IN")}</td><td className="p-4 min-w-80"><div className="space-y-3">{group.orders.map((order) => <div key={order.id} className="rounded-xl border border-[var(--line)] p-3"><div className="flex flex-wrap justify-between gap-2"><span className="font-semibold">#{order.order_number}</span><span className="font-semibold text-[var(--deep-wine)]">₹{order.total_inr}</span></div><p className="mt-1 text-xs text-[var(--muted)]">{formatDate(order.created_at)} · {order.payment_status} · {order.status}</p><div className="mt-2 space-y-1 text-xs">{order.order_items?.map((item, index) => <p key={index}>{item.product?.name || "Product"} × {item.quantity} · ₹{item.unit_price_inr * item.quantity}</p>)}</div><p className="mt-2 text-xs text-[var(--muted)]">Delivery: {[order.address?.line1, order.address?.line2, order.address?.city, order.address?.state, order.address?.pincode].filter(Boolean).join(", ") || "—"}</p>{order.tracking_number && <p className="mt-1 text-xs text-[var(--muted)]">Tracking: {order.tracking_number}</p>}</div>)}</div></td></tr>)}{!visibleGuestCustomers.length && <tr><td colSpan={4} className="p-10 text-center text-sm text-[var(--muted)]">No guest customers match this search.</td></tr>}</tbody></table></div>
     </div>}
   </div>;
 }
