@@ -15,8 +15,8 @@ export interface MarketingPartner {
   usageLimit?: number;
   walletBalance?: number;
   totalRewards?: number;
-  /** Permanent reward tier: basic (25%), silver (27%), gold (30%), or elite (30%). */
-  rewardTier?: "basic" | "silver" | "gold" | "elite";
+  /** Permanent reward tier: basic (25%), silver (27%), or gold (30%). */
+  rewardTier?: "basic" | "silver" | "gold";
   /** Coins earned in the current 30-day qualification window; resets after 30 days. */
   qualificationCoins?: number;
   qualificationPeriodStartedAt?: string;
@@ -83,7 +83,7 @@ export async function creditPartnerReward(
   const qualificationPeriodStartedAt = periodIsValid ? periodStart.toISOString() : nowIso;
   const coinsBeforeOrderInWindow = periodIsValid ? Math.max(0, Number(partner.qualificationCoins ?? 0)) : 0;
   const currentTier = partner.rewardTier ?? "basic";
-  const rewardRate = currentTier === "elite" || currentTier === "gold" ? 0.30 : currentTier === "silver" ? 0.27 : PARTNER_REWARD_RATE;
+  const rewardRate = currentTier === "gold" ? 0.30 : currentTier === "silver" ? 0.27 : PARTNER_REWARD_RATE;
   const reward = Math.max(0, Math.round(billedAmountInr * rewardRate));
   const lifetimeCoinsBeforeOrder = Math.max(0, Number(partner.totalRewards ?? 0));
   const qualificationCoinsAfterOrder = coinsBeforeOrderInWindow + reward;
@@ -91,9 +91,8 @@ export async function creditPartnerReward(
   // Tier qualification uses only coins earned in this 30-day window.
   // The current order is paid at the existing tier; any upgrade applies to later orders.
   let nextTier: NonNullable<MarketingPartner["rewardTier"]> = currentTier;
-  if (currentTier === "basic" && qualificationCoinsAfterOrder >= 1000) nextTier = "silver";
-  if ((currentTier === "basic" || currentTier === "silver") && qualificationCoinsAfterOrder >= 3000) nextTier = "gold";
-  if (qualificationCoinsAfterOrder >= 5000) nextTier = "elite";
+  if ((currentTier === "basic" || currentTier === "silver") && qualificationCoinsAfterOrder >= 3000) nextTier = "silver";
+  if (qualificationCoinsAfterOrder >= 5000) nextTier = "gold";
   const next: MarketingPartner = {
     ...partner,
     rewardTier: nextTier,
