@@ -393,7 +393,7 @@ export const products: Product[] = [
     full_ingredient_list: "Aqua, Sodium Cocoyl Isethionate, Glycerin, Cocamidopropyl Betaine, Citric Acid, Phenoxyethanol, Parfum.",
     skin_hair_type: ["All Skin Types"],
     how_to_use: "Massage onto wet skin, lather, rinse thoroughly.",
-    category: "bodycare",
+    category: "skincare",
     subrange: null,
     concern_tags: [],
     routine_tags: [],
