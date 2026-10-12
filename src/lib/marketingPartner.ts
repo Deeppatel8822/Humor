@@ -113,7 +113,7 @@ export async function creditPartnerReward(
   const { data: currentData, error: currentError } = await admin.auth.admin.getUserById(userId);
   if (currentError || !currentData.user) throw currentError || new Error("Partner account not found.");
 
-  if (isWalletLedgerEnabled) {
+  if (isWalletLedgerEnabled && reward > 0) {
     const wallet = await postWalletTransaction({
       partnerUserId: userId,
       type: "reward",
