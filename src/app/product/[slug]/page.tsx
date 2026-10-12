@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { Droplet, Sparkles, Waves, Sprout, ShieldCheck, Sun, Heart, Leaf } from "lucide-react";
 import { getProduct, getAllProducts } from "@/lib/catalog";
 import { getProducts as getLocalProducts } from "@/lib/products";
 import AddToCartForm from "@/components/AddToCartForm";
@@ -49,46 +48,46 @@ const productVolumes: Record<string, string> = {
 
 function getProductHighlights(product: { sku: string; category: string; name: string }) {
   if (product.sku === "HL-SKC-SUN-50") return [
-    { label: "Broad Spectrum", Icon: Sun },
-    { label: "Daily Protection", Icon: ShieldCheck },
-    { label: "Lightweight Feel", Icon: Droplet },
-    { label: "UVA + UVB Care", Icon: Sparkles },
+    { label: "Broad Spectrum", symbol: "☀" },
+    { label: "Daily Protection", symbol: "✓" },
+    { label: "Lightweight Feel", symbol: "◉" },
+    { label: "UVA + UVB Care", symbol: "✧" },
   ];
   if (product.category === "haircare" && product.sku.includes("SHM-SS")) return [
-    { label: "Cleanses Gently", Icon: Droplet },
-    { label: "Smooth & Glossy Hair", Icon: Waves },
-    { label: "Strengthens Hair Fiber", Icon: Sprout },
-    { label: "Deep Hydration", Icon: Sparkles },
+    { label: "Cleanses Gently", symbol: "◉" },
+    { label: "Smooth & Glossy Hair", symbol: "≋" },
+    { label: "Strengthens Hair Fiber", symbol: "♧" },
+    { label: "Deep Hydration", symbol: "✧" },
   ];
   if (product.category === "haircare" && product.sku.includes("CND")) return [
-    { label: "Smooth & Detangle", Icon: Waves },
-    { label: "Silky Shine", Icon: Sparkles },
-    { label: "Soft-Feeling Hair", Icon: Sprout },
-    { label: "Everyday Hair Care", Icon: Heart },
+    { label: "Smooth & Detangle", symbol: "≋" },
+    { label: "Silky Shine", symbol: "✧" },
+    { label: "Soft-Feeling Hair", symbol: "♧" },
+    { label: "Everyday Hair Care", symbol: "♡" },
   ];
   if (product.category === "haircare") return [
-    { label: "Deep Conditioning", Icon: Droplet },
-    { label: "Smooth Hair", Icon: Waves },
-    { label: "Soft & Bouncy", Icon: Sparkles },
-    { label: "Hair Fiber Care", Icon: Sprout },
+    { label: "Deep Conditioning", symbol: "◉" },
+    { label: "Smooth Hair", symbol: "≋" },
+    { label: "Soft & Bouncy", symbol: "✧" },
+    { label: "Hair Fiber Care", symbol: "♧" },
   ];
   if (product.category === "bodycare") return [
-    { label: "Gentle Cleansing", Icon: Droplet },
-    { label: "Moisture Care", Icon: Waves },
-    { label: "Soft-Feeling Skin", Icon: Heart },
-    { label: "Everyday Care", Icon: Leaf },
+    { label: "Gentle Cleansing", symbol: "◉" },
+    { label: "Moisture Care", symbol: "≋" },
+    { label: "Soft-Feeling Skin", symbol: "♡" },
+    { label: "Everyday Care", symbol: "♧" },
   ];
   if (product.name.toLowerCase().includes("serum")) return [
-    { label: "Targeted Care", Icon: Sparkles },
-    { label: "Smoother Texture", Icon: Waves },
-    { label: "Hydration Support", Icon: Droplet },
-    { label: "Skin Barrier Care", Icon: ShieldCheck },
+    { label: "Targeted Care", symbol: "✧" },
+    { label: "Smoother Texture", symbol: "≋" },
+    { label: "Hydration Support", symbol: "◉" },
+    { label: "Skin Barrier Care", symbol: "✓" },
   ];
   return [
-    { label: "Gentle Cleansing", Icon: Droplet },
-    { label: "Fresh-Feeling Skin", Icon: Sparkles },
-    { label: "Skin Comfort", Icon: Heart },
-    { label: "Everyday Care", Icon: Leaf },
+    { label: "Gentle Cleansing", symbol: "◉" },
+    { label: "Fresh-Feeling Skin", symbol: "✧" },
+    { label: "Skin Comfort", symbol: "♡" },
+    { label: "Everyday Care", symbol: "♧" },
   ];
 }
 
@@ -132,9 +131,9 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           </div>
           <div className="flex items-center gap-3 mb-5"><span className="text-2xl md:text-3xl font-semibold text-[var(--deep-wine)]">&#8377;{product.price_inr}</span>{onSale && <span className="text-base text-[var(--ink)]/40 line-through">&#8377;{product.compare_at_price_inr}</span>}{onSale && <span className="rounded-full bg-pink-100 text-pink-700 px-3 py-1 text-xs font-semibold">{Math.round((1 - product.price_inr / product.compare_at_price_inr!) * 100)}% OFF</span>}<span className="ml-auto whitespace-nowrap text-sm md:text-base text-[var(--ink)]/75">{volume || ""}</span></div>
           <div className="grid grid-cols-4 gap-2 md:gap-3 mb-6">
-            {highlights.map(({ label, Icon }) => <div key={label} className="flex flex-col items-center text-center gap-2 min-w-0">
+            {highlights.map(({ label, symbol }) => <div key={label} className="flex flex-col items-center text-center gap-2 min-w-0">
               <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-[#f8eefa] text-[#6d1878] flex items-center justify-center">
-                <Icon aria-hidden="true" className="w-6 h-6 md:w-8 md:h-8" strokeWidth={1.7} />
+                <span aria-hidden="true" className="text-2xl md:text-3xl leading-none">{symbol}</span>
               </div>
               <span className="text-[10px] md:text-xs leading-tight text-[var(--ink)] font-medium">{label}</span>
             </div>)}
