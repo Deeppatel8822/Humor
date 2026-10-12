@@ -26,7 +26,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Only approved partners can request withdrawals." }, { status: 403 });
     }
 
-    const balance = Math.max(0, Number(partner.walletBalance || 0));
+    let balance = Math.max(0, Number(partner.walletBalance || 0));
+    if (isWalletLedgerEnabled) {
+      const { data: walletAccount, error: walletAccountError } = await admin
+        .from("business_programme_wallet_accounts")
+        .select("balance_inr")
+        .eq("partner_user_id", data.user.id)
+        .maybeSingle();
+      if (walletAccountError) throw walletAccountError;
+      if (walletAccount) balance = Math.max(0, Number(walletAccount.balance_inr || 0));
+    }
     if (amount > balance) return NextResponse.json({ error: "The requested amount is higher than your available balance." }, { status: 400 });
 
     const entries = Array.isArray(partner.withdrawalRequests) ? partner.withdrawalRequests : [];
