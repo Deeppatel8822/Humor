@@ -2,9 +2,10 @@ import { getByCategory, getProduct } from "@/lib/catalog";
 import ProductCard from "@/components/ProductCard";
 
 export const metadata = {
-  title: "Skin Care | Humor Luxury",
+  title: "Skin Care",
   description:
-    "Explore Humor Luxury skincare ranges including Fullmoon, Blemish Block, Velvet Touch, and Light & Shade Sunscreen SPF 50.",
+    "Shop Humor Luxury skincare including face washes, serums and Light & Shade Sunscreen SPF 50. Explore Fullmoon, Blemish Block and Velvet Touch routines.",
+  alternates: { canonical: "/collections/skin-care" },
 };
 
 const subranges = ["Fullmoon", "Blemish Block", "Velvet Touch"];
