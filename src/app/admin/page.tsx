@@ -164,18 +164,27 @@ function CustomersSection({ customers, orders }: { customers: Customer[]; orders
         customerOrders.map((order) => order.order_items?.map((item) => `${item.product?.name || "Product"} x${item.quantity}`).join(", ")).join(" | "),
         customerOrders.map((order) => order.payment_status).join(" | ")];
     }));
-  const guestCsv = () => downloadCsv("humor-guest-customers-purchase-history.csv",
+  const guestCsv = () => downloadCsv(
+    "humor-guest-customers-purchase-history.csv",
     ["Customer Name", "Email", "Mobile", "Order Count", "Lifetime Purchase INR", "Order Numbers", "Purchase Dates", "Products Purchased", "Order Totals INR", "Payment Statuses", "Order Statuses", "Delivery Addresses", "Tracking Numbers"],
-    visibleGuestCustomers.map((group) => [group.name, group.email, group.phone, group.orders.length,
-      group.orders.reduce((sum, order) => sum + Number(order.total_inr || 0), 0),
-      group.orders.map((order) => order.order_number).join(" | "),
-      group.orders.map((order) => formatDate(order.created_at)).join(" | "),
-      group.orders.map((order) => order.order_items?.map((item) => `${item.product?.name || "Product"} x${item.quantity}`).join(", ")).join(" | "),
-      group.orders.map((order) => order.total_inr).join(" | "),
-      group.orders.map((order) => order.payment_status).join(" | "),
-      group.orders.map((order) => order.status).join(" | "),
-      group.orders.map((order) => [order.address?.line1, order.address?.line2, order.address?.city, order.address?.state, order.address?.pincode, order.address?.country || "India"].filter(Boolean).join(", ")).join(" | "),
-      group.orders.map((order) => order.tracking_number || "").join(" | ")]));
+    visibleGuestCustomers.map((group) => {
+      return [
+        group.name,
+        group.email,
+        group.phone,
+        group.orders.length,
+        group.orders.reduce((sum, order) => sum + Number(order.total_inr || 0), 0),
+        group.orders.map((order) => order.order_number).join(" | "),
+        group.orders.map((order) => formatDate(order.created_at)).join(" | "),
+        group.orders.map((order) => order.order_items?.map((item) => `${item.product?.name || "Product"} x${item.quantity}`).join(", ")).join(" | "),
+        group.orders.map((order) => order.total_inr).join(" | "),
+        group.orders.map((order) => order.payment_status).join(" | "),
+        group.orders.map((order) => order.status).join(" | "),
+        group.orders.map((order) => [order.address?.line1, order.address?.line2, order.address?.city, order.address?.state, order.address?.pincode, order.address?.country || "India"].filter(Boolean).join(", ")).join(" | "),
+        group.orders.map((order) => order.tracking_number || "").join(" | "),
+      ];
+    })
+  );
   return <div className="space-y-5">
     <div className="bg-white rounded-2xl border border-[var(--line)] p-5">
       <h2 className="font-display text-2xl text-[var(--deep-wine)]">Customer Purchase Records</h2>
