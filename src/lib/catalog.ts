@@ -36,6 +36,10 @@ const mainImageOverrides: Record<string, string> = {
   "shower-gel": "/products/shower-gel-main.webp",
 };
 
+const galleryImageOverrides: Record<string, string[]> = {
+  "smooth-shake-daily-shampoo": ["https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/ca95ab3f-e37e-48de-8d46-71087c7b0ca6.png"],
+};
+
 const productContentOverrides: Record<string, Partial<Product>> = {
   "repair-conditioner": {
     tagline: "Silky-smooth shine and easy detangling for everyday hair care",
