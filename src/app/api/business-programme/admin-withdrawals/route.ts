@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { getPartner } from "@/lib/marketingPartner";
+import { isWalletLedgerEnabled, postWalletTransaction } from "@/lib/businessProgrammeWallet";
 
 async function getAdmin(req: NextRequest) {
   const header = req.headers.get("authorization") || "";
@@ -64,11 +65,27 @@ export async function POST(req: NextRequest) {
     if (index < 0) return NextResponse.json({ error: "This request was already handled or could not be found." }, { status: 409 });
 
     const request = entries[index];
+    const referenceId = typeof (request as { referenceId?: unknown }).referenceId === "string"
+      ? String((request as { referenceId: string }).referenceId)
+      : `withdrawal:${userId}:${requestedAt}`;
+    let nextBalance = Math.max(0, Number(partner.walletBalance || 0)) +
+      (decision === "reject" ? Math.max(0, Number(request.amount || 0)) : 0);
+    if (isWalletLedgerEnabled) {
+      const wallet = await postWalletTransaction({
+        partnerUserId: userId,
+        type: decision === "approve" ? "withdrawal_paid" : "withdrawal_rejected",
+        amountInr: Math.max(0.01, Number(request.amount || 0)),
+        referenceId,
+        description: decision === "approve" ? "Withdrawal approved for payout" : "Withdrawal rejected; reserved funds returned",
+        metadata: { requestedAt, decision },
+      });
+      nextBalance = Number(wallet.balance ?? nextBalance);
+    }
     const nextEntries = [...entries];
     nextEntries[index] = { ...request, status: decision === "approve" ? "withdrawal:approved" : "withdrawal:rejected" };
     const nextPartner = {
       ...partner,
-      walletBalance: Math.max(0, Number(partner.walletBalance || 0)) + (decision === "reject" ? Math.max(0, Number(request.amount || 0)) : 0),
+      walletBalance: nextBalance,
       withdrawalRequests: nextEntries,
     };
     const { error: updateError } = await auth.admin.auth.admin.updateUserById(userId, {
