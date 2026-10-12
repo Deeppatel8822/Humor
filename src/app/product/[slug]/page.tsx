@@ -122,6 +122,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   if (slug === "velvet-touch-face-serum") gallery.splice(3, 0, { src: "https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/ea0cc9b3-47ef-4e73-b819-ae3b82c913d8.png", alt: "Velvet Touch Face Serum anti-pigmentation before and after comparison" });
   if (slug === "protein-shake-shampoo") gallery.splice(3, 0, { src: "https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/ee958354-bbeb-416b-b667-7c81c9519b87.png", alt: "Protein Shake Shampoo hair fall before and after comparison" });
   if (slug === "smooth-shake-daily-shampoo") gallery.splice(3, 0, { src: "https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/fe4688aa-039f-49ba-96fd-870c7b00b76e.png", alt: "Smooth Shine Daily Shampoo frizzy hair before and after comparison" });
+  if (["protein-shake-shampoo", "smooth-shake-daily-shampoo"].includes(slug)) gallery.splice(2, 0, { src: "https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/51591d71-da14-4a6f-975e-4eacec70b4bc.png", alt: "How to use shampoo in four simple steps" });
   const volume = productVolumes[product.sku];
   const highlights = getProductHighlights({ ...product, slug });
 
