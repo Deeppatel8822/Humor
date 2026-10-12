@@ -35,8 +35,10 @@ export async function GET() {
     }
   }
 
+  const accountUserIds = new Set((usersData?.users ?? []).map((user) => user.id));
   const customers = (data ?? []).map((customer) => ({
     ...customer,
+    isAccount: accountUserIds.has(customer.id),
     marketingPartner: partnerByUserId.get(customer.id) ?? null,
   }));
   return NextResponse.json({ customers });
