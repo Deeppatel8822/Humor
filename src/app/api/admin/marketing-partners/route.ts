@@ -20,11 +20,34 @@ export async function GET() {
   if (error) return NextResponse.json({ error: "Could not load applications." }, { status: 500 });
   const applications = [];
   for (const user of data.users) {
-    const application = user.user_metadata?.marketing_partner_application;
-    if (application?.status !== "pending") continue;
+    const marketingApplication = user.user_metadata?.marketing_partner_application;
+    const businessProgramme = user.user_metadata?.business_programme;
+    const isMarketingPending = marketingApplication?.status === "pending";
+    const isBusinessPending = businessProgramme?.status === "pending_verification";
+    if (!isMarketingPending && !isBusinessPending) continue;
+    const application = isMarketingPending ? marketingApplication : {
+      status: "pending",
+      businessType: businessProgramme.businessType,
+      businessName: businessProgramme.businessName,
+      gstPan: "",
+      address: businessProgramme.address,
+      mobile: businessProgramme.mobile,
+      photoPaths: [],
+      proofPath: businessProgramme.proofPath,
+      termsAccepted: businessProgramme.termsAccepted,
+      termsVersion: businessProgramme.termsVersion,
+      termsAcceptedAt: businessProgramme.termsAcceptedAt,
+      appliedAt: businessProgramme.registeredAt,
+      registrationFeeInr: businessProgramme.registrationFeeInr,
+    };
     const photoPaths = Array.isArray(application.photoPaths) ? application.photoPaths : [];
     const signed = photoPaths.length ? await admin.storage.from("vendor-business-photos").createSignedUrls(photoPaths, 3600) : { data: [] };
-    applications.push({ userId: user.id, email: user.email, phone: user.phone, application: { ...application, photoUrls: (signed.data || []).map((item) => item.signedUrl).filter(Boolean) }, partner: user.app_metadata?.marketing_partner });
+    let proofUrl: string | null = null;
+    if (isBusinessPending && typeof businessProgramme.proofPath === "string") {
+      const proof = await admin.storage.from("business-programme-proofs").createSignedUrl(businessProgramme.proofPath, 3600);
+      proofUrl = proof.data?.signedUrl ?? null;
+    }
+    applications.push({ userId: user.id, email: user.email, phone: user.phone, application: { ...application, source: isBusinessPending ? "business_programme" : "marketing_partner", proofUrl, photoUrls: (signed.data || []).map((item) => item.signedUrl).filter(Boolean) }, partner: user.app_metadata?.marketing_partner });
   }
   return NextResponse.json({ applications });
 }
@@ -41,12 +64,25 @@ export async function POST(request: Request) {
     const { data, error: userError } = await admin.auth.admin.getUserById(userId);
     if (userError || !data.user) return NextResponse.json({ error: "User not found." }, { status: 404 });
 
-    const application = data.user.user_metadata?.marketing_partner_application;
-    if (!application || application.status !== "pending") return NextResponse.json({ error: "Application is not pending." }, { status: 409 });
+    const marketingApplication = data.user.user_metadata?.marketing_partner_application;
+    const businessProgramme = data.user.user_metadata?.business_programme;
+    const isBusinessProgramme = businessProgramme?.status === "pending_verification";
+    const application = marketingApplication?.status === "pending" ? marketingApplication : isBusinessProgramme ? {
+      businessName: businessProgramme.businessName,
+      businessType: businessProgramme.businessType,
+      address: businessProgramme.address,
+      mobile: businessProgramme.mobile,
+      proofPath: businessProgramme.proofPath,
+      appliedAt: businessProgramme.registeredAt,
+    } : null;
+    if (!application) return NextResponse.json({ error: "Application is not pending." }, { status: 409 });
 
     if (action === "reject") {
+      const nextUserMetadata = isBusinessProgramme
+        ? { ...data.user.user_metadata, business_programme: { ...businessProgramme, status: "rejected", reviewedAt: new Date().toISOString() } }
+        : { ...data.user.user_metadata, marketing_partner_application: { ...application, status: "rejected", reviewedAt: new Date().toISOString() } };
       const { error } = await admin.auth.admin.updateUserById(userId, {
-        user_metadata: { ...data.user.user_metadata, marketing_partner_application: { ...application, status: "rejected", reviewedAt: new Date().toISOString() } },
+        user_metadata: nextUserMetadata,
         app_metadata: { ...data.user.app_metadata, marketing_partner: { status: "rejected" } },
       });
       if (error) throw error;
@@ -72,8 +108,11 @@ export async function POST(request: Request) {
       appliedAt: application.appliedAt,
     };
 
+    const nextUserMetadata = isBusinessProgramme
+      ? { ...data.user.user_metadata, business_programme: { ...businessProgramme, status: "approved", reviewedAt: new Date().toISOString() } }
+      : { ...data.user.user_metadata, marketing_partner_application: { ...application, status: "approved", reviewedAt: new Date().toISOString() } };
     const { error } = await admin.auth.admin.updateUserById(userId, {
-      user_metadata: { ...data.user.user_metadata, marketing_partner_application: { ...application, status: "approved", reviewedAt: new Date().toISOString() } },
+      user_metadata: nextUserMetadata,
       app_metadata: { ...data.user.app_metadata, marketing_partner: partner },
     });
     if (error) throw error;
