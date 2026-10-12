@@ -147,7 +147,7 @@ export async function POST(req: NextRequest) {
     if (itemsErr) throw itemsErr;
 
     if (partnerMatch) {
-      const billedProductAmount = Math.max(0, subtotalInr - firstOrderDiscountInr - partnerDiscountInr);
+      const billedProductAmount = Math.max(0, subtotalInr - totalDiscountInr);
       try {
         await creditPartnerReward(partnerMatch.user.id, partnerMatch.partner, billedProductAmount, orderNumber);
       } catch (rewardError) {
