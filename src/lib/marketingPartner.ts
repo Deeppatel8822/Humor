@@ -15,6 +15,11 @@ export interface MarketingPartner {
   usageLimit?: number;
   walletBalance?: number;
   totalRewards?: number;
+  /** Permanent reward tier: basic (25%), silver (27%), gold (30%), or elite (30%). */
+  rewardTier?: "basic" | "silver" | "gold" | "elite";
+  /** Coins earned in the current 30-day qualification window; resets after 30 days. */
+  qualificationCoins?: number;
+  qualificationPeriodStartedAt?: string;
   totalSales?: number;
   referredCustomers?: number;
   businessName?: string;
@@ -71,18 +76,36 @@ export async function creditPartnerReward(
   const alreadyCredited = existingOrders.some((entry) => entry.status === `reward:${orderNumber}`);
   if (alreadyCredited) return partner;
 
-  const lifetimeCoinsBeforeOrder = Math.max(0, Number(partner.totalRewards ?? 0));
-  const rewardRate = lifetimeCoinsBeforeOrder >= 5000 ? 0.30 : lifetimeCoinsBeforeOrder >= 3000 ? 0.27 : PARTNER_REWARD_RATE;
+  const now = new Date();
+  const nowIso = now.toISOString();
+  const periodStart = partner.qualificationPeriodStartedAt ? new Date(partner.qualificationPeriodStartedAt) : now;
+  const periodIsValid = Number.isFinite(periodStart.getTime()) && now.getTime() - periodStart.getTime() < 30 * 24 * 60 * 60 * 1000;
+  const qualificationPeriodStartedAt = periodIsValid ? periodStart.toISOString() : nowIso;
+  const coinsBeforeOrderInWindow = periodIsValid ? Math.max(0, Number(partner.qualificationCoins ?? 0)) : 0;
+  const currentTier = partner.rewardTier ?? "basic";
+  const rewardRate = currentTier === "elite" || currentTier === "gold" ? 0.30 : currentTier === "silver" ? 0.27 : PARTNER_REWARD_RATE;
   const reward = Math.max(0, Math.round(billedAmountInr * rewardRate));
+  const lifetimeCoinsBeforeOrder = Math.max(0, Number(partner.totalRewards ?? 0));
+  const qualificationCoinsAfterOrder = coinsBeforeOrderInWindow + reward;
+
+  // Tier qualification uses only coins earned in this 30-day window.
+  // The current order is paid at the existing tier; any upgrade applies to later orders.
+  let nextTier: NonNullable<MarketingPartner["rewardTier"]> = currentTier;
+  if (currentTier === "basic" && qualificationCoinsAfterOrder >= 1000) nextTier = "silver";
+  if ((currentTier === "basic" || currentTier === "silver") && qualificationCoinsAfterOrder >= 3000) nextTier = "gold";
+  if (qualificationCoinsAfterOrder >= 5000) nextTier = "elite";
   const next: MarketingPartner = {
     ...partner,
+    rewardTier: nextTier,
+    qualificationCoins: qualificationCoinsAfterOrder,
+    qualificationPeriodStartedAt,
     walletBalance: Math.max(0, Number(partner.walletBalance ?? 0)) + reward,
     totalRewards: lifetimeCoinsBeforeOrder + reward,
     totalSales: Math.max(0, Number(partner.totalSales ?? 0)) + Math.max(0, billedAmountInr),
     referredCustomers: Math.max(0, Number(partner.referredCustomers ?? 0)) + 1,
     usageCount: Math.max(0, Number(partner.usageCount ?? 0)) + 1,
     withdrawalRequests: [
-      { amount: reward, status: `reward:${orderNumber}:rate:${Math.round(rewardRate * 100)}`, requestedAt: new Date().toISOString() },
+      { amount: reward, status: `reward:${orderNumber}:rate:${Math.round(rewardRate * 100)}:tier:${currentTier}`, requestedAt: nowIso },
       ...existingOrders,
     ].slice(0, 100),
   };
