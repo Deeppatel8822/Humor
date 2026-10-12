@@ -1,10 +1,10 @@
 import { supabaseAdmin } from "@/lib/supabase";
 
-export const PARTNER_REWARD_RATE = 0.10;
+export const PARTNER_REWARD_RATE = 0.25;
 export const PARTNER_CUSTOMER_DISCOUNT_RATE = 0.10;
 export const PARTNER_MAX_DISCOUNT_PER_UNIT = 25;
-export const PARTNER_CODE_VALIDITY_DAYS = 90;
-export const PARTNER_USAGE_LIMIT = 1000;
+export const PARTNER_CODE_VALIDITY_DAYS = 0; // Partner codes do not have a fixed expiry.
+export const PARTNER_USAGE_LIMIT = Number.POSITIVE_INFINITY; // No fixed coupon-use cap.
 export const PARTNER_MIN_WITHDRAWAL = 1000;
 
 export interface MarketingPartner {
@@ -33,8 +33,10 @@ export function getPartner(user: { app_metadata?: Record<string, unknown> } | nu
 }
 
 export function partnerIsActive(partner: MarketingPartner | null) {
-  if (!partner || partner.status !== "approved" || !partner.code || !partner.expiresAt) return false;
-  return new Date(partner.expiresAt).getTime() >= Date.now() && (partner.usageCount ?? 0) < (partner.usageLimit ?? PARTNER_USAGE_LIMIT);
+  if (!partner || partner.status !== "approved" || !partner.code) return false;
+  // Existing codes with a legacy expiry still honour that expiry; new codes omit it.
+  if (partner.expiresAt && new Date(partner.expiresAt).getTime() < Date.now()) return false;
+  return (partner.usageCount ?? 0) < (partner.usageLimit ?? Number.POSITIVE_INFINITY);
 }
 
 export async function findPartnerByCode(code: string) {
@@ -69,16 +71,18 @@ export async function creditPartnerReward(
   const alreadyCredited = existingOrders.some((entry) => entry.status === `reward:${orderNumber}`);
   if (alreadyCredited) return partner;
 
-  const reward = Math.max(0, Math.round(billedAmountInr * PARTNER_REWARD_RATE));
+  const lifetimeCoinsBeforeOrder = Math.max(0, Number(partner.totalRewards ?? 0));
+  const rewardRate = lifetimeCoinsBeforeOrder >= 5000 ? 0.30 : lifetimeCoinsBeforeOrder >= 3000 ? 0.27 : PARTNER_REWARD_RATE;
+  const reward = Math.max(0, Math.round(billedAmountInr * rewardRate));
   const next: MarketingPartner = {
     ...partner,
     walletBalance: Math.max(0, Number(partner.walletBalance ?? 0)) + reward,
-    totalRewards: Math.max(0, Number(partner.totalRewards ?? 0)) + reward,
+    totalRewards: lifetimeCoinsBeforeOrder + reward,
     totalSales: Math.max(0, Number(partner.totalSales ?? 0)) + Math.max(0, billedAmountInr),
     referredCustomers: Math.max(0, Number(partner.referredCustomers ?? 0)) + 1,
     usageCount: Math.max(0, Number(partner.usageCount ?? 0)) + 1,
     withdrawalRequests: [
-      { amount: reward, status: `reward:${orderNumber}`, requestedAt: new Date().toISOString() },
+      { amount: reward, status: `reward:${orderNumber}:rate:${Math.round(rewardRate * 100)}`, requestedAt: new Date().toISOString() },
       ...existingOrders,
     ].slice(0, 100),
   };
