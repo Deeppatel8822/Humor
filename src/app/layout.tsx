@@ -8,13 +8,13 @@ import MetaPixel from "@/components/MetaPixel";
 import CustomerAuthPopup from "@/components/CustomerAuthPopup";
 import { CartProvider } from "@/context/CartContext";
 
-const siteUrl = "https://humorluxury.com";
+const siteUrl = "https://www.humorluxury.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
     default: "Humor Luxury | Skincare, Haircare & Beauty Essentials",
-    template: "%s | Humor Luxury",
+    template: "%s",
   },
   description:
     "Shop Humor Luxury skincare, face washes, serums, sunscreen, shampoos and haircare essentials. Discover thoughtful everyday beauty routines made in India.",
