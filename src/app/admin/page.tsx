@@ -297,7 +297,7 @@ function CustomerCrmSection() {
     <div className="bg-white rounded-2xl border border-[var(--line)] p-5 md:p-6">
       <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-3">
         <div><h2 className="font-display text-2xl text-[var(--deep-wine)]">Customer Repeat-Purchase CRM</h2><p className="text-sm text-[var(--muted)] mt-1">Product-wise reorder intervals, recorded WhatsApp consent and reminder queue.</p></div>
-        <button onClick={load} className="rounded-full border border-[var(--line)] px-4 py-2 text-sm">Refresh</button>
+        <button onClick={() => void load(false)} className="rounded-full border border-[var(--line)] px-4 py-2 text-sm">Refresh</button>
       </div>
       <div className="grid sm:grid-cols-3 gap-3 mt-5">
         <div className="rounded-xl bg-[var(--milk-sage)] p-4"><p className="text-xs text-[var(--muted)]">WhatsApp opt-ins</p><p className="text-2xl font-semibold mt-1">{consents.filter((c) => c.consent_status === "opted_in").length}</p></div>
