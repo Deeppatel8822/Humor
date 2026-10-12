@@ -18,6 +18,7 @@ const mobileLinks = [
 export default function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [customerName, setCustomerName] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
 
   useEffect(() => {
@@ -101,15 +102,39 @@ export default function SiteHeader() {
                 </button>
               )}
 
-              <button type="button" aria-label="Login or sign up" onClick={openAccount} className="p-2 text-[var(--ink)] hover:text-[var(--deep-wine)] transition-colors">
+              <form
+                role="search"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  const term = searchQuery.trim();
+                  router.push(term ? `/search?q=${encodeURIComponent(term)}` : "/search");
+                }}
+                className="hidden md:flex h-10 w-[clamp(150px,15vw,230px)] items-center gap-2 rounded-full border border-[#E5D9EB] bg-[#FCFAFD] px-3 shadow-sm transition focus-within:border-[#7047A0] focus-within:ring-2 focus-within:ring-[#7047A0]/10"
+              >
+                <input
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  aria-label="Search products"
+                  placeholder="Search products..."
+                  className="min-w-0 flex-1 bg-transparent text-xs text-[#35243F] outline-none placeholder:text-[#9A8BA2]"
+                />
+                <button type="submit" aria-label="Submit product search" className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[#7047A0] transition hover:bg-[#F0E6F6]">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="m21 21-4.3-4.3" />
+                  </svg>
+                </button>
+              </form>
+
+              <button type="button" aria-label="Login or sign up" onClick={openAccount} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#E5D9EB] bg-white text-[var(--ink)] transition-colors hover:border-[#7047A0] hover:text-[var(--deep-wine)]">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
                   <circle cx="12" cy="8" r="3.5" />
                   <path d="M5 20c.8-3.3 3.1-5 7-5s6.2 1.7 7 5" />
                 </svg>
               </button>
 
-              <Link href="/search" aria-label="Search" className="p-2 text-[var(--ink)] hover:text-[var(--deep-wine)] transition-colors">
-                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <Link href="/search" aria-label="Search products" className="flex md:hidden h-10 w-10 shrink-0 items-center justify-center rounded-xl text-[var(--ink)] transition-colors hover:bg-[#F7F1FA] hover:text-[var(--deep-wine)]">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
                   <circle cx="11" cy="11" r="7" />
                   <path d="m21 21-4.3-4.3" />
                 </svg>
