@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "@/lib/supabase";
+import { isWalletLedgerEnabled, postWalletTransaction } from "@/lib/businessProgrammeWallet";
 
 export const PARTNER_REWARD_RATE = 0.25;
 export const PARTNER_CUSTOMER_DISCOUNT_RATE = 0.10;
@@ -93,7 +94,7 @@ export async function creditPartnerReward(
   let nextTier: NonNullable<MarketingPartner["rewardTier"]> = currentTier;
   if ((currentTier === "basic" || currentTier === "silver") && qualificationCoinsAfterOrder >= 3000) nextTier = "silver";
   if (qualificationCoinsAfterOrder >= 5000) nextTier = "gold";
-  const next: MarketingPartner = {
+  let next: MarketingPartner = {
     ...partner,
     rewardTier: nextTier,
     qualificationCoins: qualificationCoinsAfterOrder,
@@ -111,6 +112,22 @@ export async function creditPartnerReward(
 
   const { data: currentData, error: currentError } = await admin.auth.admin.getUserById(userId);
   if (currentError || !currentData.user) throw currentError || new Error("Partner account not found.");
+
+  if (isWalletLedgerEnabled) {
+    const wallet = await postWalletTransaction({
+      partnerUserId: userId,
+      type: "reward",
+      amountInr: reward,
+      referenceId: `order:${orderNumber}`,
+      description: `Partner reward for order ${orderNumber}`,
+      metadata: { orderNumber, rewardRate, rewardTier: currentTier, billedAmountInr },
+    });
+    if (wallet.duplicate) {
+      return { ...partner, walletBalance: Number(wallet.balance ?? partner.walletBalance ?? 0) };
+    }
+    next = { ...next, walletBalance: Number(wallet.balance ?? next.walletBalance ?? 0) };
+  }
+
   const { error } = await admin.auth.admin.updateUserById(userId, {
     app_metadata: { ...currentData.user.app_metadata, marketing_partner: next },
   });
