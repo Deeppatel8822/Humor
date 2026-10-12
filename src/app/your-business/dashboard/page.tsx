@@ -98,7 +98,17 @@ export default function PartnerDashboardPage() {
             </div>
           </section>
 
-          <section className="mt-5 rounded-2xl border border-white/10 bg-white/[0.04] p-6 md:p-8">
+          <section className="mt-5 rounded-2xl border border-[#D49A6A]/25 bg-white/[0.04] p-6 md:p-8">
+            <h2 className="text-xl font-semibold text-white">Request a withdrawal</h2>
+            <p className="mt-2 text-sm text-white/60">Minimum ₹1,000. Requested funds are reserved from your available balance while the request is reviewed.</p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <label className="flex min-w-[180px] flex-col gap-2 text-xs text-white/50">Amount (₹)<input type="number" min="1000" step="1" value={withdrawalAmount} onChange={(e) => setWithdrawalAmount(e.target.value)} className="rounded-xl border border-white/15 bg-black/20 px-4 py-3 text-base text-white outline-none focus:border-[#D49A6A]" /></label>
+              <button type="button" onClick={requestWithdrawal} disabled={withdrawing || data.status !== "approved" || data.walletBalance < 1000} className="self-end rounded-full bg-[var(--warm-gold)] px-6 py-3 text-sm font-bold text-[var(--ink)] disabled:cursor-not-allowed disabled:opacity-40">{withdrawing ? "Submitting…" : "Submit withdrawal request"}</button>
+            </div>
+            {withdrawalMessage && <p className="mt-3 text-sm text-white/75" role="status">{withdrawalMessage}</p>}
+          </section>
+
+<section className="mt-5 rounded-2xl border border-white/10 bg-white/[0.04] p-6 md:p-8">
             <h2 className="text-xl font-semibold text-white">Recent activity</h2>
             {data.history.length === 0 ? <p className="mt-4 text-sm text-white/55">No reward activity recorded yet. Your eligible rewards will appear here after qualifying orders.</p> : <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[540px] text-left text-sm"><thead><tr className="border-b border-white/10 text-xs uppercase tracking-wider text-white/45"><th className="py-3 pr-4">Date</th><th className="py-3 pr-4">Type</th><th className="py-3 pr-4">Amount</th><th className="py-3">Status / reference</th></tr></thead><tbody>{data.history.map((item, index) => <tr key={String(item.requestedAt) + item.status + index} className="border-b border-white/5 text-white/75"><td className="py-3 pr-4">{item.requestedAt ? new Date(item.requestedAt).toLocaleDateString("en-IN") : "—"}</td><td className="py-3 pr-4 capitalize">{item.kind}</td><td className="py-3 pr-4">{inr(item.amount)}</td><td className="py-3 break-all">{item.status.replace(/^reward:/, "Reward · ")}</td></tr>)}</tbody></table></div>}
           </section>
