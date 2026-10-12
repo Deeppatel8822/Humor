@@ -46,7 +46,13 @@ const productVolumes: Record<string, string> = {
   "HL-BDC-SHG-300": "300 ml",
 };
 
-function getProductHighlights(product: { sku: string; category: string; name: string }) {
+function getProductHighlights(product: { sku: string; category: string; name: string; slug?: string }) {
+  if (product.slug === "smooth-shake-daily-shampoo") return [
+    { label: "Cleanses Gently", symbol: "♧" },
+    { label: "Smooth & Glossy Hair", symbol: "≋" },
+    { label: "Strengthens Hair Fiber", symbol: "♧" },
+    { label: "Deep Hydration", symbol: "♧" },
+  ];
   if (product.sku === "HL-SKC-SUN-50") return [
     { label: "Broad Spectrum", symbol: "☀" },
     { label: "Daily Protection", symbol: "✓" },
@@ -110,7 +116,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const onSale = product.compare_at_price_inr && product.compare_at_price_inr > product.price_inr;
   const gallery = slug === "sunscreen-spf-50" ? sunscreenImages : product.images.map((src) => ({ src, alt: product.name }));
   const volume = productVolumes[product.sku];
-  const highlights = getProductHighlights(product);
+  const highlights = getProductHighlights({ ...product, slug });
 
   return (
     <div className="max-w-7xl mx-auto px-5 md:px-8 py-14">
