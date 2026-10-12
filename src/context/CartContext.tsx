@@ -20,6 +20,7 @@ interface CartContextValue {
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
+  trackCartActivity: (eventType: string, lines?: CartLine[], contact?: { fullName?: string; email?: string; phone?: string }) => void;
   itemCount: number;
   subtotalInr: number;
   bundleSavingsInr: number;
@@ -28,6 +29,7 @@ interface CartContextValue {
 
 const CartContext = createContext<CartContextValue | undefined>(undefined);
 const STORAGE_KEY = "humor-luxury-cart";
+const SESSION_KEY = "humor-cart-session-id";
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>([]);
@@ -61,7 +63,39 @@ export function CartProvider({ children }: { children: ReactNode }) {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(lines));
   }, [lines, hydrated]);
 
+  function trackCartActivity(eventType: string, eventLines: CartLine[] = lines, contact?: { fullName?: string; email?: string; phone?: string }) {
+    if (typeof window === "undefined") return;
+    try {
+      let sessionId = window.localStorage.getItem(SESSION_KEY);
+      if (!sessionId) {
+        sessionId = typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : "cart_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+        window.localStorage.setItem(SESSION_KEY, sessionId);
+      }
+      void fetch("/api/admin/cart-activity", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        keepalive: true,
+        body: JSON.stringify({
+          session_id: sessionId,
+          event_type: eventType,
+          lines: eventLines,
+          cart_value_inr: eventLines.reduce((sum, line) => sum + line.price_inr * line.quantity, 0),
+          page_path: window.location.pathname,
+          customer_name: contact?.fullName || "",
+          email: contact?.email || "",
+          phone: contact?.phone || "",
+        }),
+      }).catch(() => {});
+    } catch {
+      // Tracking must never block shopping or checkout.
+    }
+  }
+
   function addItem(product: Product, quantity = 1) {
+    const current = lines.find((line) => line.productId === product.id);
+    trackCartActivity("add_to_cart", [{ productId: product.id, slug: product.slug, name: product.name, price_inr: product.price_inr, quantity: current ? current.quantity + quantity : quantity, shopifyVariantId: product.shopify_variant_id, image: product.images?.[0] ?? null }]);
     if (typeof window !== "undefined") {
       window.setTimeout(() => window.dispatchEvent(new CustomEvent("humor-open-cart-popup")), 0);
     }
@@ -88,19 +122,25 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }
 
   function removeItem(productId: string) {
+    const removed = lines.find((line) => line.productId === productId);
+    if (removed) trackCartActivity("remove_from_cart", [removed]);
     setLines((prev) => prev.filter((l) => l.productId !== productId));
   }
 
   function updateQuantity(productId: string, quantity: number) {
     if (quantity <= 0) return removeItem(productId);
+    const updated = lines.find((line) => line.productId === productId);
+    if (updated) trackCartActivity("quantity_updated", [{ ...updated, quantity }]);
     setLines((prev) => prev.map((l) => (l.productId === productId ? { ...l, quantity } : l)));
   }
 
   function clearCart() {
+    if (lines.length) trackCartActivity("purchase_completed", lines); 
     setLines([]);
   }
 
   async function startCheckout(): Promise<{ mode: "shopify" | "local"; url?: string }> {
+    trackCartActivity("checkout_started", lines);
     try {
       const statusRes = await fetch("/api/shopify-status");
       const { configured } = await statusRes.json();
@@ -130,7 +170,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   return (
     <CartContext.Provider
-      value={{ lines, addItem, removeItem, updateQuantity, clearCart, itemCount, subtotalInr, bundleSavingsInr, startCheckout }}
+      value={{ lines, addItem, removeItem, updateQuantity, clearCart, trackCartActivity, itemCount, subtotalInr, bundleSavingsInr, startCheckout }}
     >
       {children}
     </CartContext.Provider>
