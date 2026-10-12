@@ -15,6 +15,7 @@ function isSupabaseConfigured() {
 const finalProductNames: Record<string, string> = {
   "sunscreen-spf-50": "Light & Shade Sunscreen SPF 50",
   "repair-shampoo": "Protein Shake Anti Hairfall Shampoo",
+  "smooth-shake-daily-shampoo": "Smooth Shake Daily Shampoo",
   "repair-conditioner": "Silk Shake Smooth Shine Conditioner",
   "repair-hair-mask": "Milk Shake Repairing Smooth Hair Mask",
   "shower-gel": "Royal Water Soft Shower Cream",
