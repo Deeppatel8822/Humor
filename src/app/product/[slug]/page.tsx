@@ -13,7 +13,29 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const product = await getProduct(slug);
   if (!product) return {};
-  return { title: `${product.name} | Humor Luxury`, description: product.tagline ?? product.description.slice(0, 155) };
+  const description = (product.tagline || product.description).replace(/\\s+/g, " ").slice(0, 155);
+  const canonical = `/product/${encodeURIComponent(product.slug)}`;
+  const image = product.images?.[0];
+  return {
+    title: product.name,
+    description,
+    alternates: { canonical },
+    robots: product.status === "live" ? { index: true, follow: true } : { index: false, follow: false },
+    openGraph: {
+      type: "website",
+      title: product.name,
+      description,
+      url: canonical,
+      siteName: "Humor Luxury",
+      ...(image ? { images: [{ url: image, alt: product.name }] } : {}),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: product.name,
+      description,
+      ...(image ? { images: [image] } : {}),
+    },
+  };
 }
 
 const genericFaqs = [
@@ -138,9 +160,44 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   if (slug === "smooth-shake-daily-shampoo") gallery.splice(3, 1);
   const volume = productVolumes[product.sku];
   const highlights = getProductHighlights({ ...product, slug });
+  const siteUrl = "https://humorluxury.com";
+  const productUrl = `${siteUrl}/product/${encodeURIComponent(product.slug)}`;
+  const productImages = (product.images || []).map((image) =>
+    image.startsWith("http://") || image.startsWith("https://") ? image : `${siteUrl}${image.startsWith("/") ? "" : "/"}${image}`
+  );
+  const productSchema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    description: (product.tagline || product.description).replace(/\\s+/g, " ").slice(0, 5000),
+    sku: product.sku,
+    category: product.category,
+    brand: { "@type": "Brand", name: "Humor Luxury" },
+    url: productUrl,
+    ...(productImages.length ? { image: productImages } : {}),
+    offers: {
+      "@type": "Offer",
+      url: productUrl,
+      priceCurrency: "INR",
+      price: Number(product.price_inr).toFixed(2),
+      availability: product.stock_quantity > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      itemCondition: "https://schema.org/NewCondition",
+    },
+  };
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: siteUrl },
+      { "@type": "ListItem", position: 2, name: "Shop", item: `${siteUrl}/shop` },
+      { "@type": "ListItem", position: 3, name: product.name, item: productUrl },
+    ],
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-5 md:px-8 py-14">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema).replace(/</g, "\\\\u003c") }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema).replace(/</g, "\\\\u003c") }} />
       <nav className="text-xs text-[var(--ink)]/50 mb-8 flex gap-2"><a href="/" className="hover:underline">Home</a><span>/</span><a href="/shop" className="hover:underline">Shop</a><span>/</span><span className="text-[var(--deep-wine)]">{product.name}</span></nav>
       <div className="grid md:grid-cols-2 gap-12 mb-20">
         <ProductGallery images={gallery} />
