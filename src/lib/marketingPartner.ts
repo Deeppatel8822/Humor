@@ -73,7 +73,7 @@ export async function creditPartnerReward(
 ) {
   const admin = supabaseAdmin();
   const existingOrders = Array.isArray(partner.withdrawalRequests) ? partner.withdrawalRequests : [];
-  const alreadyCredited = existingOrders.some((entry) => entry.status === `reward:${orderNumber}`);
+  const alreadyCredited = existingOrders.some((entry) => entry.status === `reward:${orderNumber}` || entry.status.startsWith(`reward:${orderNumber}:`));
   if (alreadyCredited) return partner;
 
   const now = new Date();
