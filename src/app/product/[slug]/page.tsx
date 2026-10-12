@@ -120,6 +120,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   if (slug === "fullmoon-face-serum") gallery.splice(3, 0, { src: "https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/230e8658-1a50-414e-a9b5-de29c717001a.png", alt: "Full Moon Face Serum brightening glow before and after comparison" });
   if (slug === "blemish-block-face-serum") gallery.splice(3, 0, { src: "https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/0d5e5aa7-4131-4d39-925f-8ba4e291e87c.png", alt: "Blemish Block Face Serum anti-acne before and after comparison" });
   if (slug === "velvet-touch-face-serum") gallery.splice(3, 0, { src: "https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/ea0cc9b3-47ef-4e73-b819-ae3b82c913d8.png", alt: "Velvet Touch Face Serum anti-pigmentation before and after comparison" });
+  if (slug === "protein-shake-shampoo") gallery.splice(3, 0, { src: "https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/ee958354-bbeb-416b-b667-7c81c9519b87.png", alt: "Protein Shake Shampoo hair fall before and after comparison" });
   const volume = productVolumes[product.sku];
   const highlights = getProductHighlights({ ...product, slug });
 
