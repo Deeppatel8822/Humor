@@ -1,48 +1,110 @@
 import Link from "next/link";
 
+const steps = [
+  ["01", "Apply for ₹9", "Create or sign in to your Humor account, choose your business type and submit your details with proof."],
+  ["02", "Get verified", "Our team reviews your documents. Your application remains pending until verification is complete."],
+  ["03", "Get your ID & code", "After approval, you receive a unique partner User ID and coupon code to share with customers."],
+  ["04", "Help customers save", "Customers use your code at checkout to receive a 10% discount on eligible product value."],
+  ["05", "Earn coins", "Eligible paid orders earn coins in your account. Your dashboard shows order details, rewards and balance."],
+  ["06", "Request withdrawal", "When your available balance reaches ₹1,000, submit a withdrawal request. Approved payouts are normally processed in 5–7 business days."],
+];
+
+const faqs = [
+  ["Who can join?", "Influencers/content creators, beauty parlour or salon owners, and beauty shop/retail owners can apply. Approval is subject to document verification."],
+  ["How much does registration cost?", "The registration fee is ₹9. Payment alone does not guarantee approval. The proposed fee is non-refundable except where applicable law or payment-provider rules require otherwise."],
+  ["How do coins work?", "The base rate is 25% of the actual eligible product amount paid after applicable product discounts, excluding shipping. 1 coin represents ₹1 reward value."],
+  ["How do I unlock a higher rate?", "After lifetime eligible coins earned reach 3,000, future eligible orders use a 27% rate. After 5,000 lifetime coins, future eligible orders use a 30% rate. Higher rates do not apply retroactively."],
+  ["Does my coupon expire?", "There is no fixed expiry date while your partner account remains approved and your code is active. Humor Luxury may suspend a code for fraud, misuse, policy or legal reasons."],
+  ["When can I withdraw?", "You can request withdrawal when your available balance is at least ₹1,000. After verification and approval, processing normally takes 5–7 business days. Bank settlement may take additional time."],
+  ["What happens if an order is refunded?", "Rewards linked to cancelled, refunded, returned, charged-back or otherwise ineligible orders may be reversed. Your transaction history should show the adjustment."],
+  ["Are earnings guaranteed?", "No. Rewards depend on eligible, verified customer orders. Results vary, and the programme does not guarantee a particular income."],
+];
+
 export default function YourBusinessPage() {
   return (
-    <main className="min-h-[70vh] overflow-hidden bg-[var(--ink)] text-[var(--milk-sage)]">
-      <section className="relative overflow-hidden border-b border-white/10 bg-[var(--ink)]">
+    <main className="overflow-hidden bg-[var(--ink)] text-[var(--milk-sage)]">
+      <section className="relative border-b border-white/10">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_20%,rgba(212,154,106,0.20),transparent_35%),radial-gradient(circle_at_10%_80%,rgba(124,90,166,0.22),transparent_35%)]" />
         <div className="relative mx-auto max-w-7xl px-5 py-16 md:px-8 md:py-24">
-          <div className="max-w-3xl">
-            <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#D49A6A] bg-[#D49A6A] px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.22em] text-[#30233B] shadow-[0_6px_22px_rgba(212,154,106,0.22)]"><span className="h-2 w-2 rounded-full bg-[#30233B]" aria-hidden="true" /> Humor Business Programme</p>
-            <h1 className="font-display text-4xl leading-[1.08] text-white md:text-6xl">Your Business.<br /><span className="text-[var(--warm-gold)]">Your Audience.</span><br />Your Opportunity.</h1>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-white/70 md:text-lg">
-              A dedicated programme for influencers, salon and parlour owners, beauty professionals, and home-based beauty businesses.
-            </p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Link href="/your-business/register" className="group inline-flex items-center gap-2 rounded-full border border-[var(--warm-gold)]/70 bg-[var(--warm-gold)] px-6 py-3 text-sm font-bold text-[var(--ink)] shadow-[0_10px_30px_rgba(212,154,106,0.2)] transition-all hover:-translate-y-0.5 hover:bg-[#e2ad7d]">Get started for <span className="text-xl font-extrabold">₹9</span> <span className="transition-transform group-hover:translate-x-1">→</span></Link>
-              <span className="rounded-full border border-white/20 bg-white/[0.05] px-5 py-2.5 text-sm font-medium text-white/80">No hidden charges</span>
-            </div>
+          <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#D49A6A]/70 bg-[#D49A6A]/10 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--warm-gold)]">Humor Luxury Partner Programme</p>
+          <h1 className="max-w-4xl font-display text-4xl leading-[1.08] text-white md:text-7xl">Your Business.<br/><span className="text-[var(--warm-gold)]">Your Audience.</span><br/>Your Opportunity.</h1>
+          <p className="mt-6 max-w-2xl text-base leading-7 text-white/70 md:text-lg">A referral programme for influencers, beauty parlour owners and beauty shop owners. Share products you love, help customers save, and earn rewards on eligible orders.</p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link href="/your-business/register" className="inline-flex items-center gap-2 rounded-full bg-[var(--warm-gold)] px-7 py-3.5 text-sm font-bold text-[var(--ink)] transition hover:-translate-y-0.5">Apply for ₹9 <span>→</span></Link>
+            <a href="/start-your-business-terms.html" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full border border-white/25 px-6 py-3.5 text-sm font-semibold text-white hover:bg-white/10">Read full programme terms ↗</a>
           </div>
+          <p className="mt-4 text-xs text-white/50">Application is subject to document verification and programme approval. Rewards are not guaranteed income.</p>
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-5 py-16 md:px-8">
-        <div className="grid gap-5 md:grid-cols-3">
-          {[
-            ["01", "Create your account", "Join the programme and set up your business profile."],
-            ["02", "Share & recommend", "Share Humor products with your audience and customers."],
-            ["03", "Grow with Humor", "Build your referral business and unlock programme benefits."],
-          ].map(([number, title, text]) => (
-            <div key={number} className="rounded-3xl border border-white/10 bg-white/[0.045] p-7 shadow-[0_10px_35px_rgba(0,0,0,0.12)] transition-all duration-300 hover:-translate-y-1 hover:border-[var(--warm-gold)]/45 hover:bg-white/[0.07]">
-              <div className="mb-5 text-xs font-semibold tracking-[0.18em] text-[var(--warm-gold)]">{number}</div>
-              <h2 className="font-display text-2xl text-white">{title}</h2>
-              <p className="mt-3 text-sm leading-6 text-white/65">{text}</p>
+      <section className="mx-auto max-w-7xl px-5 py-14 md:px-8 md:py-20">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[["₹9", "Registration fee"],["10%", "Customer coupon discount"],["25% → 30%", "Reward rate by tier"],["₹1,000", "Minimum withdrawal"]].map(([value,label]) => (
+            <div key={label} className="rounded-3xl border border-white/10 bg-white/[0.045] p-6">
+              <p className="font-display text-3xl text-[var(--warm-gold)]">{value}</p>
+              <p className="mt-2 text-sm text-white/65">{label}</p>
             </div>
           ))}
         </div>
+      </section>
 
-        <div className="relative mt-10 overflow-hidden rounded-3xl border border-[var(--warm-gold)]/30 bg-[var(--deep-wine)] p-7 md:p-10">
-          <h2 className="font-display text-3xl text-white">Grow your beauty business with Humor.</h2>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-white/70">
-            Registration, referral links, rewards, programme terms, payment details and your business dashboard can be added here as the programme is finalized.
-          </p>
-          <Link href="/" className="mt-6 inline-flex rounded-full border border-[var(--warm-gold)]/70 px-6 py-3 text-sm font-semibold text-[var(--warm-gold)] transition-colors hover:bg-[var(--warm-gold)] hover:text-[var(--ink)]">
-            Back to Humor Luxury
-          </Link>
+      <section className="mx-auto max-w-7xl px-5 pb-16 md:px-8 md:pb-20">
+        <div className="mb-8 max-w-2xl">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--warm-gold)]">How it works</p>
+          <h2 className="mt-3 font-display text-3xl text-white md:text-4xl">Six simple steps to get started</h2>
+          <p className="mt-3 text-sm leading-6 text-white/60">The process is designed to keep verification, orders and reward tracking clear.</p>
         </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {steps.map(([number,title,description]) => (
+            <article key={number} className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 transition hover:border-[var(--warm-gold)]/50">
+              <p className="text-xs font-bold tracking-[0.2em] text-[var(--warm-gold)]">{number}</p>
+              <h3 className="mt-4 font-display text-2xl text-white">{title}</h3>
+              <p className="mt-3 text-sm leading-6 text-white/65">{description}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="bg-[#f8f3f7] text-[var(--ink)]">
+        <div className="mx-auto max-w-7xl px-5 py-14 md:px-8 md:py-20">
+          <div className="max-w-3xl">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#8a6a9f]">Transparent rewards</p>
+            <h2 className="mt-3 font-display text-3xl md:text-4xl">Your coins, explained clearly.</h2>
+            <p className="mt-3 text-sm leading-6 text-black/60">Coins are calculated on eligible product value actually paid after applicable product discounts. Shipping is excluded. Refunds and cancellations can reverse related rewards.</p>
+          </div>
+          <div className="mt-8 overflow-hidden rounded-2xl border border-[#e7dce7] bg-white">
+            <div className="grid grid-cols-3 bg-[#3e1730] px-5 py-4 text-xs font-bold uppercase tracking-wide text-white"><span>Lifetime coins earned</span><span>Rate</span><span>When it applies</span></div>
+            {[
+              ["Below 3,000","25%","Base rate"],
+              ["3,000–4,999","27%","Future eligible orders"],
+              ["5,000 and above","30%","Future eligible orders"],
+            ].map(([coins,rate,when]) => <div key={coins} className="grid grid-cols-3 gap-2 border-t border-[#eee5ee] px-5 py-4 text-sm"><span>{coins}</span><strong className="text-[#6f4a9a]">{rate}</strong><span className="text-black/60">{when}</span></div>)}
+          </div>
+          <p className="mt-3 text-xs leading-5 text-black/50">1 coin = ₹1 reward value. Higher tiers apply to future eligible orders only, not earlier orders. Withdrawal is available from ₹1,000 available balance, after verification and approval.</p>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-4xl px-5 py-16 md:px-8 md:py-20">
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--warm-gold)]">Questions & answers</p>
+        <h2 className="mt-3 font-display text-3xl text-white md:text-4xl">Know the rules before you join.</h2>
+        <div className="mt-7 space-y-3">
+          {faqs.map(([question,answer]) => <details key={question} className="group rounded-2xl border border-white/10 bg-white/[0.04] p-5 open:border-[var(--warm-gold)]/50">
+            <summary className="cursor-pointer list-none font-semibold text-white marker:hidden">{question}<span className="float-right text-[var(--warm-gold)]">+</span></summary>
+            <p className="mt-3 text-sm leading-6 text-white/65">{answer}</p>
+          </details>)}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-5 pb-16 md:px-8 md:pb-24">
+        <div className="rounded-[2rem] border border-[var(--warm-gold)]/30 bg-[var(--deep-wine)] p-8 md:p-12">
+          <h2 className="font-display text-3xl text-white md:text-4xl">Ready to grow with Humor?</h2>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-white/70">Read the full programme terms, understand the rewards and withdrawal process, then submit your application for verification.</p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link href="/your-business/register" className="rounded-full bg-[var(--warm-gold)] px-6 py-3 text-sm font-bold text-[var(--ink)]">Start registration for ₹9</Link>
+            <a href="/start-your-business-terms.html" target="_blank" rel="noreferrer" className="rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white">Full terms &amp; conditions</a>
+          </div>
+        </div>
+        <p className="mt-6 text-xs leading-5 text-white/40">Programme participation is subject to verification, applicable law and the full terms. Rewards depend on eligible verified orders and are not guaranteed income. The registration fee is proposed as non-refundable except where applicable law or payment-provider rules require otherwise.</p>
       </section>
     </main>
   );
