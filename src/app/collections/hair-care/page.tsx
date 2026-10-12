@@ -2,8 +2,9 @@ import { getByCategory } from "@/lib/catalog";
 import ProductCard from "@/components/ProductCard";
 
 export const metadata = {
-  title: "Hair Care | Humor Luxury",
-  description: "Shampoo, conditioner, and hair mask — Humor Luxury's haircare range.",
+  title: "Hair Care",
+  description: "Shop Humor Luxury haircare, including shampoos, smoothing conditioner and repairing hair masks for everyday hair routines.",
+  alternates: { canonical: "/collections/hair-care" },
 };
 
 export default async function HairCarePage() {
