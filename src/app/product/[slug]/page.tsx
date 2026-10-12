@@ -164,6 +164,21 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               <span className="text-[10px] md:text-xs leading-tight text-[var(--ink)] font-medium">{label}</span>
             </div>)}
           </div>
+          <div className="grid grid-cols-4 gap-2 md:gap-3 mb-5" aria-label="Product standards">
+            {[
+              { label: "Paraben Free", icon: <><path d="M12 3h8v5l3 4v8a2 2 0 0 1-2 2H11a2 2 0 0 1-2-2v-8l3-4z" /><path d="M12 8h8M13 15h6" /></> },
+              { label: "Sulphate Free", icon: <><path d="M12 3C9 8 5 11 5 16a7 7 0 0 0 14 0c0-5-4-8-7-13z" /><path d="m4 4 16 16" /></> },
+              { label: "Cruelty Free", icon: <><path d="M12 20s-8-4.5-8-11a4 4 0 0 1 8-1 4 4 0 0 1 8 1c0 6.5-8 11-8 11z" /><path d="m4 4 16 16" /></> },
+              { label: "Dermatologically Tested", icon: <><path d="M12 3 20 6v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z" /><path d="m8 12 2.5 2.5L16 9" /></> },
+            ].map(({ label, icon }) => (
+              <div key={label} className="flex min-w-0 flex-col items-center gap-1.5 text-center">
+                <div className="flex h-11 w-11 md:h-14 md:w-14 items-center justify-center rounded-full border border-[var(--line)] bg-[var(--milk-sage)] text-[var(--deep-wine)]">
+                  <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 md:h-6 md:w-6" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">{icon}</svg>
+                </div>
+                <span className="text-[9px] md:text-[11px] leading-tight font-medium text-[var(--ink)]">{label}</span>
+              </div>
+            ))}
+          </div>
           <p className="text-sm text-[var(--ink)]/85 mb-6 leading-relaxed">{product.description}</p>
           <RoutineUpsell product={product} products={allProducts} />
           <AddToCartForm product={product} />
