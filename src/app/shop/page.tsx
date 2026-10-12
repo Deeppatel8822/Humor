@@ -32,9 +32,10 @@ function matchesCategory(product: { slug: string; name: string }, category: stri
 }
 
 export const metadata = {
-  title: "Shop | Humor Luxury",
+  title: "Shop",
   description:
-    "Explore face wash, serums, haircare, shower care and sun protection from Humor Luxury.",
+    "Shop Humor Luxury face washes, face serums, sunscreen, shampoos, conditioners and body care. Find everyday skincare and haircare essentials for your routine.",
+  alternates: { canonical: "/shop" },
 };
 
 export default async function ShopPage({
