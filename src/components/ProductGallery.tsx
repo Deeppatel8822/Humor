@@ -34,7 +34,7 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
             <img
               src={image.src}
               alt={image.alt}
-              className="w-full h-full object-contain p-1 rounded-xl md:rounded-2xl"
+              className={`w-full h-full rounded-xl md:rounded-2xl ${image.src.includes("ca95ab3f-e37e-48de-8d46-71087c7b0ca6") ? "object-cover p-0" : "object-contain p-1"}`}
             />
           </button>
         ))}
@@ -44,7 +44,7 @@ export default function ProductGallery({ images }: { images: GalleryImage[] }) {
         <img
           src={active.src}
           alt={active.alt}
-          className="block w-full h-full object-contain p-3 md:p-5 rounded-2xl md:rounded-[28px] transition-opacity duration-200"
+          className={`block w-full h-full rounded-2xl md:rounded-[28px] transition-opacity duration-200 ${active.src.includes("ca95ab3f-e37e-48de-8d46-71087c7b0ca6") ? "object-cover p-0" : "object-contain p-3 md:p-5"}`}
         />
       </div>
     </div>
