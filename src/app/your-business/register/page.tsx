@@ -97,7 +97,7 @@ export default function YourBusinessPage() {
               headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
               body: JSON.stringify({
                 ...paid,
-                registration: { ...form, proofPath: finalProofPath },
+                registration: { ...form, proofPath: finalProofPath, termsAccepted: acceptedTerms, termsVersion: "2026-10-12-v1" },
               }),
             });
             const verifyData = await verifyRes.json();
