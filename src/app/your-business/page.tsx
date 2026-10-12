@@ -76,12 +76,12 @@ export default function YourBusinessPage() {
             <div className="grid grid-cols-3 bg-[#3e1730] px-5 py-4 text-xs font-bold uppercase tracking-wide text-white"><span>Coins earned in 30 days</span><span>Rate</span><span>Tier rule</span></div>
             {[
               ["Basic: below 1,000","25%","Current tier stays active"],
-              ["1,000 coins","27%","Permanent upgrade"],
-              ["3,000 coins","30%","Permanent upgrade"],
-              ["5,000 coins","30%","Highest tier"],
+              ["1,000 coins","25%","Basic tier"],
+              ["3,000 coins","27%","Permanent upgrade"],
+              ["5,000 coins","30%","Permanent upgrade; highest tier"],
             ].map(([coins,rate,when]) => <div key={coins} className="grid grid-cols-3 gap-2 border-t border-[#eee5ee] px-5 py-4 text-sm"><span>{coins}</span><strong className="text-[#6f4a9a]">{rate}</strong><span className="text-black/60">{when}</span></div>)}
           </div>
-          <p className="mt-3 text-xs leading-5 text-black/50">1 coin = ₹1 reward value. In a 30-day qualification period, 1,000 coins unlocks 27%, 3,000 unlocks 30%, and 5,000 qualifies for the highest tier. If the next target is missed, the partner stays at their current tier. Once upgraded, the tier never drops. The 30-day counter qualifies upgrades only; lifetime earned coins and available balance are separate. Higher rates apply to future eligible orders only. Withdrawal starts at ₹1,000 available balance.</p>
+          <p className="mt-3 text-xs leading-5 text-black/50">1 coin = ₹1 reward value. In a 30-day qualification period, 1,000 coins corresponds to the Basic 25% tier, 3,000 unlocks 27%, and 5,000 unlocks 30%. If the next target is missed, the partner stays at their current tier. Once upgraded, the tier never drops. The 30-day counter qualifies upgrades only; lifetime earned coins and available balance are separate. Higher rates apply to future eligible orders only. Withdrawal starts at ₹1,000 available balance.</p>
         </div>
       </section>
 
