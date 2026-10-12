@@ -12,6 +12,7 @@ async function authorized() {
 }
 const eventTypes = ["add_to_cart","remove_from_cart","quantity_updated","checkout_started","purchase_completed","cart_cleared"];
 function safeString(v: unknown, max = 200) { return String(v ?? "").trim().slice(0, max); }
+function normalizePhone(v: unknown) { let digits = String(v ?? "").replace(/\\D/g, ""); if (digits.length === 10) digits = "91" + digits; if (digits.startsWith("0") && digits.length === 11) digits = "91" + digits.slice(1); return digits.length >= 11 && digits.length <= 15 ? "+" + digits : ""; }
 
 export async function POST(request: Request) {
   try {
@@ -34,7 +35,7 @@ export async function POST(request: Request) {
       event_type: eventType,
       customer_name: contact.customer_name,
       email: contact.email,
-      phone: contact.phone,
+      phone: normalizePhone(contact.phone) || null,
       product_id: /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(line?.productId || "")) ? line.productId : null,
       product_slug: safeString(line?.slug, 160) || null,
       product_name: safeString(line?.name, 200) || null,
