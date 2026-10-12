@@ -48,10 +48,10 @@ const productVolumes: Record<string, string> = {
 
 function getProductHighlights(product: { sku: string; category: string; name: string; slug?: string }) {
   if (product.slug === "smooth-shake-daily-shampoo") return [
-    { label: "Cleanses Gently", symbol: "♧" },
-    { label: "Smooth & Glossy Hair", symbol: "≋" },
-    { label: "Strengthens Hair Fiber", symbol: "♧" },
-    { label: "Deep Hydration", symbol: "♧" },
+    { label: "Cleanses Gently", symbol: "droplet" },
+    { label: "Smooth & Glossy Hair", symbol: "waves" },
+    { label: "Strengthens Hair Fiber", symbol: "hair" },
+    { label: "Deep Hydration", symbol: "drop" },
   ];
   if (product.sku === "HL-SKC-SUN-50") return [
     { label: "Broad Spectrum", symbol: "☀" },
@@ -139,7 +139,14 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           <div className="grid grid-cols-4 gap-2 md:gap-3 mb-6">
             {highlights.map(({ label, symbol }) => <div key={label} className="flex flex-col items-center text-center gap-2 min-w-0">
               <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-[#f8eefa] text-[#6d1878] flex items-center justify-center">
-                <span aria-hidden="true" className="text-2xl md:text-3xl leading-none">{symbol}</span>
+                {slug === "smooth-shake-daily-shampoo" ? (
+                  <svg aria-hidden="true" viewBox="0 0 40 40" className="w-7 h-7 md:w-9 md:h-9" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+                    {symbol === "droplet" && <path d="M20 4 C16 12 9 19 9 25 a11 11 0 0 0 22 0 C31 19 24 12 20 4 Z" />}
+                    {symbol === "waves" && <><path d="M12 6 C4 14 4 23 12 31" /><path d="M20 4 C12 13 12 24 20 33" /><path d="M28 6 C20 14 20 23 28 31" /></>}
+                    {symbol === "hair" && <><path d="M20 34 C20 25 14 21 15 14 C16 9 20 6 24 5 C21 11 25 15 25 20 C25 25 21 28 20 34 Z" /><path d="M11 35 C13 30 14 27 14 23" /></>}
+                    {symbol === "drop" && <path d="M20 4 C16 12 9 19 9 25 a11 11 0 0 0 22 0 C31 19 24 12 20 4 Z" />}
+                  </svg>
+                ) : <span aria-hidden="true" className="text-2xl md:text-3xl leading-none">{symbol}</span>}
               </div>
               <span className="text-[10px] md:text-xs leading-tight text-[var(--ink)] font-medium">{label}</span>
             </div>)}
