@@ -311,7 +311,12 @@ async function getDatabaseProducts(): Promise<Product[] | null> {
 export async function getAllProducts(): Promise<Product[]> {
   if (isShopifyConfigured()) {
     try {
-      return (await fetchShopifyProducts()).map(withMainImage);
+      const shopifyProducts = (await fetchShopifyProducts()).map(withMainImage);
+      const localSmoothShake = local.getProductBySlug("smooth-shake-daily-shampoo");
+      if (localSmoothShake && !shopifyProducts.some((product) => product.slug === localSmoothShake.slug)) {
+        shopifyProducts.push(withMainImage(localSmoothShake));
+      }
+      return shopifyProducts;
     } catch (err) {
       console.error("Shopify fetch failed, trying Supabase/local catalog:", err);
     }
