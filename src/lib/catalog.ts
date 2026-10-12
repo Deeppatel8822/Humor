@@ -316,7 +316,12 @@ export async function getAllProducts(): Promise<Product[]> {
   }
 
   const databaseProducts = await getDatabaseProducts();
-  if (databaseProducts) return databaseProducts;
+  if (databaseProducts) {
+    const newLocalProducts = local.getProducts()
+      .filter((p) => p.slug === "smooth-shake-daily-shampoo" && !databaseProducts.some((db) => db.slug === p.slug))
+      .map(withMainImage);
+    return [...databaseProducts, ...newLocalProducts];
+  }
   return local.getProducts().map(withMainImage);
 }
 
