@@ -363,7 +363,13 @@ export async function getByCategory(category: Product["category"]): Promise<Prod
     const handle = category === "skincare" ? "skin-care" : category === "haircare" ? "hair-care" : "body-care";
     try {
       const collection = await fetchShopifyCollectionProducts(handle);
-      if (collection) return collection.products;
+      if (collection) {
+        const localAddition = local.getProducts().find((product) => product.slug === "smooth-shake-daily-shampoo");
+        const alreadyIncluded = collection.products.some((product) => product.slug === "smooth-shake-daily-shampoo");
+        return localAddition && category === "haircare" && !alreadyIncluded
+          ? [...collection.products, withMainImage(localAddition)]
+          : collection.products;
+      }
     } catch (err) {
       console.error("Shopify collection fetch failed, falling back:", err);
     }
