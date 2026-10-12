@@ -27,6 +27,7 @@ export default function YourBusinessPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [registered, setRegistered] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   useEffect(() => {
     import("@/lib/supabase").then(async ({ getSupabase }) => {
@@ -102,7 +103,7 @@ export default function YourBusinessPage() {
             const verifyData = await verifyRes.json();
             if (!verifyRes.ok) throw new Error(verifyData.error || "Payment verification failed.");
             setRegistered(true);
-            setMessage("Registration successful. Your Humor Business Programme is now active.");
+            setMessage("Payment received. Your application is submitted for document verification. Your partner ID and coupon code will be available after approval.");
             resolve();
           } catch (err) {
             reject(err);
@@ -126,6 +127,7 @@ export default function YourBusinessPage() {
         window.dispatchEvent(new CustomEvent("humor-open-customer-auth"));
         throw new Error("Please login or create your Humor account first, then submit the form again.");
       }
+      if (!acceptedTerms) throw new Error("Please read and accept the Start Your Business Programme terms.");
       if (!form.businessType || !form.businessName.trim() || !form.mobile.trim() || !form.address.trim() || !proof) {
         throw new Error("Please complete all fields and upload your business proof.");
       }
@@ -222,6 +224,13 @@ export default function YourBusinessPage() {
                 <label className="text-xs font-semibold text-[var(--ink)]">Proof of Business *</label>
                 <input required type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={(e) => { setProof(e.target.files?.[0] || null); setProofPath(""); }} className="mt-2 block w-full rounded-xl border border-[var(--line)] bg-white px-4 py-3 text-sm" />
                 <p className="mt-2 text-[11px] leading-5 text-[var(--muted)]">Shop/salon photo, business card, GST/PAN, registration proof or other valid business proof. Max 5 MB.</p>
+              </div>
+
+              <div className="rounded-xl border border-[var(--line)] bg-[var(--milk-sage)]/50 p-4">
+                <label className="flex items-start gap-3 text-xs leading-5 text-[var(--ink)]">
+                  <input type="checkbox" checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} className="mt-1 h-4 w-4 shrink-0 accent-[var(--deep-wine)]" />
+                  <span>I have read and agree to the <a href="/start-your-business-terms.html" target="_blank" rel="noreferrer" className="font-semibold text-[var(--deep-wine)] underline">Start Your Business Programme Terms</a>, including the ₹9 registration fee policy, verification process, coin rewards, refunds and withdrawals. I understand that registration payment does not guarantee approval or income.</span>
+                </label>
               </div>
 
               {error && <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
