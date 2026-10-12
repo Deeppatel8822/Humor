@@ -117,6 +117,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const gallery = slug === "sunscreen-spf-50" ? sunscreenImages : product.images.map((src) => ({ src, alt: product.name }));
   const serumSlugs = ["fullmoon-face-serum", "blemish-block-face-serum", "velvet-touch-face-serum"];
   if (serumSlugs.includes(slug)) gallery.splice(2, 0, { src: "https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/c51e03c2-b88e-43f4-8099-2064a57cc398.jpg", alt: "Four steps for applying skincare serum" });
+  if (slug === "fullmoon-face-serum") gallery.splice(3, 0, { src: "https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/230e8658-1a50-414e-a9b5-de29c717001a.png", alt: "Full Moon Face Serum brightening glow before and after comparison" });
   const volume = productVolumes[product.sku];
   const highlights = getProductHighlights({ ...product, slug });
 
