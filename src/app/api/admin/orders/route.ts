@@ -37,7 +37,7 @@ export async function GET() {
       tracking_number,
       created_at,
       updated_at,
-      customer:customers(full_name,email,phone),
+      customer:customers(id,full_name,email,phone),
       address:addresses(line1,line2,city,state,pincode,country,phone),
       order_items(
         quantity,
