@@ -128,6 +128,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   if (["repair-shampoo", "smooth-shake-daily-shampoo"].includes(slug)) gallery.splice(2, 0, { src: "https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/51591d71-da14-4a6f-975e-4eacec70b4bc.png", alt: "How to use shampoo in four simple steps" });
   if (["repair-conditioner", "repair-hair-mask"].includes(slug)) gallery.splice(2, 0, { src: "https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/b872eb2c-9650-45c3-931a-85ae0233c133.png", alt: "How to use conditioner or hair mask in four simple steps" });
   if (slug === "repair-conditioner") gallery.splice(3, 0, { src: "https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/d2033693-774b-40f4-9e33-235342bbccaf.png", alt: "Before and after conditioner comparison showing hair from behind without product packaging" });
+  if (slug === "repair-hair-mask") gallery.splice(3, 0, { src: "https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/f09ad88b-c3bf-4172-80b7-05fec2ebc8d4.png", alt: "Before and after hair mask comparison showing hair from behind without product packaging" });
   if (slug === "smooth-shake-daily-shampoo") gallery.splice(3, 1);
   const volume = productVolumes[product.sku];
   const highlights = getProductHighlights({ ...product, slug });
