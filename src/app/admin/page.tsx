@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 interface Product {
   id: string;
@@ -381,18 +381,30 @@ function CartActivitySection() {
   const [notice, setNotice] = useState("");
   const [filter, setFilter] = useState("all");
 
-  async function load() {
-    setLoading(true); setError("");
+  const polling = useRef(false);
+  async function load(silent = false) {
+    if (polling.current) return;
+    polling.current = true;
+    if (!silent) { setLoading(true); setError(""); }
     try {
       const response = await fetch("/api/admin/cart-activity", { cache: "no-store" });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Could not load cart activity.");
       setEvents(data.events || []); setOptedInPhones(data.optedInPhones || []);
-      if (data.offer) setOffer({ ...data.offer, expires_at: data.offer.expires_at ? new Date(data.offer.expires_at).toISOString().slice(0,16) : "" });
-    } catch (e) { setError(e instanceof Error ? e.message : "Could not load cart activity."); }
-    finally { setLoading(false); }
+      // Only initialize offer settings on manual/initial loads, so polling won't overwrite edits.
+      if (!silent && data.offer) setOffer({ ...data.offer, expires_at: data.offer.expires_at ? new Date(data.offer.expires_at).toISOString().slice(0,16) : "" });
+    } catch (e) {
+      if (!silent) setError(e instanceof Error ? e.message : "Could not load cart activity.");
+    } finally {
+      polling.current = false;
+      if (!silent) setLoading(false);
+    }
   }
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    void load();
+    const timer = window.setInterval(() => { void load(true); }, 3000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   const sessions = useMemo(() => {
     const map = new Map<string, { id: string; events: CartEvent[]; latest: CartEvent; name: string; email: string; phone: string; value: number; purchased: boolean }>();
