@@ -13,7 +13,7 @@ const faqs = [
   ["Who can join?", "Influencers/content creators, beauty parlour or salon owners, and beauty shop/retail owners can apply. Approval is subject to document verification."],
   ["How much does registration cost?", "The registration fee is ₹9. Payment alone does not guarantee approval. The proposed fee is non-refundable except where applicable law or payment-provider rules require otherwise."],
   ["How do coins work?", "The base rate is 25% of the actual eligible product amount paid after applicable product discounts, excluding shipping. 1 coin represents ₹1 reward value."],
-  ["How do I unlock a higher rate?", "After lifetime eligible coins earned reach 3,000, future eligible orders use a 27% rate. After 5,000 lifetime coins, future eligible orders use a 30% rate. Higher rates do not apply retroactively."],
+  ["How do I unlock a higher rate?", "Tier qualification is based on eligible coins earned within one 30-day period: 1,000 coins unlocks 27%, 3,000 coins unlocks 30%, and 5,000 coins qualifies you for the highest tier. If you do not reach the next target within that 30-day period, you stay at your current tier. Once upgraded, your tier never drops. The 30-day counter is used only to qualify for upgrades; lifetime earned coins and available balance are tracked separately. The upgraded rate applies only to future eligible orders."],
   ["Does my coupon expire?", "There is no fixed expiry date while your partner account remains approved and your code is active. Humor Luxury may suspend a code for fraud, misuse, policy or legal reasons."],
   ["When can I withdraw?", "You can request withdrawal when your available balance is at least ₹1,000. After verification and approval, processing normally takes 5–7 business days. Bank settlement may take additional time."],
   ["What happens if an order is refunded?", "Rewards linked to cancelled, refunded, returned, charged-back or otherwise ineligible orders may be reversed. Your transaction history should show the adjustment."],
@@ -70,17 +70,18 @@ export default function YourBusinessPage() {
           <div className="max-w-3xl">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#8a6a9f]">Transparent rewards</p>
             <h2 className="mt-3 font-display text-3xl md:text-4xl">Your coins, explained clearly.</h2>
-            <p className="mt-3 text-sm leading-6 text-black/60">Coins are calculated on eligible product value actually paid after applicable product discounts. Shipping is excluded. Refunds and cancellations can reverse related rewards.</p>
+            <p className="mt-3 text-sm leading-6 text-black/60">Coins are calculated on eligible product value actually paid after applicable product discounts. Shipping is excluded. Tier qualification uses coins earned within one 30-day period only. Once upgraded, a tier never drops. Lifetime coins and available balance are tracked separately. Refunds and cancellations can reverse related rewards.</p>
           </div>
           <div className="mt-8 overflow-hidden rounded-2xl border border-[#e7dce7] bg-white">
-            <div className="grid grid-cols-3 bg-[#3e1730] px-5 py-4 text-xs font-bold uppercase tracking-wide text-white"><span>Lifetime coins earned</span><span>Rate</span><span>When it applies</span></div>
+            <div className="grid grid-cols-3 bg-[#3e1730] px-5 py-4 text-xs font-bold uppercase tracking-wide text-white"><span>Coins earned in 30 days</span><span>Rate</span><span>Tier rule</span></div>
             {[
-              ["Below 3,000","25%","Base rate"],
-              ["3,000–4,999","27%","Future eligible orders"],
-              ["5,000 and above","30%","Future eligible orders"],
+              ["Basic: below 1,000","25%","Current tier stays active"],
+              ["1,000 coins","27%","Permanent upgrade"],
+              ["3,000 coins","30%","Permanent upgrade"],
+              ["5,000 coins","30%","Highest tier"],
             ].map(([coins,rate,when]) => <div key={coins} className="grid grid-cols-3 gap-2 border-t border-[#eee5ee] px-5 py-4 text-sm"><span>{coins}</span><strong className="text-[#6f4a9a]">{rate}</strong><span className="text-black/60">{when}</span></div>)}
           </div>
-          <p className="mt-3 text-xs leading-5 text-black/50">1 coin = ₹1 reward value. Higher tiers apply to future eligible orders only, not earlier orders. Withdrawal is available from ₹1,000 available balance, after verification and approval.</p>
+          <p className="mt-3 text-xs leading-5 text-black/50">1 coin = ₹1 reward value. In a 30-day qualification period, 1,000 coins unlocks 27%, 3,000 unlocks 30%, and 5,000 qualifies for the highest tier. If the next target is missed, the partner stays at their current tier. Once upgraded, the tier never drops. The 30-day counter qualifies upgrades only; lifetime earned coins and available balance are separate. Higher rates apply to future eligible orders only. Withdrawal starts at ₹1,000 available balance.</p>
         </div>
       </section>
 
