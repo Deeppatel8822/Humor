@@ -130,6 +130,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   if (slug === "repair-conditioner") gallery.splice(3, 0, { src: "https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/d2033693-774b-40f4-9e33-235342bbccaf.png", alt: "Before and after conditioner comparison showing hair from behind without product packaging" });
   if (slug === "repair-hair-mask") gallery.splice(3, 0, { src: "https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/f09ad88b-c3bf-4172-80b7-05fec2ebc8d4.png", alt: "Before and after hair mask comparison showing hair from behind without product packaging" });
   if (slug === "shower-gel") gallery.splice(2, 0, { src: "https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/68322a4a-ffb2-4d02-bd7f-146d359e195a.png", alt: "Shower Cream before and after skin freshness and hydration comparison" });
+  if (slug === "shower-gel") gallery.splice(3, 0, { src: "https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/2c70dcab-c1f9-4067-98e5-544ccf06333a.png", alt: "How to use shower cream in four simple steps, without product packaging" });
   if (slug === "smooth-shake-daily-shampoo") gallery.splice(3, 1);
   const volume = productVolumes[product.sku];
   const highlights = getProductHighlights({ ...product, slug });
