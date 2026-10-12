@@ -140,11 +140,24 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             {highlights.map(({ label, symbol }) => <div key={label} className="flex flex-col items-center text-center gap-2 min-w-0">
               <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-[#f8eefa] text-[#6d1878] flex items-center justify-center">
                 {slug === "smooth-shake-daily-shampoo" ? (
-                  <svg aria-hidden="true" viewBox="0 0 40 40" className="w-7 h-7 md:w-9 md:h-9" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
-                    {symbol === "droplet" && <path d="M20 4 C16 12 9 19 9 25 a11 11 0 0 0 22 0 C31 19 24 12 20 4 Z" />}
-                    {symbol === "waves" && <><path d="M12 6 C4 14 4 23 12 31" /><path d="M20 4 C12 13 12 24 20 33" /><path d="M28 6 C20 14 20 23 28 31" /></>}
-                    {symbol === "hair" && <><path d="M20 34 C20 25 14 21 15 14 C16 9 20 6 24 5 C21 11 25 15 25 20 C25 25 21 28 20 34 Z" /><path d="M11 35 C13 30 14 27 14 23" /></>}
-                    {symbol === "drop" && <path d="M20 4 C16 12 9 19 9 25 a11 11 0 0 0 22 0 C31 19 24 12 20 4 Z" />}
+                  <svg aria-hidden="true" viewBox="0 0 48 48" className="w-8 h-8 md:w-10 md:h-10" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+                    {symbol === "droplet" && <g>
+                      <path d="M25 5 C21 15 13 21 13 29 C13 37 18 42 25 42 C32 42 37 37 37 29 C37 21 29 14 25 5 Z" fill="currentColor" stroke="none" />
+                      <path d="M8 18 l2 -3 l2 3 l-2 3 Z M14 10 l1.5 -3 l1.5 3 l-1.5 3 Z M37 13 l2 -3 l2 3 l-2 3 Z M41 22 l1.5 -2.5 l1.5 2.5 l-1.5 2.5 Z" fill="currentColor" stroke="none" />
+                    </g>}
+                    {symbol === "waves" && <g strokeWidth="3.4">
+                      <path d="M13 9 C4 18 8 27 14 36" />
+                      <path d="M24 5 C15 16 18 28 24 40" />
+                      <path d="M35 9 C26 18 30 27 36 36" />
+                    </g>}
+                    {symbol === "hair" && <g>
+                      <path d="M22 43 C22 34 15 30 17 22 C19 14 26 8 30 4 C27 14 32 20 30 27 C29 34 24 36 22 43 Z" fill="currentColor" stroke="none" />
+                      <path d="M8 29 H18 M29 29 H40" />
+                    </g>}
+                    {symbol === "drop" && <g>
+                      <path d="M24 5 C19 14 10 22 10 30 C10 38 16 43 24 43 C32 43 38 38 38 30 C38 22 29 14 24 5 Z" />
+                      <path d="M28 34 C30 31 30 28 28 25" strokeWidth="1.7" />
+                    </g>}
                   </svg>
                 ) : <span aria-hidden="true" className="text-2xl md:text-3xl leading-none">{symbol}</span>}
               </div>
