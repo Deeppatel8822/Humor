@@ -213,7 +213,7 @@ const productContentOverrides: Record<string, Partial<Product>> = {
 
 const galleryImageOverrides: Record<string, string[]> = {
   "repair-shampoo": ["/products/protein-shake-shampoo-model-1.webp"],
-  "smooth-shake-daily-shampoo": ["https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/ca95ab3f-e37e-48de-8d46-71087c7b0ca6.png"],
+  "smooth-shake-daily-shampoo": ["https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/812d9232-a866-404a-b263-080895bfdcc9.jpg"],
   "repair-hair-mask": ["/products/milk-shake-hair-mask-model-1.webp"],
   "blemish-block-face-serum": ["/products/blemish-block-face-serum-model-1.webp"],
   "velvet-touch-face-serum": ["/products/velvet-touch-face-serum-model-1.webp"],
