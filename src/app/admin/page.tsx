@@ -47,7 +47,7 @@ function printShippingLabel(order: Order) {
 export default function AdminPage() {
   const [email, setEmail] = useState(""); const [password, setPassword] = useState(""); const [loggedIn, setLoggedIn] = useState(false);
   const [products, setProducts] = useState<Product[]>([]); const [orders, setOrders] = useState<Order[]>([]);
-  const [tab, setTab] = useState<"orders" | "products" | "customers" | "coupons" | "marketingPartners">("orders");
+  const [tab, setTab] = useState<"orders" | "products" | "customers" | "coupons" | "crm" | "marketingPartners">("orders");
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [coupons, setCoupons] = useState<Coupon[]>([]); const [partnerApps, setPartnerApps] = useState<PartnerApplication[]>([]); const [partnerLoading, setPartnerLoading] = useState(false); const [stage, setStage] = useState<StageKey>("new");
   const [search, setSearch] = useState(""); const [orderSearch, setOrderSearch] = useState(""); const [error, setError] = useState(""); const [loading, setLoading] = useState(false); const [saving, setSaving] = useState<string | null>(null);
@@ -86,8 +86,8 @@ export default function AdminPage() {
 <button onClick={() => setTab("orders")} className={`rounded-full px-5 md:px-6 py-3 text-sm font-medium ${tab === "orders" ? "bg-[var(--deep-wine)] text-white" : "bg-white border border-[var(--line)]"}`}>Orders {newCount > 0 && <span className="ml-1 inline-flex min-w-5 h-5 px-1 items-center justify-center rounded-full bg-red-500 text-white text-[10px]">{newCount}</span>}</button>
 <button onClick={() => setTab("products")} className={`rounded-full px-5 md:px-6 py-3 text-sm font-medium ${tab === "products" ? "bg-[var(--deep-wine)] text-white" : "bg-white border border-[var(--line)]"}`}>Products & Inventory</button>
 <button onClick={() => setTab("customers")} className={`rounded-full px-5 md:px-6 py-3 text-sm font-medium ${tab === "customers" ? "bg-[var(--deep-wine)] text-white" : "bg-white border border-[var(--line)]"}`}>Customers <span className="ml-1 text-[10px] opacity-70">{customers.length}</span></button>
-<button onClick={() => setTab("coupons")} className={`rounded-full px-5 md:px-6 py-3 text-sm font-medium ${tab === "coupons" ? "bg-[var(--deep-wine)] text-white" : "bg-white border border-[var(--line)]"}`}>Coupons <span className="ml-1 text-[10px] opacity-70">{coupons.length}</span></button><button onClick={() => { setTab("marketingPartners"); loadPartnerApplications(); }} className={`rounded-full px-5 md:px-6 py-3 text-sm font-medium ${tab === "marketingPartners" ? "bg-[var(--deep-wine)] text-white" : "bg-white border border-[var(--line)]"}`}>Marketing Partners {partnerApps.length > 0 && <span className="ml-1 inline-flex min-w-5 h-5 px-1 items-center justify-center rounded-full bg-red-500 text-white text-[10px]">{partnerApps.length}</span>}</button>
-</div>{error && <div className="bg-white border border-red-200 text-red-600 rounded-xl px-4 py-3 text-sm mb-5">{error}</div>}{tab === "orders" ? <div><div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 mb-6">{STAGES.map((s) => <button key={s.key} onClick={() => setStage(s.key)} className={`text-left rounded-2xl p-4 border transition ${stage === s.key ? "bg-[var(--deep-wine)] text-white border-[var(--deep-wine)]" : "bg-white border-[var(--line)]"}`}><div className="text-xs opacity-80">{s.label}</div><div className="text-2xl font-semibold mt-1">{stageCounts[s.key] || 0}</div></button>)}</div><div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5"><div><h2 className="font-display text-2xl text-[var(--deep-wine)]">{STAGES.find((s) => s.key === stage)?.label}</h2><p className="text-sm text-[var(--muted)] mt-1">Newest orders appear first.</p></div><input value={orderSearch} onChange={(e) => setOrderSearch(e.target.value)} placeholder="Search order, name, phone…" className="w-full md:w-80 border border-[var(--line)] bg-white rounded-full px-5 py-3 text-sm outline-none" /></div><div className="space-y-4">{filteredOrders.map((order) => <OrderCard key={order.id} order={order} saving={saving === order.id} onMove={moveOrder} onPrint={() => printShippingLabel(order)} />)}{!filteredOrders.length && <div className="bg-white rounded-2xl border border-[var(--line)] px-6 py-12 text-center text-sm text-[var(--muted)]">No orders in this stage.</div>}</div></div> : tab === "products" ? <ProductsSection products={filteredProducts} search={search} setSearch={setSearch} saving={saving} onSave={saveProduct} /> : tab === "customers" ? <CustomersSection customers={customers} orders={orders} /> : tab === "coupons" ? <CouponsSection coupons={coupons} /> : <MarketingPartnersSection applications={partnerApps} loading={partnerLoading} saving={saving} onRefresh={loadPartnerApplications} onAction={actPartner} />}</div></main></>;
+<button onClick={() => setTab("coupons")} className={`rounded-full px-5 md:px-6 py-3 text-sm font-medium ${tab === "coupons" ? "bg-[var(--deep-wine)] text-white" : "bg-white border border-[var(--line)]"}`}>Coupons <span className="ml-1 text-[10px] opacity-70">{coupons.length}</span></button><button onClick={() => setTab("crm")} className={`rounded-full px-5 md:px-6 py-3 text-sm font-medium ${tab === "crm" ? "bg-[var(--deep-wine)] text-white" : "bg-white border border-[var(--line)]"}`}>Customer CRM</button><button onClick={() => { setTab("marketingPartners"); loadPartnerApplications(); }} className={`rounded-full px-5 md:px-6 py-3 text-sm font-medium ${tab === "marketingPartners" ? "bg-[var(--deep-wine)] text-white" : "bg-white border border-[var(--line)]"}`}>Marketing Partners {partnerApps.length > 0 && <span className="ml-1 inline-flex min-w-5 h-5 px-1 items-center justify-center rounded-full bg-red-500 text-white text-[10px]">{partnerApps.length}</span>}</button>
+</div>{error && <div className="bg-white border border-red-200 text-red-600 rounded-xl px-4 py-3 text-sm mb-5">{error}</div>}{tab === "orders" ? <div><div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 mb-6">{STAGES.map((s) => <button key={s.key} onClick={() => setStage(s.key)} className={`text-left rounded-2xl p-4 border transition ${stage === s.key ? "bg-[var(--deep-wine)] text-white border-[var(--deep-wine)]" : "bg-white border-[var(--line)]"}`}><div className="text-xs opacity-80">{s.label}</div><div className="text-2xl font-semibold mt-1">{stageCounts[s.key] || 0}</div></button>)}</div><div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5"><div><h2 className="font-display text-2xl text-[var(--deep-wine)]">{STAGES.find((s) => s.key === stage)?.label}</h2><p className="text-sm text-[var(--muted)] mt-1">Newest orders appear first.</p></div><input value={orderSearch} onChange={(e) => setOrderSearch(e.target.value)} placeholder="Search order, name, phone…" className="w-full md:w-80 border border-[var(--line)] bg-white rounded-full px-5 py-3 text-sm outline-none" /></div><div className="space-y-4">{filteredOrders.map((order) => <OrderCard key={order.id} order={order} saving={saving === order.id} onMove={moveOrder} onPrint={() => printShippingLabel(order)} />)}{!filteredOrders.length && <div className="bg-white rounded-2xl border border-[var(--line)] px-6 py-12 text-center text-sm text-[var(--muted)]">No orders in this stage.</div>}</div></div> : tab === "products" ? <ProductsSection products={filteredProducts} search={search} setSearch={setSearch} saving={saving} onSave={saveProduct} /> : tab === "customers" ? <CustomersSection customers={customers} orders={orders} /> : tab === "coupons" ? <CouponsSection coupons={coupons} /> : tab === "crm" ? <CustomerCrmSection /> : <MarketingPartnersSection applications={partnerApps} loading={partnerLoading} saving={saving} onRefresh={loadPartnerApplications} onAction={actPartner} />}</div></main></>;
 }
 
 function OrderCard({ order, saving, onMove, onPrint }: { order: Order; saving: boolean; onMove: (id: string, status: string, tracking?: string) => void; onPrint: () => void }) {
@@ -217,5 +217,130 @@ function CouponsSection({ coupons }: { coupons: Coupon[] }) {
   return <div className="bg-white rounded-2xl border border-[var(--line)] overflow-hidden">
     <div className="p-5 border-b border-[var(--line)]"><h2 className="font-display text-2xl text-[var(--deep-wine)]">Coupons</h2><p className="text-sm text-[var(--muted)] mt-1">Coupon monitoring is ready. Coupon creation/generation can be added separately.</p></div>
     <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b border-[var(--line)] text-left text-xs uppercase tracking-wide text-[var(--muted)]"><th className="p-4">Code</th><th className="p-4">Discount</th><th className="p-4">Min Order</th><th className="p-4">Status</th><th className="p-4">Expiry</th></tr></thead><tbody>{coupons.map((c) => <tr key={c.id} className="border-b border-[var(--line)] last:border-0"><td className="p-4 font-semibold">{c.code}</td><td className="p-4">{c.discount_type === "percentage" ? c.discount_value + "%" : "₹" + c.discount_value}</td><td className="p-4">₹{c.min_order_inr}</td><td className="p-4">{c.is_active ? <span className="text-green-700">Active</span> : <span className="text-red-600">Inactive</span>}</td><td className="p-4 text-[var(--muted)]">{c.expires_at ? formatDate(c.expires_at) : "No expiry"}</td></tr>)}{!coupons.length && <tr><td colSpan={5} className="p-10 text-center text-[var(--muted)]">No coupons found.</td></tr>}</tbody></table></div>
+  </div>;
+}
+
+
+type CrmProduct = { id: string; name: string; slug: string; category: string; status: string };
+type CrmSetting = { product_id: string; reminder_after_days: number; is_enabled: boolean };
+type CrmConsent = { id: string; phone_e164: string; customer_name: string | null; email: string | null; consent_status: string; consent_source: string | null; consent_at: string | null };
+type CrmReminder = { id: string; customer_name: string | null; phone_e164: string; product_name: string; due_at: string; status: string; message: string | null; sent_at: string | null; error_message: string | null };
+
+function CustomerCrmSection() {
+  const [products, setProducts] = useState<CrmProduct[]>([]);
+  const [settings, setSettings] = useState<CrmSetting[]>([]);
+  const [consents, setConsents] = useState<CrmConsent[]>([]);
+  const [reminders, setReminders] = useState<CrmReminder[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState<string | null>(null);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [whatsappConfigured, setWhatsappConfigured] = useState(false);
+  const [phone, setPhone] = useState("");
+  const [name, setName] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [consentStatus, setConsentStatus] = useState("opted_in");
+  const [consentSource, setConsentSource] = useState("");
+
+  async function load() {
+    setLoading(true); setError("");
+    try {
+      const response = await fetch("/api/admin/customer-crm", { cache: "no-store" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Could not load customer CRM.");
+      setProducts(data.products || []); setSettings(data.settings || []);
+      setConsents(data.consents || []); setReminders(data.reminders || []);
+      setWhatsappConfigured(Boolean(data.whatsappConfigured));
+    } catch (e) { setError(e instanceof Error ? e.message : "Could not load customer CRM."); }
+    finally { setLoading(false); }
+  }
+  useEffect(() => { load(); }, []);
+
+  function settingFor(productId: string) {
+    return settings.find((item) => item.product_id === productId) || { product_id: productId, reminder_after_days: 30, is_enabled: true };
+  }
+  async function saveSetting(productId: string, days: number, enabled: boolean) {
+    setSaving(productId); setError(""); setNotice("");
+    try {
+      const response = await fetch("/api/admin/customer-crm", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "save_setting", product_id: productId, reminder_after_days: days, is_enabled: enabled }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Could not save reminder setting.");
+      setSettings((old) => [...old.filter((x) => x.product_id !== productId), data.setting]);
+      setNotice("Product reminder settings saved.");
+    } catch (e) { setError(e instanceof Error ? e.message : "Could not save setting."); }
+    finally { setSaving(null); }
+  }
+  async function saveConsent(e: React.FormEvent) {
+    e.preventDefault(); setSaving("consent"); setError(""); setNotice("");
+    try {
+      const response = await fetch("/api/admin/customer-crm", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "save_consent", phone_e164: phone, customer_name: name, email: contactEmail, consent_status: consentStatus, consent_source: consentSource }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Could not save WhatsApp preference.");
+      setPhone(""); setName(""); setContactEmail(""); setConsentSource("");
+      setNotice("WhatsApp preference saved."); await load();
+    } catch (e) { setError(e instanceof Error ? e.message : "Could not save consent."); }
+    finally { setSaving(null); }
+  }
+  async function generateDue() {
+    setSaving("generate"); setError(""); setNotice("");
+    try {
+      const response = await fetch("/api/admin/customer-crm", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "generate_due" }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Could not calculate due reminders.");
+      setNotice("Checked " + data.checked + " due reminder candidates. Newly queued: " + data.created + ". No WhatsApp messages were sent.");
+      await load();
+    } catch (e) { setError(e instanceof Error ? e.message : "Could not generate reminders."); }
+    finally { setSaving(null); }
+  }
+  const dueCount = reminders.filter((r) => r.status === "pending" || r.status === "ready").length;
+  return <div className="space-y-5">
+    <div className="bg-white rounded-2xl border border-[var(--line)] p-5 md:p-6">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-3">
+        <div><h2 className="font-display text-2xl text-[var(--deep-wine)]">Customer Repeat-Purchase CRM</h2><p className="text-sm text-[var(--muted)] mt-1">Product-wise reorder intervals, recorded WhatsApp consent and reminder queue.</p></div>
+        <button onClick={load} className="rounded-full border border-[var(--line)] px-4 py-2 text-sm">Refresh</button>
+      </div>
+      <div className="grid sm:grid-cols-3 gap-3 mt-5">
+        <div className="rounded-xl bg-[var(--milk-sage)] p-4"><p className="text-xs text-[var(--muted)]">WhatsApp opt-ins</p><p className="text-2xl font-semibold mt-1">{consents.filter((c) => c.consent_status === "opted_in").length}</p></div>
+        <div className="rounded-xl bg-[var(--milk-sage)] p-4"><p className="text-xs text-[var(--muted)]">Pending reminders</p><p className="text-2xl font-semibold mt-1">{dueCount}</p></div>
+        <div className="rounded-xl bg-[var(--milk-sage)] p-4"><p className="text-xs text-[var(--muted)]">WhatsApp provider</p><p className="text-sm font-semibold mt-2">{whatsappConfigured ? "Credentials detected" : "Not connected"}</p></div>
+      </div>
+      {error && <p className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+      {notice && <p className="mt-4 rounded-xl border border-green-200 bg-green-50 p-3 text-sm text-green-800">{notice}</p>}
+      {loading && <p className="mt-4 text-sm text-[var(--muted)]">Loading CRM…</p>}
+    </div>
+    <div className="bg-white rounded-2xl border border-[var(--line)] overflow-hidden">
+      <div className="p-5 border-b border-[var(--line)]"><h3 className="font-display text-xl text-[var(--deep-wine)]">Product-wise reminder timing</h3><p className="text-xs text-[var(--muted)] mt-1">Set when a customer should be considered due to reorder after a delivered order.</p></div>
+      <div className="divide-y divide-[var(--line)]">{products.map((product) => {
+        const current = settingFor(product.id);
+        return <div key={product.id} className="p-4 md:p-5 flex flex-col md:flex-row md:items-center gap-3">
+          <div className="flex-1 min-w-0"><p className="font-medium">{product.name}</p><p className="text-xs text-[var(--muted)] mt-1">{product.category} · {product.status}</p></div>
+          <label className="text-sm flex items-center gap-2">After <input aria-label={"Reminder days for " + product.name} type="number" min={1} max={365} defaultValue={current.reminder_after_days} key={product.id + "-" + current.reminder_after_days} id={"crm-days-" + product.id} className="w-20 rounded-lg border border-[var(--line)] px-3 py-2" /> days</label>
+          <label className="text-sm flex items-center gap-2"><input type="checkbox" defaultChecked={current.is_enabled} key={product.id + "-enabled-" + current.is_enabled} id={"crm-enabled-" + product.id} /> Enabled</label>
+          <button disabled={saving === product.id} onClick={() => {
+            const days = Number((document.getElementById("crm-days-" + product.id) as HTMLInputElement | null)?.value || 30);
+            const enabled = Boolean((document.getElementById("crm-enabled-" + product.id) as HTMLInputElement | null)?.checked);
+            saveSetting(product.id, days, enabled);
+          }} className="rounded-full bg-[var(--deep-wine)] text-white px-4 py-2 text-sm disabled:opacity-50">{saving === product.id ? "Saving…" : "Save"}</button>
+        </div>;
+      })}{!products.length && !loading && <p className="p-6 text-sm text-[var(--muted)]">No products found.</p>}</div>
+    </div>
+    <div className="bg-white rounded-2xl border border-[var(--line)] p-5 md:p-6">
+      <h3 className="font-display text-xl text-[var(--deep-wine)]">WhatsApp consent</h3>
+      <p className="text-xs text-[var(--muted)] mt-1 mb-4">Only customers who explicitly opted in can enter the reminder queue. Record the source of consent, for example checkout checkbox or customer message.</p>
+      <form onSubmit={saveConsent} className="grid md:grid-cols-2 gap-3">
+        <input required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Mobile number, e.g. +91 98765 43210" className="rounded-xl border border-[var(--line)] px-4 py-3 text-sm" />
+        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Customer name" className="rounded-xl border border-[var(--line)] px-4 py-3 text-sm" />
+        <input type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="Email (optional)" className="rounded-xl border border-[var(--line)] px-4 py-3 text-sm" />
+        <select value={consentStatus} onChange={(e) => setConsentStatus(e.target.value)} className="rounded-xl border border-[var(--line)] px-4 py-3 text-sm"><option value="opted_in">Opted in</option><option value="opted_out">Opted out</option><option value="unknown">Unknown / no consent</option></select>
+        <input value={consentSource} onChange={(e) => setConsentSource(e.target.value)} placeholder="Consent source / record (required for opt-in)" className="md:col-span-2 rounded-xl border border-[var(--line)] px-4 py-3 text-sm" />
+        <button disabled={saving === "consent"} className="md:col-span-2 rounded-full bg-[var(--deep-wine)] text-white px-5 py-3 text-sm font-semibold disabled:opacity-50">{saving === "consent" ? "Saving…" : "Save customer WhatsApp preference"}</button>
+      </form>
+      <div className="overflow-x-auto mt-5"><table className="w-full text-sm"><thead><tr className="border-b border-[var(--line)] text-left text-xs uppercase text-[var(--muted)]"><th className="p-3">Customer</th><th className="p-3">Phone</th><th className="p-3">Consent</th><th className="p-3">Source</th></tr></thead><tbody>{consents.map((item) => <tr key={item.id} className="border-b border-[var(--line)]"><td className="p-3">{item.customer_name || item.email || "Customer"}</td><td className="p-3">{item.phone_e164}</td><td className="p-3">{item.consent_status}</td><td className="p-3">{item.consent_source || "—"}</td></tr>)}{!consents.length && <tr><td colSpan={4} className="p-5 text-center text-[var(--muted)]">No WhatsApp preferences recorded yet.</td></tr>}</tbody></table></div>
+    </div>
+    <div className="bg-white rounded-2xl border border-[var(--line)] overflow-hidden">
+      <div className="p-5 border-b border-[var(--line)] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"><div><h3 className="font-display text-xl text-[var(--deep-wine)]">Reorder reminders</h3><p className="text-xs text-[var(--muted)] mt-1">Calculates reminders from delivered orders and product intervals.</p></div><button onClick={generateDue} disabled={saving === "generate"} className="rounded-full bg-[var(--deep-wine)] text-white px-5 py-2.5 text-sm disabled:opacity-50">{saving === "generate" ? "Checking…" : "Generate due reminders"}</button></div>
+      <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b border-[var(--line)] text-left text-xs uppercase text-[var(--muted)]"><th className="p-3">Customer</th><th className="p-3">Product</th><th className="p-3">Due date</th><th className="p-3">Status</th><th className="p-3">Action</th></tr></thead><tbody>{reminders.map((reminder) => <tr key={reminder.id} className="border-b border-[var(--line)] align-top"><td className="p-3">{reminder.customer_name || "Customer"}<p className="text-xs text-[var(--muted)] mt-1">{reminder.phone_e164}</p></td><td className="p-3">{reminder.product_name}</td><td className="p-3 whitespace-nowrap">{formatDate(reminder.due_at)}</td><td className="p-3">{reminder.status}</td><td className="p-3">{reminder.status === "pending" || reminder.status === "ready" ? <a href={"https://wa.me/" + reminder.phone_e164.replace(/\D/g, "") + "?text=" + encodeURIComponent(reminder.message || ("Hi, it's time to reorder " + reminder.product_name + " from Humor Luxury."))} target="_blank" rel="noreferrer" className="inline-block rounded-full border border-[var(--line)] px-3 py-2 text-xs font-medium">Open WhatsApp draft</a> : reminder.sent_at ? <span className="text-xs text-[var(--muted)]">Sent {formatDate(reminder.sent_at)}</span> : "—"}</td></tr>)}{!reminders.length && <tr><td colSpan={5} className="p-8 text-center text-[var(--muted)]">No reminders yet. Record consent, configure intervals and generate due reminders.</td></tr>}</tbody></table></div>
+      <p className="p-4 text-xs text-[var(--muted)] border-t border-[var(--line)]">WhatsApp is not sending automatically yet. The current flow queues reminders and opens a prefilled WhatsApp draft for manual review. Automatic delivery requires approved WhatsApp Business Cloud API credentials, templates where required, and a verified send/opt-out webhook.</p>
+    </div>
   </div>;
 }
