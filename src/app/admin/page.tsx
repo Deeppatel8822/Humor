@@ -47,7 +47,7 @@ function printShippingLabel(order: Order) {
 export default function AdminPage() {
   const [email, setEmail] = useState(""); const [password, setPassword] = useState(""); const [loggedIn, setLoggedIn] = useState(false);
   const [products, setProducts] = useState<Product[]>([]); const [orders, setOrders] = useState<Order[]>([]);
-  const [tab, setTab] = useState<"orders" | "products" | "customers" | "coupons" | "crm" | "marketingPartners">("orders");
+  const [tab, setTab] = useState<"orders" | "products" | "customers" | "coupons" | "crm" | "cartActivity" | "marketingPartners">("orders");
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [coupons, setCoupons] = useState<Coupon[]>([]); const [partnerApps, setPartnerApps] = useState<PartnerApplication[]>([]); const [partnerLoading, setPartnerLoading] = useState(false); const [stage, setStage] = useState<StageKey>("new");
   const [search, setSearch] = useState(""); const [orderSearch, setOrderSearch] = useState(""); const [error, setError] = useState(""); const [loading, setLoading] = useState(false); const [saving, setSaving] = useState<string | null>(null);
@@ -86,8 +86,8 @@ export default function AdminPage() {
 <button onClick={() => setTab("orders")} className={`rounded-full px-5 md:px-6 py-3 text-sm font-medium ${tab === "orders" ? "bg-[var(--deep-wine)] text-white" : "bg-white border border-[var(--line)]"}`}>Orders {newCount > 0 && <span className="ml-1 inline-flex min-w-5 h-5 px-1 items-center justify-center rounded-full bg-red-500 text-white text-[10px]">{newCount}</span>}</button>
 <button onClick={() => setTab("products")} className={`rounded-full px-5 md:px-6 py-3 text-sm font-medium ${tab === "products" ? "bg-[var(--deep-wine)] text-white" : "bg-white border border-[var(--line)]"}`}>Products & Inventory</button>
 <button onClick={() => setTab("customers")} className={`rounded-full px-5 md:px-6 py-3 text-sm font-medium ${tab === "customers" ? "bg-[var(--deep-wine)] text-white" : "bg-white border border-[var(--line)]"}`}>Customers <span className="ml-1 text-[10px] opacity-70">{customers.length}</span></button>
-<button onClick={() => setTab("coupons")} className={`rounded-full px-5 md:px-6 py-3 text-sm font-medium ${tab === "coupons" ? "bg-[var(--deep-wine)] text-white" : "bg-white border border-[var(--line)]"}`}>Coupons <span className="ml-1 text-[10px] opacity-70">{coupons.length}</span></button><button onClick={() => setTab("crm")} className={`rounded-full px-5 md:px-6 py-3 text-sm font-medium ${tab === "crm" ? "bg-[var(--deep-wine)] text-white" : "bg-white border border-[var(--line)]"}`}>Customer CRM</button><button onClick={() => { setTab("marketingPartners"); loadPartnerApplications(); }} className={`rounded-full px-5 md:px-6 py-3 text-sm font-medium ${tab === "marketingPartners" ? "bg-[var(--deep-wine)] text-white" : "bg-white border border-[var(--line)]"}`}>Marketing Partners {partnerApps.length > 0 && <span className="ml-1 inline-flex min-w-5 h-5 px-1 items-center justify-center rounded-full bg-red-500 text-white text-[10px]">{partnerApps.length}</span>}</button>
-</div>{error && <div className="bg-white border border-red-200 text-red-600 rounded-xl px-4 py-3 text-sm mb-5">{error}</div>}{tab === "orders" ? <div><div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 mb-6">{STAGES.map((s) => <button key={s.key} onClick={() => setStage(s.key)} className={`text-left rounded-2xl p-4 border transition ${stage === s.key ? "bg-[var(--deep-wine)] text-white border-[var(--deep-wine)]" : "bg-white border-[var(--line)]"}`}><div className="text-xs opacity-80">{s.label}</div><div className="text-2xl font-semibold mt-1">{stageCounts[s.key] || 0}</div></button>)}</div><div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5"><div><h2 className="font-display text-2xl text-[var(--deep-wine)]">{STAGES.find((s) => s.key === stage)?.label}</h2><p className="text-sm text-[var(--muted)] mt-1">Newest orders appear first.</p></div><input value={orderSearch} onChange={(e) => setOrderSearch(e.target.value)} placeholder="Search order, name, phone…" className="w-full md:w-80 border border-[var(--line)] bg-white rounded-full px-5 py-3 text-sm outline-none" /></div><div className="space-y-4">{filteredOrders.map((order) => <OrderCard key={order.id} order={order} saving={saving === order.id} onMove={moveOrder} onPrint={() => printShippingLabel(order)} />)}{!filteredOrders.length && <div className="bg-white rounded-2xl border border-[var(--line)] px-6 py-12 text-center text-sm text-[var(--muted)]">No orders in this stage.</div>}</div></div> : tab === "products" ? <ProductsSection products={filteredProducts} search={search} setSearch={setSearch} saving={saving} onSave={saveProduct} /> : tab === "customers" ? <CustomersSection customers={customers} orders={orders} /> : tab === "coupons" ? <CouponsSection coupons={coupons} /> : tab === "crm" ? <CustomerCrmSection /> : <MarketingPartnersSection applications={partnerApps} loading={partnerLoading} saving={saving} onRefresh={loadPartnerApplications} onAction={actPartner} />}</div></main></>;
+<button onClick={() => setTab("coupons")} className={`rounded-full px-5 md:px-6 py-3 text-sm font-medium ${tab === "coupons" ? "bg-[var(--deep-wine)] text-white" : "bg-white border border-[var(--line)]"}`}>Coupons <span className="ml-1 text-[10px] opacity-70">{coupons.length}</span></button><button onClick={() => setTab("crm")} className={`rounded-full px-5 md:px-6 py-3 text-sm font-medium ${tab === "crm" ? "bg-[var(--deep-wine)] text-white" : "bg-white border border-[var(--line)]"}`}>Customer CRM</button><button onClick={() => setTab("cartActivity")} className={`rounded-full px-5 md:px-6 py-3 text-sm font-medium ${tab === "cartActivity" ? "bg-[var(--deep-wine)] text-white" : "bg-white border border-[var(--line)]"}`}>Cart Activity</button><button onClick={() => { setTab("marketingPartners"); loadPartnerApplications(); }} className={`rounded-full px-5 md:px-6 py-3 text-sm font-medium ${tab === "marketingPartners" ? "bg-[var(--deep-wine)] text-white" : "bg-white border border-[var(--line)]"}`}>Marketing Partners {partnerApps.length > 0 && <span className="ml-1 inline-flex min-w-5 h-5 px-1 items-center justify-center rounded-full bg-red-500 text-white text-[10px]">{partnerApps.length}</span>}</button>
+</div>{error && <div className="bg-white border border-red-200 text-red-600 rounded-xl px-4 py-3 text-sm mb-5">{error}</div>}{tab === "orders" ? <div><div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 mb-6">{STAGES.map((s) => <button key={s.key} onClick={() => setStage(s.key)} className={`text-left rounded-2xl p-4 border transition ${stage === s.key ? "bg-[var(--deep-wine)] text-white border-[var(--deep-wine)]" : "bg-white border-[var(--line)]"}`}><div className="text-xs opacity-80">{s.label}</div><div className="text-2xl font-semibold mt-1">{stageCounts[s.key] || 0}</div></button>)}</div><div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5"><div><h2 className="font-display text-2xl text-[var(--deep-wine)]">{STAGES.find((s) => s.key === stage)?.label}</h2><p className="text-sm text-[var(--muted)] mt-1">Newest orders appear first.</p></div><input value={orderSearch} onChange={(e) => setOrderSearch(e.target.value)} placeholder="Search order, name, phone…" className="w-full md:w-80 border border-[var(--line)] bg-white rounded-full px-5 py-3 text-sm outline-none" /></div><div className="space-y-4">{filteredOrders.map((order) => <OrderCard key={order.id} order={order} saving={saving === order.id} onMove={moveOrder} onPrint={() => printShippingLabel(order)} />)}{!filteredOrders.length && <div className="bg-white rounded-2xl border border-[var(--line)] px-6 py-12 text-center text-sm text-[var(--muted)]">No orders in this stage.</div>}</div></div> : tab === "products" ? <ProductsSection products={filteredProducts} search={search} setSearch={setSearch} saving={saving} onSave={saveProduct} /> : tab === "customers" ? <CustomersSection customers={customers} orders={orders} /> : tab === "coupons" ? <CouponsSection coupons={coupons} /> : tab === "crm" ? <CustomerCrmSection /> : tab === "cartActivity" ? <CartActivitySection /> : <MarketingPartnersSection applications={partnerApps} loading={partnerLoading} saving={saving} onRefresh={loadPartnerApplications} onAction={actPartner} />}</div></main></>;
 }
 
 function OrderCard({ order, saving, onMove, onPrint }: { order: Order; saving: boolean; onMove: (id: string, status: string, tracking?: string) => void; onPrint: () => void }) {
@@ -341,6 +341,119 @@ function CustomerCrmSection() {
       <div className="p-5 border-b border-[var(--line)] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"><div><h3 className="font-display text-xl text-[var(--deep-wine)]">Reorder reminders</h3><p className="text-xs text-[var(--muted)] mt-1">Calculates reminders from delivered orders and product intervals.</p></div><button onClick={generateDue} disabled={saving === "generate"} className="rounded-full bg-[var(--deep-wine)] text-white px-5 py-2.5 text-sm disabled:opacity-50">{saving === "generate" ? "Checking…" : "Generate due reminders"}</button></div>
       <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b border-[var(--line)] text-left text-xs uppercase text-[var(--muted)]"><th className="p-3">Customer</th><th className="p-3">Product</th><th className="p-3">Due date</th><th className="p-3">Status</th><th className="p-3">Action</th></tr></thead><tbody>{reminders.map((reminder) => <tr key={reminder.id} className="border-b border-[var(--line)] align-top"><td className="p-3">{reminder.customer_name || "Customer"}<p className="text-xs text-[var(--muted)] mt-1">{reminder.phone_e164}</p></td><td className="p-3">{reminder.product_name}</td><td className="p-3 whitespace-nowrap">{formatDate(reminder.due_at)}</td><td className="p-3">{reminder.status}</td><td className="p-3">{reminder.status === "pending" || reminder.status === "ready" ? <a href={"https://wa.me/" + reminder.phone_e164.replace(/\D/g, "") + "?text=" + encodeURIComponent(reminder.message || ("Hi, it's time to reorder " + reminder.product_name + " from Humor Luxury."))} target="_blank" rel="noreferrer" className="inline-block rounded-full border border-[var(--line)] px-3 py-2 text-xs font-medium">Open WhatsApp draft</a> : reminder.sent_at ? <span className="text-xs text-[var(--muted)]">Sent {formatDate(reminder.sent_at)}</span> : "—"}</td></tr>)}{!reminders.length && <tr><td colSpan={5} className="p-8 text-center text-[var(--muted)]">No reminders yet. Record consent, configure intervals and generate due reminders.</td></tr>}</tbody></table></div>
       <p className="p-4 text-xs text-[var(--muted)] border-t border-[var(--line)]">WhatsApp is not sending automatically yet. The current flow queues reminders and opens a prefilled WhatsApp draft for manual review. Automatic delivery requires approved WhatsApp Business Cloud API credentials, templates where required, and a verified send/opt-out webhook.</p>
+    </div>
+  </div>;
+}
+
+
+type CartEvent = { id: string; session_id: string; event_type: string; customer_name: string | null; email: string | null; phone: string | null; product_id: string | null; product_slug: string | null; product_name: string | null; unit_price_inr: number; quantity: number; cart_value_inr: number; page_path: string | null; created_at: string };
+type CartOffer = { id: number; enabled: boolean; offer_code: string | null; offer_text: string; discount_label: string; expires_at: string | null; reminder_after_minutes: number };
+
+function CartActivitySection() {
+  const [events, setEvents] = useState<CartEvent[]>([]);
+  const [offer, setOffer] = useState<CartOffer>({ id: 1, enabled: false, offer_code: "", offer_text: "Your cart is waiting. Complete checkout to enjoy this special offer.", discount_label: "Special offer", expires_at: "", reminder_after_minutes: 60 });
+  const [optedInPhones, setOptedInPhones] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [filter, setFilter] = useState("all");
+
+  async function load() {
+    setLoading(true); setError("");
+    try {
+      const response = await fetch("/api/admin/cart-activity", { cache: "no-store" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Could not load cart activity.");
+      setEvents(data.events || []); setOptedInPhones(data.optedInPhones || []);
+      if (data.offer) setOffer({ ...data.offer, expires_at: data.offer.expires_at ? new Date(data.offer.expires_at).toISOString().slice(0,16) : "" });
+    } catch (e) { setError(e instanceof Error ? e.message : "Could not load cart activity."); }
+    finally { setLoading(false); }
+  }
+  useEffect(() => { load(); }, []);
+
+  const sessions = useMemo(() => {
+    const map = new Map<string, { id: string; events: CartEvent[]; latest: CartEvent; name: string; email: string; phone: string; value: number; purchased: boolean }>();
+    for (const event of events) {
+      let group = map.get(event.session_id);
+      if (!group) {
+        group = { id: event.session_id, events: [], latest: event, name: event.customer_name || "", email: event.email || "", phone: event.phone || "", value: Number(event.cart_value_inr || 0), purchased: false };
+        map.set(event.session_id, group);
+      }
+      group.events.push(event);
+      if (new Date(event.created_at).getTime() > new Date(group.latest.created_at).getTime()) group.latest = event;
+      if (!group.name && event.customer_name) group.name = event.customer_name;
+      if (!group.email && event.email) group.email = event.email;
+      if (!group.phone && event.phone) group.phone = event.phone;
+      group.value = Math.max(group.value, Number(event.cart_value_inr || 0));
+    }
+    return Array.from(map.values()).map((group) => {
+      const sorted = [...group.events].sort((a,b) => new Date(a.created_at).getTime()-new Date(b.created_at).getTime());
+      const lastPurchase = sorted.filter((e) => e.event_type === "purchase_completed").at(-1);
+      const latestNonPurchase = sorted.filter((e) => e.event_type !== "purchase_completed").at(-1);
+      const purchased = Boolean(lastPurchase && (!latestNonPurchase || new Date(lastPurchase.created_at) >= new Date(latestNonPurchase.created_at)));
+      return { ...group, latest: sorted.at(-1) || group.latest, purchased };
+    }).sort((a,b) => new Date(b.latest.created_at).getTime()-new Date(a.latest.created_at).getTime());
+  }, [events]);
+
+  const abandoned = sessions.filter((session) => !session.purchased && Date.now() - new Date(session.latest.created_at).getTime() >= offer.reminder_after_minutes * 60000 && session.latest.event_type !== "cart_cleared");
+  const shown = filter === "abandoned" ? abandoned : filter === "purchased" ? sessions.filter((s) => s.purchased) : sessions;
+
+  async function saveOffer(e: React.FormEvent) {
+    e.preventDefault(); setSaving(true); setError(""); setNotice("");
+    try {
+      const response = await fetch("/api/admin/cart-activity", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...offer, expires_at: offer.expires_at || null }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Could not save offer.");
+      setOffer({ ...data.offer, expires_at: data.offer.expires_at ? new Date(data.offer.expires_at).toISOString().slice(0,16) : "" });
+      setNotice("Abandoned-cart offer settings saved.");
+    } catch (e) { setError(e instanceof Error ? e.message : "Could not save offer."); }
+    finally { setSaving(false); }
+  }
+  const money = (n: number) => "₹" + Number(n || 0).toLocaleString("en-IN");
+  function waLink(session: (typeof sessions)[number]) {
+    const phone = session.phone.replace(/\D/g, "");
+    const expires = offer.expires_at ? new Date(offer.expires_at) : null;
+    const offerValid = offer.enabled && (!expires || expires.getTime() > Date.now());
+    const offerLine = offerValid ? " " + offer.offer_text + (offer.offer_code ? " Use code " + offer.offer_code + "." : "") + (expires ? " Offer valid until " + expires.toLocaleString("en-IN") + "." : "") : "";
+    const msg = "Hi " + (session.name || "there") + ", you still have items waiting in your Humor Luxury cart. Complete your checkout here: https://www.humorluxury.com/cart." + offerLine + " Reply STOP if you no longer want WhatsApp reminders.";
+    return "https://wa.me/" + phone + "?text=" + encodeURIComponent(msg);
+  }
+
+  return <div className="space-y-5">
+    <div className="bg-white rounded-2xl border border-[var(--line)] p-5 md:p-6">
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3"><div><h2 className="font-display text-2xl text-[var(--deep-wine)]">Cart Activity & Recovery</h2><p className="text-sm text-[var(--muted)] mt-1">See product interest, removals, checkout starts and completed purchases. Tracking starts after this feature is deployed.</p></div><button onClick={load} className="rounded-full border border-[var(--line)] px-4 py-2 text-sm">Refresh</button></div>
+      <div className="grid sm:grid-cols-4 gap-3 mt-5">
+        <div className="rounded-xl bg-[var(--milk-sage)] p-4"><p className="text-xs text-[var(--muted)]">Tracked sessions</p><p className="text-2xl font-semibold mt-1">{sessions.length}</p></div>
+        <div className="rounded-xl bg-[var(--milk-sage)] p-4"><p className="text-xs text-[var(--muted)]">Add to cart events</p><p className="text-2xl font-semibold mt-1">{events.filter((e) => e.event_type === "add_to_cart").length}</p></div>
+        <div className="rounded-xl bg-[var(--milk-sage)] p-4"><p className="text-xs text-[var(--muted)]">Remove events</p><p className="text-2xl font-semibold mt-1">{events.filter((e) => e.event_type === "remove_from_cart").length}</p></div>
+        <div className="rounded-xl bg-[var(--milk-sage)] p-4"><p className="text-xs text-[var(--muted)]">Completed purchase sessions</p><p className="text-2xl font-semibold mt-1">{sessions.filter((s) => s.purchased).length}</p></div>
+      </div>
+      {error && <p className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+      {notice && <p className="mt-4 rounded-xl border border-green-200 bg-green-50 p-3 text-sm text-green-800">{notice}</p>}
+      {loading && <p className="mt-4 text-sm text-[var(--muted)]">Loading cart activity…</p>}
+    </div>
+    <div className="bg-white rounded-2xl border border-[var(--line)] p-5 md:p-6">
+      <h3 className="font-display text-xl text-[var(--deep-wine)]">Abandoned-cart offer</h3>
+      <p className="text-xs text-[var(--muted)] mt-1 mb-4">Configure a real offer and expiry. This only prepares a WhatsApp draft; it does not send messages automatically.</p>
+      <form onSubmit={saveOffer} className="grid md:grid-cols-2 gap-3">
+        <label className="flex items-center gap-2 text-sm md:col-span-2"><input type="checkbox" checked={offer.enabled} onChange={(e) => setOffer({ ...offer, enabled: e.target.checked })} /> Enable offer in recovery drafts</label>
+        <input value={offer.discount_label} onChange={(e) => setOffer({ ...offer, discount_label: e.target.value })} placeholder="Offer label, e.g. 10% off" className="rounded-xl border border-[var(--line)] px-4 py-3 text-sm" />
+        <input value={offer.offer_code || ""} onChange={(e) => setOffer({ ...offer, offer_code: e.target.value.toUpperCase() })} placeholder="Coupon code (optional)" className="rounded-xl border border-[var(--line)] px-4 py-3 text-sm" />
+        <textarea value={offer.offer_text} onChange={(e) => setOffer({ ...offer, offer_text: e.target.value })} placeholder="Offer message" className="md:col-span-2 rounded-xl border border-[var(--line)] px-4 py-3 text-sm" rows={2} />
+        <label className="text-sm">Reminder after (minutes)<input type="number" min={15} max={10080} value={offer.reminder_after_minutes} onChange={(e) => setOffer({ ...offer, reminder_after_minutes: Number(e.target.value) })} className="mt-1 w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm" /></label>
+        <label className="text-sm">Offer expiry (optional)<input type="datetime-local" value={offer.expires_at || ""} onChange={(e) => setOffer({ ...offer, expires_at: e.target.value })} className="mt-1 w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm" /></label>
+        <button disabled={saving} className="md:col-span-2 rounded-full bg-[var(--deep-wine)] text-white px-5 py-3 text-sm font-semibold disabled:opacity-50">{saving ? "Saving…" : "Save recovery offer"}</button>
+      </form>
+    </div>
+    <div className="bg-white rounded-2xl border border-[var(--line)] overflow-hidden">
+      <div className="p-5 border-b border-[var(--line)] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"><div><h3 className="font-display text-xl text-[var(--deep-wine)]">Cart sessions</h3><p className="text-xs text-[var(--muted)] mt-1">Abandoned status is inferred when the latest activity is old enough and no later purchase event exists.</p></div><select value={filter} onChange={(e) => setFilter(e.target.value)} className="rounded-full border border-[var(--line)] px-4 py-2 text-sm"><option value="all">All sessions</option><option value="abandoned">Abandoned carts</option><option value="purchased">Purchased</option></select></div>
+      <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b border-[var(--line)] text-left text-xs uppercase text-[var(--muted)]"><th className="p-3">Customer / session</th><th className="p-3">Last product activity</th><th className="p-3">Cart value</th><th className="p-3">Last activity</th><th className="p-3">Status / action</th></tr></thead><tbody>{shown.map((session) => {
+        const items = session.events.filter((e) => e.product_name).slice(0, 4);
+        const oldEnough = Date.now() - new Date(session.latest.created_at).getTime() >= offer.reminder_after_minutes * 60000;
+        const canWhatsApp = Boolean(session.phone && optedInPhones.includes(session.phone.startsWith("+") ? session.phone : "+" + session.phone.replace(/\D/g, "")) && !session.purchased && oldEnough);
+        return <tr key={session.id} className="border-b border-[var(--line)] align-top"><td className="p-3 min-w-48"><p className="font-medium">{session.name || "Guest visitor"}</p><p className="text-xs text-[var(--muted)] break-all">{session.email || session.phone || "Anonymous session"}</p><p className="text-[10px] text-[var(--muted)] mt-1">{session.id.slice(0, 12)}…</p></td><td className="p-3 min-w-44">{items.map((item) => <p key={item.id} className="text-xs mb-1">{item.product_name} × {item.quantity} <span className="text-[var(--muted)]">({item.event_type.replaceAll("_", " ")})</span></p>)}</td><td className="p-3 font-semibold">{money(session.value)}</td><td className="p-3 whitespace-nowrap text-xs">{formatDate(session.latest.created_at)}<p className="mt-1 text-[var(--muted)]">{session.latest.event_type.replaceAll("_", " ")}</p></td><td className="p-3">{session.purchased ? <span className="text-green-700">Purchased</span> : oldEnough ? <span className="text-amber-700">Potentially abandoned</span> : <span className="text-[var(--muted)]">Active / waiting</span>}{canWhatsApp && <a href={waLink(session)} target="_blank" rel="noreferrer" className="block mt-2 rounded-full border border-[var(--line)] px-3 py-2 text-center text-xs font-medium">Open WhatsApp draft</a>}{session.phone && !optedInPhones.includes(session.phone.startsWith("+") ? session.phone : "+" + session.phone.replace(/\D/g, "")) && <p className="mt-2 text-[10px] text-[var(--muted)]">No recorded WhatsApp opt-in</p>}</td></tr>;
+      })}{!shown.length && <tr><td colSpan={5} className="p-8 text-center text-[var(--muted)]">No cart sessions match this filter yet.</td></tr>}</tbody></table></div>
     </div>
   </div>;
 }
