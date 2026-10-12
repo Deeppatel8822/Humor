@@ -9,6 +9,8 @@ export type WalletTransactionType =
   | "wallet_refund"
   | "manual_adjustment";
 
+export const isWalletLedgerEnabled = process.env.BUSINESS_PROGRAMME_WALLET_LEDGER_ENABLED === "true";
+
 export interface WalletPostResult {
   success: boolean;
   duplicate?: boolean;
