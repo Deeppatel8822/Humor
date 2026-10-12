@@ -35,7 +35,7 @@ export async function POST(request: Request) {
       customer_name: contact.customer_name,
       email: contact.email,
       phone: contact.phone,
-      product_id: line?.productId || null,
+      product_id: /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(line?.productId || "")) ? line.productId : null,
       product_slug: safeString(line?.slug, 160) || null,
       product_name: safeString(line?.name, 200) || null,
       unit_price_inr: Math.max(0, Math.round(Number(line?.price_inr) || 0)),
@@ -55,12 +55,13 @@ export async function POST(request: Request) {
 export async function GET() {
   if (!(await authorized())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const db = supabaseAdmin();
-  const [eventsResult, offerResult] = await Promise.all([
+  const [eventsResult, offerResult, consentResult] = await Promise.all([
     db.from("cart_activity_events").select("id,session_id,event_type,customer_name,email,phone,product_id,product_slug,product_name,unit_price_inr,quantity,cart_value_inr,page_path,created_at").order("created_at", { ascending: false }).limit(1000),
     db.from("abandoned_cart_offer_settings").select("id,enabled,offer_code,offer_text,discount_label,expires_at,reminder_after_minutes").eq("id", 1).maybeSingle(),
+    db.from("customer_whatsapp_consent").select("phone_e164,consent_status").eq("consent_status", "opted_in"),
   ]);
   if (eventsResult.error || offerResult.error) return NextResponse.json({ error: "Cart tracking tables are not ready. Apply db/migrations/2026-10-12-cart-activity-abandoned-cart.sql in Supabase SQL Editor." }, { status: 503 });
-  return NextResponse.json({ events: eventsResult.data ?? [], offer: offerResult.data ?? null });
+  return NextResponse.json({ events: eventsResult.data ?? [], offer: offerResult.data ?? null, optedInPhones: (consentResult.data ?? []).map((row) => row.phone_e164) });
 }
 
 export async function PATCH(request: Request) {
