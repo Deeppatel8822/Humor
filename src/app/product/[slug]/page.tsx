@@ -136,34 +136,6 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             )}
           </div>
           <div className="flex items-center gap-3 mb-5"><span className="text-2xl md:text-3xl font-semibold text-[var(--deep-wine)]">&#8377;{product.price_inr}</span>{onSale && <span className="text-base text-[var(--ink)]/40 line-through">&#8377;{product.compare_at_price_inr}</span>}{onSale && <span className="rounded-full bg-pink-100 text-pink-700 px-3 py-1 text-xs font-semibold">{Math.round((1 - product.price_inr / product.compare_at_price_inr!) * 100)}% OFF</span>}<span className="ml-auto whitespace-nowrap text-sm md:text-base text-[var(--ink)]/75">{volume || ""}</span></div>
-          <div className="grid grid-cols-4 gap-2 md:gap-3 mb-6">
-            {highlights.map(({ label, symbol }) => <div key={label} className="flex flex-col items-center text-center gap-2 min-w-0">
-              <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-[#f8eefa] text-[#6d1878] flex items-center justify-center">
-                {slug === "smooth-shake-daily-shampoo" ? (
-                  <svg aria-hidden="true" viewBox="0 0 48 48" className="w-8 h-8 md:w-10 md:h-10" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
-                    {symbol === "droplet" && <g>
-                      <path d="M25 5 C21 15 13 21 13 29 C13 37 18 42 25 42 C32 42 37 37 37 29 C37 21 29 14 25 5 Z" fill="currentColor" stroke="none" />
-                      <path d="M8 18 l2 -3 l2 3 l-2 3 Z M14 10 l1.5 -3 l1.5 3 l-1.5 3 Z M37 13 l2 -3 l2 3 l-2 3 Z M41 22 l1.5 -2.5 l1.5 2.5 l-1.5 2.5 Z" fill="currentColor" stroke="none" />
-                    </g>}
-                    {symbol === "waves" && <g strokeWidth="3.4">
-                      <path d="M13 9 C4 18 8 27 14 36" />
-                      <path d="M24 5 C15 16 18 28 24 40" />
-                      <path d="M35 9 C26 18 30 27 36 36" />
-                    </g>}
-                    {symbol === "hair" && <g>
-                      <path d="M22 43 C22 34 15 30 17 22 C19 14 26 8 30 4 C27 14 32 20 30 27 C29 34 24 36 22 43 Z" fill="currentColor" stroke="none" />
-                      <path d="M8 29 H18 M29 29 H40" />
-                    </g>}
-                    {symbol === "drop" && <g>
-                      <path d="M24 5 C19 14 10 22 10 30 C10 38 16 43 24 43 C32 43 38 38 38 30 C38 22 29 14 24 5 Z" />
-                      <path d="M28 34 C30 31 30 28 28 25" strokeWidth="1.7" />
-                    </g>}
-                  </svg>
-                ) : <span aria-hidden="true" className="text-2xl md:text-3xl leading-none">{symbol}</span>}
-              </div>
-              <span className="text-[10px] md:text-xs leading-tight text-[var(--ink)] font-medium">{label}</span>
-            </div>)}
-          </div>
           <div className="grid grid-cols-4 gap-2 md:gap-3 mb-5" aria-label="Product standards">
             {[
               { label: "Paraben Free", icon: <><path d="M12 3h8v5l3 4v8a2 2 0 0 1-2 2H11a2 2 0 0 1-2-2v-8l3-4z" /><path d="M12 8h8M13 15h6" /></> },
@@ -172,7 +144,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               { label: "Dermatologically Tested", icon: <><path d="M12 3 20 6v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z" /><path d="m8 12 2.5 2.5L16 9" /></> },
             ].map(({ label, icon }) => (
               <div key={label} className="flex min-w-0 flex-col items-center gap-1.5 text-center">
-                <div className="flex h-11 w-11 md:h-14 md:w-14 items-center justify-center rounded-full border border-[var(--line)] bg-[var(--milk-sage)] text-[var(--deep-wine)]">
+                <div className="flex h-11 w-11 md:h-14 md:w-14 shrink-0 items-center justify-center rounded-full border border-[var(--line)] bg-[var(--milk-sage)] text-[var(--deep-wine)] [&>svg]:block [&>svg]:shrink-0">
                   <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 md:h-6 md:w-6" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">{icon}</svg>
                 </div>
                 <span className="text-[9px] md:text-[11px] leading-tight font-medium text-[var(--ink)]">{label}</span>
