@@ -349,6 +349,28 @@ function CustomerCrmSection() {
 type CartEvent = { id: string; session_id: string; event_type: string; customer_name: string | null; email: string | null; phone: string | null; product_id: string | null; product_slug: string | null; product_name: string | null; unit_price_inr: number; quantity: number; cart_value_inr: number; page_path: string | null; created_at: string };
 type CartOffer = { id: number; enabled: boolean; offer_code: string | null; offer_text: string; discount_label: string; expires_at: string | null; reminder_after_minutes: number };
 
+type IntentLevel = "High intent" | "Medium intent" | "Low intent";
+function scorePurchaseIntent(events: CartEvent[]) {
+  const now = Date.now();
+  const recent = events.filter((e) => now - new Date(e.created_at).getTime() <= 14 * 86400000);
+  const count = (type: string) => recent.filter((e) => e.event_type === type).length;
+  const adds = count("add_to_cart"), checkout = count("checkout_started"), views = count("product_view"), removals = count("remove_from_cart"), purchases = count("purchase_completed");
+  const latest = [...recent].sort((a,b)=>new Date(b.created_at).getTime()-new Date(a.created_at).getTime())[0];
+  let score = 0;
+  const reasons: string[] = [];
+  if (adds) { score += Math.min(35, 20 + (adds - 1) * 5); reasons.push("Added product to cart"); }
+  if (checkout) { score += 30; reasons.push("Started checkout"); }
+  if (views >= 3) { score += 15; reasons.push("Viewed products repeatedly"); }
+  else if (views >= 1) { score += 5; reasons.push("Viewed a product"); }
+  if (removals) { score -= Math.min(15, removals * 5); reasons.push("Removed product from cart"); }
+  if (purchases) { score = 0; reasons.push("Purchased in this session"); }
+  if (latest && now - new Date(latest.created_at).getTime() > 3 * 86400000) score -= 10;
+  score = Math.max(0, Math.min(100, score));
+  const level: IntentLevel = score >= 70 ? "High intent" : score >= 40 ? "Medium intent" : "Low intent";
+  return { score, level, reasons: reasons.slice(0, 3) };
+}
+
+
 function CartActivitySection() {
   const [events, setEvents] = useState<CartEvent[]>([]);
   const [offer, setOffer] = useState<CartOffer>({ id: 1, enabled: false, offer_code: "", offer_text: "Your cart is waiting. Complete checkout to enjoy this special offer.", discount_label: "Special offer", expires_at: "", reminder_after_minutes: 60 });
@@ -398,6 +420,7 @@ function CartActivitySection() {
     }).sort((a,b) => new Date(b.latest.created_at).getTime()-new Date(a.latest.created_at).getTime());
   }, [events]);
 
+  const intentRanked = sessions.map((session) => ({ ...session, intent: scorePurchaseIntent(session.events) })).sort((a,b) => b.intent.score-a.intent.score);
   const abandoned = sessions.filter((session) => !session.purchased && Date.now() - new Date(session.latest.created_at).getTime() >= offer.reminder_after_minutes * 60000 && session.latest.event_type !== "cart_cleared");
   const shown = filter === "abandoned" ? abandoned : filter === "purchased" ? sessions.filter((s) => s.purchased) : sessions;
 
@@ -425,7 +448,7 @@ function CartActivitySection() {
   return <div className="space-y-5">
     <div className="bg-white rounded-2xl border border-[var(--line)] p-5 md:p-6">
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3"><div><h2 className="font-display text-2xl text-[var(--deep-wine)]">Cart Activity & Recovery</h2><p className="text-sm text-[var(--muted)] mt-1">See product interest, removals, checkout starts and completed purchases. Tracking starts after this feature is deployed.</p></div><button onClick={load} className="rounded-full border border-[var(--line)] px-4 py-2 text-sm">Refresh</button></div>
-      <div className="grid sm:grid-cols-4 gap-3 mt-5">
+      <div className="grid sm:grid-cols-4 gap-3 mt-5"><div className="mt-5 rounded-xl border border-[var(--line)] p-4"><div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"><div><h3 className="font-semibold text-[var(--deep-wine)]">Purchase Intent Ranking</h3><p className="text-xs text-[var(--muted)]">Rule-based score from tracked events in the last 14 days. This is a priority estimate, not a guaranteed probability.</p></div><div className="text-sm">High: {intentRanked.filter((s) => s.intent.level === "High intent" && !s.purchased).length} · Medium: {intentRanked.filter((s) => s.intent.level === "Medium intent" && !s.purchased).length}</div></div><div className="mt-3 space-y-2">{intentRanked.filter((s) => !s.purchased && s.intent.score > 0).slice(0,8).map((s) => <div key={s.id} className="flex flex-col sm:flex-row sm:items-center gap-2 border-t border-[var(--line)] pt-3"><div className="flex-1 min-w-0"><p className="text-sm font-medium">{s.name || "Anonymous visitor"} <span className="text-xs text-[var(--muted)]">{s.email || s.phone || s.id.slice(0,10)}</span></p><p className="text-xs text-[var(--muted)]">{s.intent.reasons.join(" · ")}</p></div><div className="flex items-center gap-2"><span className="text-xs font-semibold">{s.intent.score}/100</span><span className="text-xs">{s.intent.level}</span></div></div>)}{!intentRanked.some((s) => !s.purchased && s.intent.score > 0) && <p className="text-sm text-[var(--muted)] mt-3">No scored visitors yet. Scores will appear after tracked activity arrives.</p>}</div></div>
         <div className="rounded-xl bg-[var(--milk-sage)] p-4"><p className="text-xs text-[var(--muted)]">Tracked sessions</p><p className="text-2xl font-semibold mt-1">{sessions.length}</p></div>
         <div className="rounded-xl bg-[var(--milk-sage)] p-4"><p className="text-xs text-[var(--muted)]">Add to cart events</p><p className="text-2xl font-semibold mt-1">{events.filter((e) => e.event_type === "add_to_cart").length}</p></div>
         <div className="rounded-xl bg-[var(--milk-sage)] p-4"><p className="text-xs text-[var(--muted)]">Remove events</p><p className="text-2xl font-semibold mt-1">{events.filter((e) => e.event_type === "remove_from_cart").length}</p></div>
