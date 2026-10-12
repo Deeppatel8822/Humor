@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Product } from "@/types/product";
 import { useCart } from "@/context/CartContext";
@@ -8,7 +8,10 @@ import { useCart } from "@/context/CartContext";
 export default function AddToCartForm({ product }: { product: Product }) {
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
-  const { addItem } = useCart();
+  const { addItem, trackCartActivity } = useCart();
+  useEffect(() => {
+    trackCartActivity("product_view", [{ productId: product.id, slug: product.slug, name: product.name, price_inr: product.price_inr, quantity: 1, shopifyVariantId: product.shopify_variant_id, image: product.images?.[0] ?? null }]);
+  }, [product.id]);
   const router = useRouter();
 
   function handleAdd() {
