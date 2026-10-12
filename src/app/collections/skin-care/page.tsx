@@ -1,4 +1,4 @@
-import { getByCategory } from "@/lib/catalog";
+import { getByCategory, getProduct } from "@/lib/catalog";
 import ProductCard from "@/components/ProductCard";
 
 export const metadata = {
@@ -16,6 +16,10 @@ export default async function SkinCarePage({
 }) {
   const { range } = await searchParams;
   const products = await getByCategory("skincare");
+  const showerCream = await getProduct("shower-gel");
+  if (showerCream && !products.some((product) => product.slug === showerCream.slug)) {
+    products.push(showerCream);
+  }
 
   const filteredProducts = range
     ? products.filter(
