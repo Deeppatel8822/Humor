@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { getPartner, PARTNER_MIN_WITHDRAWAL } from "@/lib/marketingPartner";
+import { isWalletLedgerEnabled, postWalletTransaction } from "@/lib/businessProgrammeWallet";
 
 export async function POST(req: NextRequest) {
   try {
@@ -30,10 +31,26 @@ export async function POST(req: NextRequest) {
 
     const entries = Array.isArray(partner.withdrawalRequests) ? partner.withdrawalRequests : [];
     const now = new Date().toISOString();
+    const referenceId = `withdrawal:${data.user.id}:${now}`;
+    let nextBalance = balance - amount;
+    if (isWalletLedgerEnabled) {
+      const wallet = await postWalletTransaction({
+        partnerUserId: data.user.id,
+        type: "withdrawal_request",
+        amountInr: amount,
+        referenceId,
+        description: "Partner withdrawal request",
+        metadata: { requestedAt: now },
+      });
+      if (wallet.duplicate) {
+        return NextResponse.json({ success: true, walletBalance: Number(wallet.balance ?? balance), message: "This withdrawal request was already recorded." });
+      }
+      nextBalance = Number(wallet.balance ?? nextBalance);
+    }
     const next = {
       ...partner,
-      walletBalance: balance - amount,
-      withdrawalRequests: [{ amount, status: "withdrawal:pending", requestedAt: now }, ...entries].slice(0, 100),
+      walletBalance: nextBalance,
+      withdrawalRequests: [{ amount, status: "withdrawal:pending", requestedAt: now, referenceId }, ...entries].slice(0, 100),
     };
     const { error: updateError } = await admin.auth.admin.updateUserById(data.user.id, {
       app_metadata: { ...latest.user.app_metadata, marketing_partner: next },
