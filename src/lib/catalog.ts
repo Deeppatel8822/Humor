@@ -29,6 +29,7 @@ const mainImageOverrides: Record<string, string> = {
   "velvet-touch-face-serum": "/products/velvet-touch-face-serum-main.webp",
   "fullmoon-face-serum": "/products/fullmoon-face-serum-main.webp",
   "repair-shampoo": "/products/protein-shake-shampoo-main.webp",
+  "smooth-shake-daily-shampoo": "https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/c92fcb76-27bc-47aa-80ff-94ed2a1f33dd.png",
   "repair-conditioner": "/products/conditioner-main.webp",
   "repair-hair-mask": "/products/milk-shake-hair-mask-main.webp",
   "sunscreen-spf-50": "/products/sunscreen-main.webp",
