@@ -175,7 +175,7 @@ function CustomersSection({ customers, orders }: { customers: Customer[]; orders
       group.orders.map((order) => order.payment_status).join(" | "),
       group.orders.map((order) => order.status).join(" | "),
       group.orders.map((order) => [order.address?.line1, order.address?.line2, order.address?.city, order.address?.state, order.address?.pincode, order.address?.country || "India"].filter(Boolean).join(", ")).join(" | "),
-      group.orders.map((order) => order.tracking_number || "").join(" | ")]);
+      group.orders.map((order) => order.tracking_number || "").join(" | ")]));
   return <div className="space-y-5">
     <div className="bg-white rounded-2xl border border-[var(--line)] p-5">
       <h2 className="font-display text-2xl text-[var(--deep-wine)]">Customer Purchase Records</h2>
