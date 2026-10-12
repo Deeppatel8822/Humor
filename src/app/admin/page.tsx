@@ -13,12 +13,12 @@ interface Product {
   category: string;
 }
 interface OrderItem { quantity: number; unit_price_inr: number; product?: { name?: string; sku?: string } | null; }
-interface Customer { id: string; full_name: string | null; email: string | null; phone: string | null; created_at: string; marketingPartner?: { status: string; code?: string; businessName?: string } | null; }
+interface Customer { id: string; full_name: string | null; email: string | null; phone: string | null; created_at: string; isAccount?: boolean; marketingPartner?: { status: string; code?: string; businessName?: string } | null; }
 interface Coupon { id: string; code: string; discount_type: string; discount_value: number; min_order_inr: number; is_active: boolean; expires_at: string | null; }
 interface Order {
   id: string; order_number: string; status: string; subtotal_inr: number; discount_inr: number; shipping_inr: number; total_inr: number;
   payment_status: string; tracking_number: string | null; created_at: string;
-  customer?: { full_name?: string; email?: string; phone?: string } | null;
+  customer?: { id?: string; full_name?: string; email?: string; phone?: string } | null;
   address?: { line1?: string; line2?: string | null; city?: string; state?: string; pincode?: string; country?: string; phone?: string } | null;
   order_items: OrderItem[];
 }
@@ -87,7 +87,7 @@ export default function AdminPage() {
 <button onClick={() => setTab("products")} className={`rounded-full px-5 md:px-6 py-3 text-sm font-medium ${tab === "products" ? "bg-[var(--deep-wine)] text-white" : "bg-white border border-[var(--line)]"}`}>Products & Inventory</button>
 <button onClick={() => setTab("customers")} className={`rounded-full px-5 md:px-6 py-3 text-sm font-medium ${tab === "customers" ? "bg-[var(--deep-wine)] text-white" : "bg-white border border-[var(--line)]"}`}>Customers <span className="ml-1 text-[10px] opacity-70">{customers.length}</span></button>
 <button onClick={() => setTab("coupons")} className={`rounded-full px-5 md:px-6 py-3 text-sm font-medium ${tab === "coupons" ? "bg-[var(--deep-wine)] text-white" : "bg-white border border-[var(--line)]"}`}>Coupons <span className="ml-1 text-[10px] opacity-70">{coupons.length}</span></button><button onClick={() => { setTab("marketingPartners"); loadPartnerApplications(); }} className={`rounded-full px-5 md:px-6 py-3 text-sm font-medium ${tab === "marketingPartners" ? "bg-[var(--deep-wine)] text-white" : "bg-white border border-[var(--line)]"}`}>Marketing Partners {partnerApps.length > 0 && <span className="ml-1 inline-flex min-w-5 h-5 px-1 items-center justify-center rounded-full bg-red-500 text-white text-[10px]">{partnerApps.length}</span>}</button>
-</div>{error && <div className="bg-white border border-red-200 text-red-600 rounded-xl px-4 py-3 text-sm mb-5">{error}</div>}{tab === "orders" ? <div><div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 mb-6">{STAGES.map((s) => <button key={s.key} onClick={() => setStage(s.key)} className={`text-left rounded-2xl p-4 border transition ${stage === s.key ? "bg-[var(--deep-wine)] text-white border-[var(--deep-wine)]" : "bg-white border-[var(--line)]"}`}><div className="text-xs opacity-80">{s.label}</div><div className="text-2xl font-semibold mt-1">{stageCounts[s.key] || 0}</div></button>)}</div><div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5"><div><h2 className="font-display text-2xl text-[var(--deep-wine)]">{STAGES.find((s) => s.key === stage)?.label}</h2><p className="text-sm text-[var(--muted)] mt-1">Newest orders appear first.</p></div><input value={orderSearch} onChange={(e) => setOrderSearch(e.target.value)} placeholder="Search order, name, phone…" className="w-full md:w-80 border border-[var(--line)] bg-white rounded-full px-5 py-3 text-sm outline-none" /></div><div className="space-y-4">{filteredOrders.map((order) => <OrderCard key={order.id} order={order} saving={saving === order.id} onMove={moveOrder} onPrint={() => printShippingLabel(order)} />)}{!filteredOrders.length && <div className="bg-white rounded-2xl border border-[var(--line)] px-6 py-12 text-center text-sm text-[var(--muted)]">No orders in this stage.</div>}</div></div> : tab === "products" ? <ProductsSection products={filteredProducts} search={search} setSearch={setSearch} saving={saving} onSave={saveProduct} /> : tab === "customers" ? <CustomersSection customers={customers} /> : tab === "coupons" ? <CouponsSection coupons={coupons} /> : <MarketingPartnersSection applications={partnerApps} loading={partnerLoading} saving={saving} onRefresh={loadPartnerApplications} onAction={actPartner} />}</div></main></>;
+</div>{error && <div className="bg-white border border-red-200 text-red-600 rounded-xl px-4 py-3 text-sm mb-5">{error}</div>}{tab === "orders" ? <div><div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 mb-6">{STAGES.map((s) => <button key={s.key} onClick={() => setStage(s.key)} className={`text-left rounded-2xl p-4 border transition ${stage === s.key ? "bg-[var(--deep-wine)] text-white border-[var(--deep-wine)]" : "bg-white border-[var(--line)]"}`}><div className="text-xs opacity-80">{s.label}</div><div className="text-2xl font-semibold mt-1">{stageCounts[s.key] || 0}</div></button>)}</div><div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5"><div><h2 className="font-display text-2xl text-[var(--deep-wine)]">{STAGES.find((s) => s.key === stage)?.label}</h2><p className="text-sm text-[var(--muted)] mt-1">Newest orders appear first.</p></div><input value={orderSearch} onChange={(e) => setOrderSearch(e.target.value)} placeholder="Search order, name, phone…" className="w-full md:w-80 border border-[var(--line)] bg-white rounded-full px-5 py-3 text-sm outline-none" /></div><div className="space-y-4">{filteredOrders.map((order) => <OrderCard key={order.id} order={order} saving={saving === order.id} onMove={moveOrder} onPrint={() => printShippingLabel(order)} />)}{!filteredOrders.length && <div className="bg-white rounded-2xl border border-[var(--line)] px-6 py-12 text-center text-sm text-[var(--muted)]">No orders in this stage.</div>}</div></div> : tab === "products" ? <ProductsSection products={filteredProducts} search={search} setSearch={setSearch} saving={saving} onSave={saveProduct} /> : tab === "customers" ? <CustomersSection customers={customers} orders={orders} /> : tab === "coupons" ? <CouponsSection coupons={coupons} /> : <MarketingPartnersSection applications={partnerApps} loading={partnerLoading} saving={saving} onRefresh={loadPartnerApplications} onAction={actPartner} />}</div></main></>;
 }
 
 function OrderCard({ order, saving, onMove, onPrint }: { order: Order; saving: boolean; onMove: (id: string, status: string, tracking?: string) => void; onPrint: () => void }) {
@@ -105,10 +105,78 @@ function MarketingPartnersSection({ applications, loading, saving, onRefresh, on
   </div>;
 }
 
-function CustomersSection({ customers }: { customers: Customer[] }) {
-  return <div className="bg-white rounded-2xl border border-[var(--line)] overflow-hidden">
-    <div className="p-5 border-b border-[var(--line)]"><h2 className="font-display text-2xl text-[var(--deep-wine)]">Customer Accounts</h2><p className="text-sm text-[var(--muted)] mt-1">Signup data and contact details from customer authentication.</p></div>
-    <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b border-[var(--line)] text-left text-xs uppercase tracking-wide text-[var(--muted)]"><th className="p-4">Name</th><th className="p-4">Email</th><th className="p-4">Mobile</th><th className="p-4">Joined</th></tr></thead><tbody>{customers.map((c) => <tr key={c.id} className="border-b border-[var(--line)] last:border-0"><td className="p-4"><div className="flex items-center gap-2 flex-wrap"><span className="font-medium">{c.full_name || "—"}</span>{c.marketingPartner?.status === "approved" && <span className="inline-flex items-center rounded-full bg-purple-100 text-purple-700 border border-purple-200 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide">Marketing Partner</span>}</div>{c.marketingPartner?.businessName && <p className="text-[11px] text-[var(--muted)] mt-1">{c.marketingPartner.businessName}</p>}</td><td className="p-4">{c.email || "—"}</td><td className="p-4">{c.phone || "—"}</td><td className="p-4 text-[var(--muted)]">{formatDate(c.created_at)}</td></tr>)}{!customers.length && <tr><td colSpan={4} className="p-10 text-center text-[var(--muted)]">No customer accounts yet.</td></tr>}</tbody></table></div>
+function csvCell(value: unknown) {
+  const text = value == null ? "" : String(value);
+  return '"' + text.replace(/"/g, '""') + '"';
+}
+function downloadCsv(filename: string, headers: string[], rows: unknown[][]) {
+  const csv = [headers, ...rows].map((row) => row.map(csvCell).join(",")).join("\r\n");
+  const blob = new Blob(["\\uFEFF", csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+function CustomersSection({ customers, orders }: { customers: Customer[]; orders: Order[] }) {
+  const [view, setView] = useState<"registered" | "guest">("registered");
+  const [customerSearch, setCustomerSearch] = useState("");
+  const registered = customers.filter((customer) => customer.isAccount);
+  const registeredIds = new Set(registered.map((customer) => customer.id));
+  const registeredOrders = orders.filter((order) => !!order.customer?.id && registeredIds.has(order.customer.id));
+  const guestOrders = orders.filter((order) => !order.customer?.id || !registeredIds.has(order.customer.id));
+  const matches = (value: string) => value.toLowerCase().includes(customerSearch.toLowerCase().trim());
+  const visibleCustomers = registered.filter((customer) => matches(`${customer.full_name || ""} ${customer.email || ""} ${customer.phone || ""}`));
+  const visibleGuestOrders = guestOrders.filter((order) => matches(`${order.order_number} ${order.customer?.full_name || ""} ${order.customer?.email || ""} ${order.customer?.phone || ""} ${order.address?.phone || ""} ${order.address?.city || ""}`));
+  const ordersForCustomer = (customerId: string) => registeredOrders.filter((order) => order.customer?.id === customerId);
+  const registeredCsv = () => downloadCsv("humor-registered-customers.csv",
+    ["Customer ID", "Name", "Email", "Mobile", "Joined", "Order Count", "Total Purchase INR", "Order Numbers", "Order Dates", "Order Statuses", "Products Purchased", "Payment Statuses"],
+    visibleCustomers.map((customer) => {
+      const customerOrders = ordersForCustomer(customer.id);
+      return [customer.id, customer.full_name, customer.email, customer.phone, customer.created_at, customerOrders.length,
+        customerOrders.reduce((sum, order) => sum + Number(order.total_inr || 0), 0),
+        customerOrders.map((order) => order.order_number).join(" | "),
+        customerOrders.map((order) => formatDate(order.created_at)).join(" | "),
+        customerOrders.map((order) => order.status).join(" | "),
+        customerOrders.map((order) => order.order_items?.map((item) => `${item.product?.name || "Product"} x${item.quantity}`).join(", ")).join(" | "),
+        customerOrders.map((order) => order.payment_status).join(" | ")];
+    }));
+  const guestCsv = () => downloadCsv("humor-guest-checkout-orders.csv",
+    ["Order Number", "Order Date", "Customer Name", "Email", "Mobile", "Address", "Products", "Subtotal INR", "Discount INR", "Shipping INR", "Total INR", "Payment Status", "Order Status", "Tracking Number"],
+    visibleGuestOrders.map((order) => [order.order_number, order.created_at, order.customer?.full_name || "Guest Customer", order.customer?.email,
+      order.customer?.phone || order.address?.phone,
+      [order.address?.line1, order.address?.line2, order.address?.city, order.address?.state, order.address?.pincode, order.address?.country || "India"].filter(Boolean).join(", "),
+      order.order_items?.map((item) => `${item.product?.name || "Product"} x${item.quantity} @ ₹${item.unit_price_inr}`).join(" | "),
+      order.subtotal_inr, order.discount_inr, order.shipping_inr, order.total_inr, order.payment_status, order.status, order.tracking_number]));
+  return <div className="space-y-5">
+    <div className="bg-white rounded-2xl border border-[var(--line)] p-5">
+      <h2 className="font-display text-2xl text-[var(--deep-wine)]">Customer Purchase Records</h2>
+      <p className="text-sm text-[var(--muted)] mt-1">Registered-account purchases and guest checkout orders are separated below. Export either list as a spreadsheet-compatible CSV file.</p>
+      <div className="mt-5 flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
+        <div className="flex flex-wrap gap-2">
+          <button onClick={() => setView("registered")} className={`rounded-full px-4 py-2.5 text-sm font-medium ${view === "registered" ? "bg-[var(--deep-wine)] text-white" : "border border-[var(--line)] bg-white"}`}>Registered Customers ({registered.length})</button>
+          <button onClick={() => setView("guest")} className={`rounded-full px-4 py-2.5 text-sm font-medium ${view === "guest" ? "bg-[var(--deep-wine)] text-white" : "border border-[var(--line)] bg-white"}`}>Guest Purchases ({guestOrders.length})</button>
+        </div>
+        <input value={customerSearch} onChange={(event) => setCustomerSearch(event.target.value)} placeholder="Search name, email, phone, order…" className="w-full md:w-80 rounded-full border border-[var(--line)] bg-white px-4 py-3 text-sm outline-none" />
+      </div>
+    </div>
+    {view === "registered" ? <div className="bg-white rounded-2xl border border-[var(--line)] overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-5 border-b border-[var(--line)]">
+        <div><h3 className="font-display text-xl text-[var(--deep-wine)]">Registered Customers</h3><p className="text-xs text-[var(--muted)] mt-1">Account details, order history and total spend.</p></div>
+        <button onClick={registeredCsv} className="rounded-full bg-[var(--deep-wine)] px-5 py-2.5 text-sm font-semibold text-white">Download Registered CSV</button>
+      </div>
+      <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b border-[var(--line)] bg-[var(--milk-sage)] text-left text-xs uppercase tracking-wide text-[var(--muted)]"><th className="p-4">Customer</th><th className="p-4">Contact</th><th className="p-4">Joined</th><th className="p-4">Orders</th><th className="p-4">Total Spend</th><th className="p-4">Purchase History</th></tr></thead><tbody>{visibleCustomers.map((customer) => { const customerOrders = ordersForCustomer(customer.id); const spend = customerOrders.reduce((sum, order) => sum + Number(order.total_inr || 0), 0); return <tr key={customer.id} className="border-b border-[var(--line)] last:border-0 align-top"><td className="p-4"><p className="font-medium">{customer.full_name || "—"}</p>{customer.marketingPartner?.status === "approved" && <span className="mt-1 inline-flex rounded-full bg-purple-100 px-2 py-1 text-[10px] font-semibold text-purple-700">Marketing Partner</span>}</td><td className="p-4"><p>{customer.email || "—"}</p><p className="mt-1 text-xs text-[var(--muted)]">{customer.phone || "No mobile"}</p></td><td className="p-4 whitespace-nowrap text-[var(--muted)]">{formatDate(customer.created_at)}</td><td className="p-4 font-semibold">{customerOrders.length}</td><td className="p-4 font-semibold text-[var(--deep-wine)]">₹{spend.toLocaleString("en-IN")}</td><td className="p-4 min-w-64">{customerOrders.length ? <div className="space-y-2">{customerOrders.map((order) => <div key={order.id} className="rounded-xl border border-[var(--line)] p-3"><div className="flex flex-wrap justify-between gap-2"><span className="font-semibold">#{order.order_number}</span><span>₹{order.total_inr}</span></div><p className="mt-1 text-xs text-[var(--muted)]">{formatDate(order.created_at)} · {order.status} · {order.payment_status}</p><p className="mt-2 text-xs">{order.order_items?.map((item) => `${item.product?.name || "Product"} × ${item.quantity}`).join(", ")}</p></div>)}</div> : <span className="text-xs text-[var(--muted)]">No purchases yet</span>}</td></tr>; })}{!visibleCustomers.length && <tr><td colSpan={6} className="p-10 text-center text-sm text-[var(--muted)]">No registered customers match this search.</td></tr>}</tbody></table></div>
+    </div> : <div className="bg-white rounded-2xl border border-[var(--line)] overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-5 border-b border-[var(--line)]">
+        <div><h3 className="font-display text-xl text-[var(--deep-wine)]">Guest Checkout Purchases</h3><p className="text-xs text-[var(--muted)] mt-1">Each guest order is listed with contact, delivery, products and payment details.</p></div>
+        <button onClick={guestCsv} className="rounded-full bg-[var(--deep-wine)] px-5 py-2.5 text-sm font-semibold text-white">Download Guest Orders CSV</button>
+      </div>
+      <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b border-[var(--line)] bg-[var(--milk-sage)] text-left text-xs uppercase tracking-wide text-[var(--muted)]"><th className="p-4">Order</th><th className="p-4">Customer / Contact</th><th className="p-4">Delivery Address</th><th className="p-4">Products</th><th className="p-4">Payment / Status</th><th className="p-4">Total</th></tr></thead><tbody>{visibleGuestOrders.map((order) => <tr key={order.id} className="border-b border-[var(--line)] last:border-0 align-top"><td className="p-4 whitespace-nowrap"><p className="font-semibold">#{order.order_number}</p><p className="mt-1 text-xs text-[var(--muted)]">{formatDate(order.created_at)}</p></td><td className="p-4"><p className="font-medium">{order.customer?.full_name || "Guest Customer"}</p><p className="mt-1">{order.customer?.email || "—"}</p><p className="mt-1 text-xs text-[var(--muted)]">{order.customer?.phone || order.address?.phone || "—"}</p></td><td className="p-4 min-w-48 text-[var(--muted)]">{[order.address?.line1, order.address?.line2, order.address?.city, order.address?.state, order.address?.pincode, order.address?.country || "India"].filter(Boolean).join(", ") || "—"}</td><td className="p-4 min-w-52">{order.order_items?.map((item, index) => <p key={index}>{item.product?.name || "Product"} × {item.quantity} · ₹{item.unit_price_inr * item.quantity}</p>)}</td><td className="p-4"><p>{order.payment_status}</p><p className="mt-1 text-xs text-[var(--muted)]">{order.status}</p><p className="mt-1 text-xs text-[var(--muted)]">{order.tracking_number || "No tracking yet"}</p></td><td className="p-4 font-semibold text-[var(--deep-wine)]">₹{order.total_inr}</td></tr>)}{!visibleGuestOrders.length && <tr><td colSpan={6} className="p-10 text-center text-sm text-[var(--muted)]">No guest purchases match this search.</td></tr>}</tbody></table></div>
+    </div>}
   </div>;
 }
 
