@@ -122,9 +122,9 @@ export async function creditPartnerReward(
       description: `Partner reward for order ${orderNumber}`,
       metadata: { orderNumber, rewardRate, rewardTier: currentTier, billedAmountInr },
     });
-    if (wallet.duplicate) {
-      return { ...partner, walletBalance: Number(wallet.balance ?? partner.walletBalance ?? 0) };
-    }
+    // The ledger is authoritative for money. If the transaction already exists
+    // but partner metadata is missing its reward record, continue below to repair
+    // the metadata instead of returning early and leaving dashboard totals stale.
     next = { ...next, walletBalance: Number(wallet.balance ?? next.walletBalance ?? 0) };
   }
 
