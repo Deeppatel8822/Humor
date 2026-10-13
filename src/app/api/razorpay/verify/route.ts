@@ -90,6 +90,36 @@ export async function POST(req: NextRequest) {
   try {
     const admin = supabaseAdmin();
 
+    // Razorpay may retry the verification callback. Reuse an already persisted
+    // order for this payment instead of creating a second order and rewarding twice.
+    const { data: existingOrder, error: existingOrderError } = await admin
+      .from("orders")
+      .select("id, order_number, total_inr, discount_inr, razorpay_payment_id")
+      .eq("razorpay_order_id", razorpay_order_id)
+      .maybeSingle();
+    if (existingOrderError) throw existingOrderError;
+    if (existingOrder) {
+      if (existingOrder.razorpay_payment_id && existingOrder.razorpay_payment_id !== razorpay_payment_id) {
+        return NextResponse.json({ error: "This Razorpay order is already linked to a different payment." }, { status: 409 });
+      }
+      if (partnerMatch) {
+        const billedProductAmount = Math.max(0, subtotalInr - totalDiscountInr);
+        try {
+          await creditPartnerReward(partnerMatch.user.id, partnerMatch.partner, billedProductAmount, String(existingOrder.order_number));
+        } catch (rewardError) {
+          console.error("Marketing Partner reward reconciliation failed for existing paid order:", rewardError);
+        }
+      }
+      return NextResponse.json({
+        orderNumber: existingOrder.order_number,
+        orderId: existingOrder.id,
+        persisted: true,
+        duplicate: true,
+        totalInr: Number(existingOrder.total_inr),
+        discountInr: Number(existingOrder.discount_inr),
+      });
+    }
+
     const { data: customer, error: customerErr } = await admin
       .from("customers")
       .upsert(
