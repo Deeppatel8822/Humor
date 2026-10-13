@@ -19,9 +19,14 @@ export async function GET(req: NextRequest) {
   try {
     const auth = await getAdmin(req);
     if (!auth) return NextResponse.json({ error: "Admin access is not configured or you are not authorised." }, { status: 403 });
-    const { data, error } = await auth.admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
-    if (error) throw error;
-    const requests = data.users.flatMap((user) => {
+    const users: Awaited<ReturnType<typeof auth.admin.auth.admin.listUsers>>["data"]["users"] = [];
+    for (let page = 1; ; page += 1) {
+      const { data, error } = await auth.admin.auth.admin.listUsers({ page, perPage: 1000 });
+      if (error) throw error;
+      users.push(...data.users);
+      if (data.users.length < 1000) break;
+    }
+    const requests = users.flatMap((user) => {
       const partner = getPartner(user);
       if (!partner) return [];
       return (Array.isArray(partner.withdrawalRequests) ? partner.withdrawalRequests : [])
@@ -37,6 +42,18 @@ export async function GET(req: NextRequest) {
           status: entry.status,
         }));
     });
+    if (isWalletLedgerEnabled && requests.length > 0) {
+      const partnerIds = [...new Set(requests.map((request) => request.userId))];
+      const { data: accounts, error: accountsError } = await auth.admin
+        .from("business_programme_wallet_accounts")
+        .select("partner_user_id, balance_inr")
+        .in("partner_user_id", partnerIds);
+      if (accountsError) throw accountsError;
+      const balances = new Map((accounts || []).map((account) => [account.partner_user_id, Number(account.balance_inr) || 0]));
+      for (const request of requests) {
+        if (balances.has(request.userId)) request.walletBalance = balances.get(request.userId)!;
+      }
+    }
     requests.sort((a, b) => String(a.requestedAt).localeCompare(String(b.requestedAt)));
     return NextResponse.json({ requests });
   } catch {
