@@ -51,9 +51,8 @@ export async function POST(req: NextRequest) {
         description: "Partner withdrawal request",
         metadata: { requestedAt: now },
       });
-      if (wallet.duplicate) {
-        return NextResponse.json({ success: true, walletBalance: Number(wallet.balance ?? balance), message: "This withdrawal request was already recorded." });
-      }
+      // Even when the ledger transaction already exists, continue to reconcile
+      // Auth metadata so a retry can repair a request whose first metadata update failed.
       nextBalance = Number(wallet.balance ?? nextBalance);
     }
     const next = {
