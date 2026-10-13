@@ -65,8 +65,9 @@ export async function POST(req: NextRequest) {
     if (index < 0) return NextResponse.json({ error: "This request was already handled or could not be found." }, { status: 409 });
 
     const request = entries[index];
-    const referenceId = typeof (request as { referenceId?: unknown }).referenceId === "string"
-      ? String((request as { referenceId: string }).referenceId)
+    const requestReferenceId = (request as unknown as { referenceId?: unknown }).referenceId;
+    const referenceId = typeof requestReferenceId === "string"
+      ? requestReferenceId
       : `withdrawal:${userId}:${requestedAt}`;
     let nextBalance = Math.max(0, Number(partner.walletBalance || 0)) +
       (decision === "reject" ? Math.max(0, Number(request.amount || 0)) : 0);
