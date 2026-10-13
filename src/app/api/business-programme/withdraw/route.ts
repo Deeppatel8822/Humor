@@ -39,6 +39,17 @@ export async function POST(req: NextRequest) {
     if (amount > balance) return NextResponse.json({ error: "The requested amount is higher than your available balance." }, { status: 400 });
 
     const entries = Array.isArray(partner.withdrawalRequests) ? partner.withdrawalRequests : [];
+    // Avoid creating multiple reserved withdrawals when a partner retries the
+    // same request while an earlier withdrawal is still awaiting admin review.
+    const pendingRequest = entries.find((entry) => entry.status === "withdrawal:pending" && Number(entry.amount) === amount);
+    if (pendingRequest) {
+      return NextResponse.json({
+        success: true,
+        walletBalance: balance,
+        message: "A withdrawal request for this amount is already pending review.",
+        duplicate: true,
+      });
+    }
     const now = new Date().toISOString();
     const referenceId = `withdrawal:${data.user.id}:${now}`;
     let nextBalance = balance - amount;
