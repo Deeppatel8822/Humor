@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
   try {
     const auth = await getAdmin(req);
     if (!auth) return NextResponse.json({ error: "Admin access is not configured or you are not authorised." }, { status: 403 });
-    const users: Awaited<ReturnType<typeof auth.admin.auth.admin.listUsers>>["data"]["users"] = [];
+    const users: any[] = [];
     for (let page = 1; ; page += 1) {
       const { data, error } = await auth.admin.auth.admin.listUsers({ page, perPage: 1000 });
       if (error) throw error;
