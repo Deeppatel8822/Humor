@@ -36,7 +36,7 @@ export default function CartBadge() {
           aria-label={`Open cart, ${itemCount} items`}
           aria-expanded={hoverOpen}
           onClick={() => { setHoverOpen(false); setOpen(true); }}
-          className="relative rounded-full p-2 text-[var(--ink)] transition-colors hover:text-[var(--deep-wine)]"
+          className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#E5D9EB] bg-white text-[var(--ink)] transition-colors hover:border-[#7047A0] hover:text-[var(--deep-wine)]"
         >
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
             <path d="M6 6h15l-1.5 9h-12z" />
