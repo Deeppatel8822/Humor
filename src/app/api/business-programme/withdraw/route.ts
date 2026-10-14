@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { getPartner, PARTNER_MIN_WITHDRAWAL } from "@/lib/marketingPartner";
-import { isWalletLedgerEnabled, postWalletTransaction } from "@/lib/businessProgrammeWallet";
+import { isWalletLedgerEnabled } from "@/lib/businessProgrammeWallet";
 
 export async function POST(req: NextRequest) {
   try {
