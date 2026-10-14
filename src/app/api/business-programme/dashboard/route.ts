@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
 
       const { data: transactions, error: transactionsError } = await admin
         .from("business_programme_wallet_transactions")
-        .select("amount_inr, transaction_type, status, created_at, reference_id, description")
+        .select("amount_inr, transaction_type, status, created_at, reference_id, description, metadata")
         .eq("partner_user_id", data.user.id)
         .order("created_at", { ascending: false })
         .limit(100);
@@ -47,6 +47,36 @@ export async function GET(req: NextRequest) {
         requestedAt: entry.created_at || null,
         kind: entry.transaction_type,
       }));
+
+      // Metadata may lag if a reward was committed to the ledger but the
+      // subsequent Auth metadata write failed. Use ledger aggregates as a
+      // lower bound while preserving older legacy totals not represented in
+      // the ledger migration.
+      const { data: rewardRows, error: rewardRowsError } = await admin
+        .from("business_programme_wallet_transactions")
+        .select("amount_inr, metadata, created_at")
+        .eq("partner_user_id", data.user.id)
+        .eq("transaction_type", "reward")
+        .order("created_at", { ascending: false })
+        .limit(1000);
+      if (rewardRowsError) throw rewardRowsError;
+      const ledgerLifetimeRewards = (rewardRows || []).reduce((sum, row) => sum + Math.max(0, Number(row.amount_inr) || 0), 0);
+      const ledgerLifetimeSales = (rewardRows || []).reduce((sum, row) => {
+        const billed = Number(row.metadata?.billedAmountInr);
+        return sum + (Number.isFinite(billed) ? Math.max(0, billed) : 0);
+      }, 0);
+      const periodStart = partner.qualificationPeriodStartedAt ? new Date(partner.qualificationPeriodStartedAt) : null;
+      const now = Date.now();
+      const qualificationWindowValid = Boolean(periodStart && Number.isFinite(periodStart.getTime()) && now - periodStart.getTime() < 30 * 24 * 60 * 60 * 1000);
+      const ledgerWindowCoins = (rewardRows || []).reduce((sum, row) => {
+        const createdAt = new Date(row.created_at).getTime();
+        return sum + (qualificationWindowValid && Number.isFinite(createdAt) && createdAt >= periodStart!.getTime()
+          ? Math.max(0, Number(row.amount_inr) || 0)
+          : 0);
+      }, 0);
+      partner.totalRewards = Math.max(0, Number(partner.totalRewards) || 0, ledgerLifetimeRewards);
+      partner.totalSales = Math.max(0, Number(partner.totalSales) || 0, ledgerLifetimeSales);
+      if (qualificationWindowValid) partner.qualificationCoins = Math.max(0, Number(partner.qualificationCoins) || 0, ledgerWindowCoins);
     }
 
     return NextResponse.json({
