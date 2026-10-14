@@ -73,10 +73,19 @@ export async function creditPartnerReward(
   orderNumber: string,
 ) {
   const admin = supabaseAdmin();
-  const existingOrders = Array.isArray(partner.withdrawalRequests) ? partner.withdrawalRequests : [];
+  // Always reconcile against the latest Auth metadata, not the potentially stale
+  // partner snapshot captured when the coupon was first looked up. Razorpay can
+  // retry callbacks concurrently, so stale snapshots must not increment totals twice.
+  const { data: currentData, error: currentError } = await admin.auth.admin.getUserById(userId);
+  if (currentError || !currentData.user) throw currentError || new Error("Partner account not found.");
+  const latestPartner = getPartner(currentData.user);
+  if (!latestPartner) throw new Error("Partner account not found.");
+  const existingOrders = Array.isArray(latestPartner.withdrawalRequests) ? latestPartner.withdrawalRequests : [];
   const alreadyCredited = existingOrders.some((entry) => entry.status === `reward:${orderNumber}` || entry.status.startsWith(`reward:${orderNumber}:`));
-  if (alreadyCredited) return partner;
+  if (alreadyCredited) return latestPartner;
 
+  // All reward calculations below use the freshest persisted partner state.
+  partner = latestPartner;
   const now = new Date();
   const nowIso = now.toISOString();
   const periodStart = partner.qualificationPeriodStartedAt ? new Date(partner.qualificationPeriodStartedAt) : now;
@@ -109,9 +118,6 @@ export async function creditPartnerReward(
       ...existingOrders,
     ].slice(0, 100),
   };
-
-  const { data: currentData, error: currentError } = await admin.auth.admin.getUserById(userId);
-  if (currentError || !currentData.user) throw currentError || new Error("Partner account not found.");
 
   if (isWalletLedgerEnabled && reward > 0) {
     const wallet = await postWalletTransaction({
