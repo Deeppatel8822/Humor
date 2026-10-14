@@ -4,6 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { razorpayClient } from "@/lib/razorpay";
 import { getAllProducts } from "@/lib/catalog";
 import { calculateBundleSavings } from "@/lib/bundles";
+import { calculateCheckoutPricing } from "@/lib/checkoutPricing";
 import { calculatePartnerDiscount, creditPartnerReward, findPartnerByCode } from "@/lib/marketingPartner";
 
 interface VerifyBody {
@@ -113,13 +114,13 @@ export async function POST(req: NextRequest) {
     })));
   }
   const bundleSavingsInr = calculateBundleSavings(lines.map((line) => ({ slug: line.slug || products.find((p) => p.id === line.productId)?.slug || "", quantity: line.quantity })), products);
-  const prepaidDiscountInr = Math.round(subtotalInr * (subtotalInr >= 1000 ? 0.04 : 0.03));
-  const totalDiscountInr = firstOrderDiscountInr + partnerDiscountInr + prepaidDiscountInr + bundleSavingsInr;
-  // Keep shipping threshold aligned with create-order, which applies the
-  // threshold after bundle savings.
-  const shippingBaseInr = Math.max(0, subtotalInr - bundleSavingsInr);
-  const calculatedShippingInr = shippingBaseInr >= 299 ? 0 : 50;
-  const totalInr = Math.max(0, subtotalInr - totalDiscountInr + calculatedShippingInr);
+  const pricing = calculateCheckoutPricing({
+    subtotalInr,
+    firstOrderDiscountInr,
+    partnerDiscountInr,
+    bundleSavingsInr,
+  });
+  const { shippingInr: calculatedShippingInr, totalDiscountInr, totalInr } = pricing;
   if (shippingInr !== calculatedShippingInr) {
     return NextResponse.json({ error: "Shipping charge does not match checkout pricing." }, { status: 400 });
   }
