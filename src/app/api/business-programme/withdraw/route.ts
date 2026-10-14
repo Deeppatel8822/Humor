@@ -38,7 +38,56 @@ export async function POST(req: NextRequest) {
     }
     if (amount > balance) return NextResponse.json({ error: "The requested amount is higher than your available balance." }, { status: 400 });
 
-    const entries = Array.isArray(partner.withdrawalRequests) ? partner.withdrawalRequests : [];
+    let entries = Array.isArray(partner.withdrawalRequests) ? partner.withdrawalRequests : [];
+    // First recover a request that was reserved in the ledger but whose Auth
+    // metadata write failed. Only treat undecided ledger requests as pending.
+    if (isWalletLedgerEnabled) {
+      const { data: ledgerRequests, error: ledgerRequestsError } = await admin
+        .from("business_programme_wallet_transactions")
+        .select("amount_inr, reference_id, created_at, metadata")
+        .eq("partner_user_id", data.user.id)
+        .eq("transaction_type", "withdrawal_request")
+        .eq("status", "pending")
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (ledgerRequestsError) throw ledgerRequestsError;
+      const { data: decisions, error: decisionsError } = await admin
+        .from("business_programme_withdrawal_decisions")
+        .select("reference_id")
+        .eq("partner_user_id", data.user.id);
+      if (decisionsError) throw decisionsError;
+      const decidedReferences = new Set((decisions || []).map((item) => item.reference_id));
+      const recoverable = (ledgerRequests || []).find((item) =>
+        Number(item.amount_inr) === amount &&
+        !decidedReferences.has(item.reference_id) &&
+        !entries.some((entry) => (entry as typeof entry & { referenceId?: string }).referenceId === item.reference_id)
+      );
+      if (recoverable) {
+        const requestedAt = recoverable.created_at || new Date().toISOString();
+        const recoveredEntry = {
+          amount: Number(recoverable.amount_inr),
+          status: "withdrawal:pending",
+          requestedAt,
+          referenceId: recoverable.reference_id,
+        };
+        const recoveredPartner = {
+          ...partner,
+          walletBalance: balance,
+          withdrawalRequests: [recoveredEntry, ...entries].slice(0, 100),
+        };
+        const { error: recoveryError } = await admin.auth.admin.updateUserById(data.user.id, {
+          app_metadata: { ...latest.user.app_metadata, marketing_partner: recoveredPartner },
+        });
+        if (recoveryError) throw recoveryError;
+        return NextResponse.json({
+          success: true,
+          walletBalance: balance,
+          message: "Your existing withdrawal request was recovered and remains pending review.",
+          duplicate: true,
+        });
+      }
+    }
+
     // Avoid creating multiple reserved withdrawals when a partner retries the
     // same request while an earlier withdrawal is still awaiting admin review.
     const pendingRequest = entries.find((entry) => entry.status === "withdrawal:pending" && Number(entry.amount) === amount);
