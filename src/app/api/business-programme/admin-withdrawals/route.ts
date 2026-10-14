@@ -144,10 +144,10 @@ export async function POST(req: NextRequest) {
             : "This withdrawal was already rejected.",
         });
       }
-      return NextResponse.json({ error: "This request was already handled or could not be found." }, { status: 409 });
     }
 
-    let request = index >= 0 ? entries[index] : undefined;
+    let request: { amount: number; status: string; requestedAt: string; referenceId?: string } | undefined =
+      index >= 0 ? { ...entries[index] } : undefined;
     let requestReferenceId = request && (request as typeof request & { referenceId?: unknown }).referenceId;
     let referenceId = typeof requestReferenceId === "string"
       ? requestReferenceId
