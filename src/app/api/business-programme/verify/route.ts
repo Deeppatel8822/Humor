@@ -85,14 +85,34 @@ export async function POST(req: NextRequest) {
     const termsVersion = String(registration.termsVersion || body.termsVersion || "").trim();
 
     const proofPathParts = proofPath.split("/");
+    const allowedBusinessTypes = [
+      "Influencer / Content Creator",
+      "Salon / Parlour",
+      "Beauty Professional",
+      "Home Beauty Business",
+      "Beauty Store / Retailer",
+      "Other",
+    ];
     if (
-      !businessType || !businessName || !mobile || !address || !proofPath ||
-      !proofPath.startsWith(authData.user.id + "/") ||
+      !allowedBusinessTypes.includes(businessType) ||
+      !businessName ||
+      !mobile ||
+      !address ||
+      proofPathParts.length !== 2 ||
+      proofPathParts[0] !== authData.user.id ||
       proofPathParts.some((part: string) => !part || part === "." || part === "..") ||
       !/^\d{10}$/.test(mobile) ||
-      !termsAccepted || !termsVersion
+      !termsAccepted ||
+      termsVersion !== "2026-10-12-v1"
     ) {
       return NextResponse.json({ error: "Registration details are incomplete or invalid." }, { status: 400 });
+    }
+    const { data: proofFiles, error: proofError } = await admin.storage
+      .from("business-programme-proofs")
+      .list(authData.user.id, { limit: 100, search: proofPathParts[1] });
+    if (proofError) throw proofError;
+    if (!(proofFiles || []).some((file) => file.name === proofPathParts[1])) {
+      return NextResponse.json({ error: "Your business proof could not be found. Please upload it again." }, { status: 400 });
     }
 
     const programme = {
