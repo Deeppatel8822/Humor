@@ -36,8 +36,6 @@ export async function POST(req: NextRequest) {
       if (walletAccountError) throw walletAccountError;
       if (walletAccount) balance = Math.max(0, Number(walletAccount.balance_inr || 0));
     }
-    if (amount > balance) return NextResponse.json({ error: "The requested amount is higher than your available balance." }, { status: 400 });
-
     let entries = Array.isArray(partner.withdrawalRequests) ? partner.withdrawalRequests : [];
     // First recover a request that was reserved in the ledger but whose Auth
     // metadata write failed. Only treat undecided ledger requests as pending.
@@ -99,6 +97,8 @@ export async function POST(req: NextRequest) {
         duplicate: true,
       });
     }
+    if (amount > balance) return NextResponse.json({ error: "The requested amount is higher than your available balance." }, { status: 400 });
+
     const now = new Date().toISOString();
     const referenceId = `withdrawal:${data.user.id}:${now}`;
     let nextBalance = balance - amount;
