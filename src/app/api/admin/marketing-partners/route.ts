@@ -98,24 +98,33 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, status: "rejected" });
     }
 
-    const code = "HL" + crypto.randomBytes(5).toString("hex").toUpperCase();
-    const partnerId = "HLP" + crypto.randomBytes(6).toString("hex").toUpperCase();
-    const partner = {
-      status: "approved",
-      partnerId,
-      code,
-      usageCount: 0,
-      walletBalance: 0,
-      totalRewards: 0,
-      totalSales: 0,
-      referredCustomers: 0,
-      businessName: application.businessName,
-      gstPan: application.gstPan,
-      address: application.address,
-      mobile: application.mobile,
-      photoPaths: application.photoPaths || [],
-      appliedAt: application.appliedAt,
-    };
+    const existingPartner = data.user.app_metadata?.marketing_partner;
+    // Approving a Business Programme application must not reset an already
+    // approved partner's wallet, tier, code or historical counters.
+    const partner = isBusinessProgramme && existingPartner?.status === "approved"
+      ? {
+          ...existingPartner,
+          status: "approved",
+          businessName: application.businessName || existingPartner.businessName,
+          address: application.address || existingPartner.address,
+          mobile: application.mobile || existingPartner.mobile,
+        }
+      : {
+          status: "approved",
+          partnerId: "HLP" + crypto.randomBytes(6).toString("hex").toUpperCase(),
+          code: "HL" + crypto.randomBytes(5).toString("hex").toUpperCase(),
+          usageCount: 0,
+          walletBalance: 0,
+          totalRewards: 0,
+          totalSales: 0,
+          referredCustomers: 0,
+          businessName: application.businessName,
+          gstPan: application.gstPan,
+          address: application.address,
+          mobile: application.mobile,
+          photoPaths: application.photoPaths || [],
+          appliedAt: application.appliedAt,
+        };
 
     const nextUserMetadata = isBusinessProgramme
       ? { ...data.user.user_metadata, business_programme: { ...businessProgramme, status: "approved", reviewedAt: new Date().toISOString() } }
