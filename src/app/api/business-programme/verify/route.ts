@@ -23,18 +23,56 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Payment details are incomplete." }, { status: 400 });
     }
 
+    const secret = process.env.RAZORPAY_KEY_SECRET;
+    if (!secret) {
+      return NextResponse.json({ error: "Payment verification is temporarily unavailable." }, { status: 503 });
+    }
     const expected = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
+      .createHmac("sha256", secret)
       .update(razorpayOrderId + "|" + razorpayPaymentId)
       .digest("hex");
-
-    if (expected !== razorpaySignature) {
+    const expectedBuffer = Buffer.from(expected, "hex");
+    const suppliedBuffer = Buffer.from(razorpaySignature, "hex");
+    if (
+      !/^[a-f0-9]{64}$/i.test(razorpaySignature) ||
+      expectedBuffer.length !== suppliedBuffer.length ||
+      !crypto.timingSafeEqual(expectedBuffer, suppliedBuffer)
+    ) {
       return NextResponse.json({ error: "Payment verification failed." }, { status: 400 });
     }
 
-    const razorpayOrder = await razorpayClient().orders.fetch(razorpayOrderId);
-    if (Number(razorpayOrder.amount) !== 900 || razorpayOrder.currency !== "INR") {
-      return NextResponse.json({ error: "Invalid registration payment amount." }, { status: 400 });
+    const client = razorpayClient();
+    const razorpayOrder = await client.orders.fetch(razorpayOrderId);
+    if (
+      Number(razorpayOrder.amount) !== 900 ||
+      razorpayOrder.currency !== "INR" ||
+      String(razorpayOrder.notes?.userId || "") !== authData.user.id ||
+      String(razorpayOrder.notes?.programme || "") !== "humor_business"
+    ) {
+      return NextResponse.json({ error: "This payment order is not valid for your Business Programme registration." }, { status: 400 });
+    }
+
+    const payment = await client.payments.fetch(razorpayPaymentId);
+    if (
+      String(payment.order_id || "") !== razorpayOrderId ||
+      Number(payment.amount) !== 900 ||
+      payment.currency !== "INR" ||
+      payment.status !== "captured"
+    ) {
+      return NextResponse.json({ error: "Payment is not captured or does not match this registration order." }, { status: 400 });
+    }
+
+    const existingProgramme = authData.user.user_metadata?.business_programme;
+    if (
+      existingProgramme &&
+      ["pending_verification", "approved"].includes(String(existingProgramme.status || "")) &&
+      String(existingProgramme.razorpayPaymentId || "") === razorpayPaymentId &&
+      String(existingProgramme.razorpayOrderId || "") === razorpayOrderId
+    ) {
+      return NextResponse.json({ success: true, duplicate: true, programme: existingProgramme });
+    }
+    if (existingProgramme && ["pending_verification", "approved"].includes(String(existingProgramme.status || ""))) {
+      return NextResponse.json({ error: "A Business Programme application is already submitted for this account." }, { status: 409 });
     }
 
     const businessType = String(registration.businessType || "").trim();
