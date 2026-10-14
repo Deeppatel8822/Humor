@@ -61,7 +61,7 @@ export default function PartnerDashboardPage() {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Could not submit request.");
       setWithdrawalMessage(json.message || "Request submitted.");
-      setData((current) => current ? { ...current, walletBalance: json.walletBalance, history: [{ amount: Number(withdrawalAmount), status: "withdrawal:pending", requestedAt: new Date().toISOString(), kind: "withdrawal" }, ...current.history].slice(0, 100) } : current);
+      setData((current) => current ? { ...current, walletBalance: json.walletBalance, history: [{ amount: -Math.abs(Number(withdrawalAmount)), status: "withdrawal:pending", requestedAt: new Date().toISOString(), kind: "withdrawal" }, ...current.history].slice(0, 100) } : current);
     } catch (e) { setWithdrawalMessage(e instanceof Error ? e.message : "Could not submit request."); }
     finally { setWithdrawing(false); }
   }
