@@ -190,7 +190,7 @@ export async function POST(req: NextRequest) {
           .select("amount_inr, created_at")
           .eq("partner_user_id", userId)
           .eq("reference_id", suppliedReferenceId)
-          .in("transaction_type", ["withdrawal_approved", "withdrawal_rejected"])
+          .eq("transaction_type", decision === "approve" ? "withdrawal_approved" : "withdrawal_rejected")
           .maybeSingle(),
       ]);
       if (recordedDecisionError) throw recordedDecisionError;
