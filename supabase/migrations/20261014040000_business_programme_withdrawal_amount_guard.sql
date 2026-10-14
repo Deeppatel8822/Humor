@@ -56,13 +56,8 @@ begin
     return jsonb_build_object('success', false, 'conflict', true, 'decision', v_existing.decision, 'balance', v_balance);
   end if;
 
-  if not v_has_decision then
-    insert into public.business_programme_withdrawal_decisions
-      (partner_user_id, reference_id, decision, decided_by)
-    values (p_partner_user_id, p_reference_id, p_decision, p_decided_by);
-    v_inserted := true;
-  end if;
-
+  -- Validate any existing ledger transaction before persisting a new decision.
+  -- Returning a conflict must not leave a decision row behind.
   select * into v_tx
   from public.business_programme_wallet_transactions
   where partner_user_id = p_partner_user_id
@@ -75,6 +70,13 @@ begin
       'success', false, 'conflict', true, 'error', 'WITHDRAWAL_AMOUNT_MISMATCH',
       'decision', p_decision, 'recorded_amount', v_tx.amount_inr, 'balance', v_balance
     );
+  end if;
+
+  if not v_has_decision then
+    insert into public.business_programme_withdrawal_decisions
+      (partner_user_id, reference_id, decision, decided_by)
+    values (p_partner_user_id, p_reference_id, p_decision, p_decided_by);
+    v_inserted := true;
   end if;
 
   if v_has_transaction then
