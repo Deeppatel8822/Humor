@@ -89,7 +89,7 @@ begin
     u.id,
     case when u.raw_app_meta_data->'marketing_partner'->>'rewardTier' in ('basic','silver','gold')
       then u.raw_app_meta_data->'marketing_partner'->>'rewardTier' else 'basic' end,
-    case when coalesce(u.raw_app_meta_data->'marketing_partner'->>'qualificationCoins','') ~ '^[0-9]+(\\.[0-9]+)?
+    case when coalesce(u.raw_app_meta_data->'marketing_partner'->>'qualificationCoins','') ~ '^[0-9]+(\.[0-9]+)?
   select * into v_state
   from public.business_programme_partner_reward_state
   where partner_user_id = p_partner_user_id
@@ -186,7 +186,7 @@ grant execute on function public.business_programme_reward_credit(uuid,text,nume
       then greatest(0, (u.raw_app_meta_data->'marketing_partner'->>'qualificationCoins')::numeric) else 0 end,
     case when coalesce(u.raw_app_meta_data->'marketing_partner'->>'qualificationPeriodStartedAt','') <> ''
       then (u.raw_app_meta_data->'marketing_partner'->>'qualificationPeriodStartedAt')::timestamptz else null end,
-    case when coalesce(u.raw_app_meta_data->'marketing_partner'->>'totalRewards','') ~ '^[0-9]+(\\.[0-9]+)?
+    case when coalesce(u.raw_app_meta_data->'marketing_partner'->>'totalRewards','') ~ '^[0-9]+(\.[0-9]+)?
   select * into v_state
   from public.business_programme_partner_reward_state
   where partner_user_id = p_partner_user_id
@@ -281,7 +281,7 @@ revoke all on function public.business_programme_reward_credit(uuid,text,numeric
 grant execute on function public.business_programme_reward_credit(uuid,text,numeric) to service_role;
 
       then greatest(0, (u.raw_app_meta_data->'marketing_partner'->>'totalRewards')::numeric) else 0 end,
-    case when coalesce(u.raw_app_meta_data->'marketing_partner'->>'totalSales','') ~ '^[0-9]+(\\.[0-9]+)?
+    case when coalesce(u.raw_app_meta_data->'marketing_partner'->>'totalSales','') ~ '^[0-9]+(\.[0-9]+)?
   select * into v_state
   from public.business_programme_partner_reward_state
   where partner_user_id = p_partner_user_id
