@@ -27,98 +27,88 @@ export async function POST(req: NextRequest) {
     }
 
     let balance = Math.max(0, Number(partner.walletBalance || 0));
-    if (isWalletLedgerEnabled) {
-      const { data: walletAccount, error: walletAccountError } = await admin
-        .from("business_programme_wallet_accounts")
-        .select("balance_inr")
-        .eq("partner_user_id", data.user.id)
-        .maybeSingle();
-      if (walletAccountError) throw walletAccountError;
-      if (walletAccount) balance = Math.max(0, Number(walletAccount.balance_inr || 0));
-    }
     let entries = Array.isArray(partner.withdrawalRequests) ? partner.withdrawalRequests : [];
-    // First recover a request that was reserved in the ledger but whose Auth
-    // metadata write failed. Only treat undecided ledger requests as pending.
-    if (isWalletLedgerEnabled) {
-      const { data: ledgerRequests, error: ledgerRequestsError } = await admin
-        .from("business_programme_wallet_transactions")
-        .select("amount_inr, reference_id, created_at, metadata")
-        .eq("partner_user_id", data.user.id)
-        .eq("transaction_type", "withdrawal_request")
-        .eq("status", "pending")
-        .order("created_at", { ascending: false })
-        .limit(100);
-      if (ledgerRequestsError) throw ledgerRequestsError;
-      const { data: decisions, error: decisionsError } = await admin
-        .from("business_programme_withdrawal_decisions")
-        .select("reference_id")
-        .eq("partner_user_id", data.user.id);
-      if (decisionsError) throw decisionsError;
-      const decidedReferences = new Set((decisions || []).map((item) => item.reference_id));
-      const recoverable = (ledgerRequests || []).find((item) =>
-        Number(item.amount_inr) === amount &&
-        !decidedReferences.has(item.reference_id) &&
-        !entries.some((entry) => (entry as typeof entry & { referenceId?: string }).referenceId === item.reference_id)
-      );
-      if (recoverable) {
-        const requestedAt = recoverable.created_at || new Date().toISOString();
-        const recoveredEntry = {
-          amount: Number(recoverable.amount_inr),
-          status: "withdrawal:pending",
-          requestedAt,
-          referenceId: recoverable.reference_id,
-        };
-        const recoveredPartner = {
-          ...partner,
-          walletBalance: balance,
-          withdrawalRequests: [recoveredEntry, ...entries].slice(0, 100),
-        };
-        const { error: recoveryError } = await admin.auth.admin.updateUserById(data.user.id, {
-          app_metadata: { ...latest.user.app_metadata, marketing_partner: recoveredPartner },
-        });
-        if (recoveryError) throw recoveryError;
+
+    // Preserve legacy metadata-only duplicate protection when ledger mode is off.
+    if (!isWalletLedgerEnabled) {
+      const pendingRequest = entries.find((entry) => entry.status === "withdrawal:pending" && Number(entry.amount) === amount);
+      if (pendingRequest) {
         return NextResponse.json({
           success: true,
           walletBalance: balance,
-          message: "Your existing withdrawal request was recovered and remains pending review.",
+          message: "A withdrawal request for this amount is already pending review.",
+          duplicate: true,
+        });
+      }
+      if (amount > balance) return NextResponse.json({ error: "The requested amount is higher than your available balance." }, { status: 400 });
+    }
+
+    const now = new Date().toISOString();
+    const referenceId = `withdrawal:${data.user.id}:${now}`;
+    let nextBalance = balance - amount;
+    let reservedReferenceId = referenceId;
+    let requestedAt = now;
+
+    if (isWalletLedgerEnabled) {
+      const { data: reservation, error: reservationError } = await admin.rpc("business_programme_withdrawal_reserve", {
+        p_partner_user_id: data.user.id,
+        p_amount_inr: amount,
+        p_reference_id: referenceId,
+        p_requested_at: now,
+        p_description: "Partner withdrawal request",
+      });
+      if (reservationError) throw reservationError;
+      const wallet = reservation as {
+        success?: boolean;
+        duplicate?: boolean;
+        balance?: number;
+        reference_id?: string;
+        created_at?: string;
+        error?: string;
+      } | null;
+      if (!wallet?.success) {
+        if (wallet?.error === "INSUFFICIENT_BALANCE") {
+          return NextResponse.json({ error: "The requested amount is higher than your available balance." }, { status: 400 });
+        }
+        throw new Error(wallet?.error || "Withdrawal reservation failed.");
+      }
+      balance = Number(wallet.balance ?? balance);
+      nextBalance = balance;
+      reservedReferenceId = wallet.reference_id || referenceId;
+      requestedAt = wallet.created_at || now;
+      if (wallet.duplicate) {
+        const alreadyListed = entries.some((entry) =>
+          (entry as typeof entry & { referenceId?: string }).referenceId === reservedReferenceId
+        );
+        if (!alreadyListed) {
+          const recoveredPartner = {
+            ...partner,
+            walletBalance: balance,
+            withdrawalRequests: [{
+              amount,
+              status: "withdrawal:pending",
+              requestedAt,
+              referenceId: reservedReferenceId,
+            }, ...entries].slice(0, 100),
+          };
+          const { error: recoveryError } = await admin.auth.admin.updateUserById(data.user.id, {
+            app_metadata: { ...latest.user.app_metadata, marketing_partner: recoveredPartner },
+          });
+          if (recoveryError) throw recoveryError;
+        }
+        return NextResponse.json({
+          success: true,
+          walletBalance: balance,
+          message: "A withdrawal request for this amount is already pending review.",
           duplicate: true,
         });
       }
     }
 
-    // Avoid creating multiple reserved withdrawals when a partner retries the
-    // same request while an earlier withdrawal is still awaiting admin review.
-    const pendingRequest = entries.find((entry) => entry.status === "withdrawal:pending" && Number(entry.amount) === amount);
-    if (pendingRequest) {
-      return NextResponse.json({
-        success: true,
-        walletBalance: balance,
-        message: "A withdrawal request for this amount is already pending review.",
-        duplicate: true,
-      });
-    }
-    if (amount > balance) return NextResponse.json({ error: "The requested amount is higher than your available balance." }, { status: 400 });
-
-    const now = new Date().toISOString();
-    const referenceId = `withdrawal:${data.user.id}:${now}`;
-    let nextBalance = balance - amount;
-    if (isWalletLedgerEnabled) {
-      const wallet = await postWalletTransaction({
-        partnerUserId: data.user.id,
-        type: "withdrawal_request",
-        amountInr: amount,
-        referenceId,
-        description: "Partner withdrawal request",
-        metadata: { requestedAt: now },
-      });
-      // Even when the ledger transaction already exists, continue to reconcile
-      // Auth metadata so a retry can repair a request whose first metadata update failed.
-      nextBalance = Number(wallet.balance ?? nextBalance);
-    }
     const next = {
       ...partner,
       walletBalance: nextBalance,
-      withdrawalRequests: [{ amount, status: "withdrawal:pending", requestedAt: now, referenceId }, ...entries].slice(0, 100),
+      withdrawalRequests: [{ amount, status: "withdrawal:pending", requestedAt, referenceId: reservedReferenceId }, ...entries].slice(0, 100),
     };
     const { error: updateError } = await admin.auth.admin.updateUserById(data.user.id, {
       app_metadata: { ...latest.user.app_metadata, marketing_partner: next },
