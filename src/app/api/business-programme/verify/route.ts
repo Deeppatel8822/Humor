@@ -83,8 +83,15 @@ export async function POST(req: NextRequest) {
     const termsAccepted = registration.termsAccepted === true;
     const termsVersion = String(registration.termsVersion || "");
 
-    if (!businessType || !businessName || !mobile || !address || !proofPath || !proofPath.startsWith(authData.user.id + "/") || !termsAccepted || !termsVersion) {
-      return NextResponse.json({ error: "Registration details are incomplete." }, { status: 400 });
+    const proofPathParts = proofPath.split("/");
+    if (
+      !businessType || !businessName || !mobile || !address || !proofPath ||
+      !proofPath.startsWith(authData.user.id + "/") ||
+      proofPathParts.some((part: string) => !part || part === "." || part === "..") ||
+      !/^\\d{10}$/.test(mobile) ||
+      !termsAccepted || !termsVersion
+    ) {
+      return NextResponse.json({ error: "Registration details are incomplete or invalid." }, { status: 400 });
     }
 
     const programme = {
