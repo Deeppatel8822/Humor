@@ -180,62 +180,27 @@ export async function POST(req: NextRequest) {
     let nextBalance = Math.max(0, Number(partner.walletBalance || 0)) +
       (decision === "reject" ? Math.max(0, Number(request.amount || 0)) : 0);
     if (isWalletLedgerEnabled) {
-      // Reserve the decision first. A conflicting or repeated decision must not
-      // mutate the wallet a second time.
-      const { data: decisionResult, error: decisionError } = await auth.admin.rpc("business_programme_withdrawal_decide", {
+      // The database RPC locks the wallet and atomically records the decision
+      // and its corresponding ledger transaction, including recovery retries.
+      const { data: result, error: decisionError } = await auth.admin.rpc("business_programme_withdrawal_decide_and_post", {
         p_partner_user_id: userId,
         p_reference_id: referenceId,
         p_decision: decision,
+        p_amount_inr: Number(request.amount || 0),
         p_decided_by: auth.user.id,
+        p_requested_at: requestedAt || request.requestedAt,
       });
       if (decisionError) throw decisionError;
-      const decisionGuard = decisionResult as { conflict?: boolean; decision?: string; duplicate?: boolean } | null;
-      if (decisionGuard?.conflict) {
+      const decisionResult = result as { success?: boolean; conflict?: boolean; decision?: string; duplicate?: boolean; balance?: number; error?: string } | null;
+      if (decisionResult?.conflict) {
         return NextResponse.json({
-          error: `This withdrawal was already recorded as ${decisionGuard.decision}.`,
+          error: `This withdrawal was already recorded as ${decisionResult.decision}.`,
         }, { status: 409 });
       }
-
-      // An identical retry can happen after the first request committed its
-      // ledger update but failed to save Auth metadata. Only reconcile metadata
-      // on retry; do not issue a different ledger transaction type.
-      if (decisionGuard?.duplicate) {
-        const txType = decision === "approve" ? "withdrawal_approved" : "withdrawal_rejected";
-        const { data: existingTransaction, error: existingTransactionError } = await auth.admin
-          .from("business_programme_wallet_transactions")
-          .select("id, balance_after_inr")
-          .eq("partner_user_id", userId)
-          .eq("transaction_type", txType)
-          .eq("reference_id", referenceId)
-          .maybeSingle();
-        if (existingTransactionError) throw existingTransactionError;
-        if (existingTransaction) {
-          nextBalance = Number(existingTransaction.balance_after_inr);
-        } else {
-          // The decision row may have committed just before a transient wallet
-          // failure. Re-post the same transaction type/reference; the wallet
-          // RPC is idempotent and will refund at most once.
-          const wallet = await postWalletTransaction({
-            partnerUserId: userId,
-            type: txType,
-            amountInr: Number(request.amount || 0),
-            referenceId,
-            description: decision === "approve" ? "Withdrawal approved; external payout not yet confirmed" : "Withdrawal rejected; reserved funds returned",
-            metadata: { requestedAt, decision, decidedBy: auth.user.id },
-          });
-          nextBalance = Number(wallet.balance ?? nextBalance);
-        }
-      } else {
-        const wallet = await postWalletTransaction({
-          partnerUserId: userId,
-          type: decision === "approve" ? "withdrawal_approved" : "withdrawal_rejected",
-          amountInr: Number(request.amount || 0),
-          referenceId,
-          description: decision === "approve" ? "Withdrawal approved; external payout not yet confirmed" : "Withdrawal rejected; reserved funds returned",
-          metadata: { requestedAt, decision, decidedBy: auth.user.id },
-        });
-        nextBalance = Number(wallet.balance ?? nextBalance);
+      if (!decisionResult?.success) {
+        throw new Error(decisionResult?.error || "Could not atomically record withdrawal decision.");
       }
+      nextBalance = Number(decisionResult.balance ?? nextBalance);
     }
     const nextEntries = [...entries];
     nextEntries[index] = { ...request, status: decision === "approve" ? "withdrawal:approved" : "withdrawal:rejected" };
