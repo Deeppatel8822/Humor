@@ -90,9 +90,15 @@ export async function POST(request: Request) {
       const nextUserMetadata = isBusinessProgramme
         ? { ...data.user.user_metadata, business_programme: { ...businessProgramme, status: "rejected", reviewedAt: new Date().toISOString() } }
         : { ...data.user.user_metadata, marketing_partner_application: { ...application, status: "rejected", reviewedAt: new Date().toISOString() } };
+      const existingPartner = data.user.app_metadata?.marketing_partner;
+      // Rejecting a Business Programme application must not revoke an existing
+      // approved partner account or erase its wallet, code, tier and history.
+      const nextPartner = isBusinessProgramme && existingPartner?.status === "approved"
+        ? existingPartner
+        : { ...(existingPartner && typeof existingPartner === "object" ? existingPartner : {}), status: "rejected" };
       const { error } = await admin.auth.admin.updateUserById(userId, {
         user_metadata: nextUserMetadata,
-        app_metadata: { ...data.user.app_metadata, marketing_partner: { status: "rejected" } },
+        app_metadata: { ...data.user.app_metadata, marketing_partner: nextPartner },
       });
       if (error) throw error;
       return NextResponse.json({ success: true, status: "rejected" });
