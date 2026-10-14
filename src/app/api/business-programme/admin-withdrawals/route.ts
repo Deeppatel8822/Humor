@@ -58,7 +58,6 @@ export async function GET(req: NextRequest) {
         .select("partner_user_id, reference_id");
       if (decisionsError) throw decisionsError;
       const decidedKeys = new Set((decisions || []).map((item) => `${item.partner_user_id}|${item.reference_id}`));
-      const visibleKeys = new Set(requests.map((item) => `${item.userId}|${item.requestedAt}`));
       const userMap = new Map(users.map((user) => [user.id, user]));
       for (const item of ledgerRequests || []) {
         if (decidedKeys.has(`${item.partner_user_id}|${item.reference_id}`)) continue;
