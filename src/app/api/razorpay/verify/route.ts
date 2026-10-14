@@ -204,6 +204,55 @@ export async function POST(req: NextRequest) {
       if (existingOrder.razorpay_payment_id && existingOrder.razorpay_payment_id !== razorpay_payment_id) {
         return NextResponse.json({ error: "This Razorpay order is already linked to a different payment." }, { status: 409 });
       }
+
+      // Recover a paid order if a previous callback persisted the order row but
+      // failed before order_items were inserted. Compare aggregate quantities so
+      // repeated product lines are handled safely and never silently duplicated.
+      const { data: existingItems, error: existingItemsError } = await admin
+        .from("order_items")
+        .select("product_id, quantity")
+        .eq("order_id", existingOrder.id);
+      if (existingItemsError) throw existingItemsError;
+
+      const expectedItems = new Map<string, { quantity: number; unitPrice: number }>();
+      for (const line of lines) {
+        const product = products.find((p) => p.id === line.productId || p.slug === line.slug);
+        if (!product) {
+          return NextResponse.json({ error: "Could not reconcile items for this paid order." }, { status: 409 });
+        }
+        const previous = expectedItems.get(product.id);
+        expectedItems.set(product.id, {
+          quantity: (previous?.quantity ?? 0) + line.quantity,
+          unitPrice: product.price_inr,
+        });
+      }
+      const actualQuantities = new Map<string, number>();
+      for (const item of existingItems ?? []) {
+        actualQuantities.set(item.product_id, (actualQuantities.get(item.product_id) ?? 0) + Number(item.quantity));
+      }
+      const missingItems: { order_id: string; product_id: string; quantity: number; unit_price_inr: number }[] = [];
+      for (const [productId, expected] of expectedItems) {
+        const actual = actualQuantities.get(productId) ?? 0;
+        if (actual > expected.quantity) {
+          return NextResponse.json({ error: "This paid order has inconsistent item quantities and needs admin review." }, { status: 409 });
+        }
+        if (actual < expected.quantity) {
+          missingItems.push({
+            order_id: existingOrder.id,
+            product_id: productId,
+            quantity: expected.quantity - actual,
+            unit_price_inr: expected.unitPrice,
+          });
+        }
+      }
+      if ([...actualQuantities.keys()].some((productId) => !expectedItems.has(productId))) {
+        return NextResponse.json({ error: "This paid order contains unexpected items and needs admin review." }, { status: 409 });
+      }
+      if (missingItems.length > 0) {
+        const { error: repairItemsError } = await admin.from("order_items").insert(missingItems);
+        if (repairItemsError) throw repairItemsError;
+      }
+
       if (partnerMatch) {
         const billedProductAmount = Math.max(0, subtotalInr - totalDiscountInr);
         try {
@@ -266,15 +315,22 @@ export async function POST(req: NextRequest) {
       .single();
     if (orderErr) throw orderErr;
 
-    const orderItems = lines.map((line) => {
-      const product = products.find((p) => p.id === line.productId);
-      return {
-        order_id: order.id,
-        product_id: line.productId,
-        quantity: line.quantity,
-        unit_price_inr: product?.price_inr ?? 0,
-      };
-    });
+    const quantitiesByProduct = new Map<string, { quantity: number; unitPrice: number }>();
+    for (const line of lines) {
+      const product = products.find((p) => p.id === line.productId || p.slug === line.slug);
+      if (!product) throw new Error("Product disappeared while persisting paid order items.");
+      const previous = quantitiesByProduct.get(product.id);
+      quantitiesByProduct.set(product.id, {
+        quantity: (previous?.quantity ?? 0) + line.quantity,
+        unitPrice: product.price_inr,
+      });
+    }
+    const orderItems = [...quantitiesByProduct.entries()].map(([productId, item]) => ({
+      order_id: order.id,
+      product_id: productId,
+      quantity: item.quantity,
+      unit_price_inr: item.unitPrice,
+    }));
     const { error: itemsErr } = await admin.from("order_items").insert(orderItems);
     if (itemsErr) throw itemsErr;
 
