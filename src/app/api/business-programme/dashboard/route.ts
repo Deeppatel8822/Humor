@@ -42,10 +42,16 @@ export async function GET(req: NextRequest) {
         .limit(100);
       if (transactionsError) throw transactionsError;
       history = (transactions || []).map((entry) => ({
-        amount: Number(entry.amount_inr) || 0,
-        status: String(entry.status || entry.transaction_type || "recorded"),
+        amount: entry.transaction_type === "reward_reversal"
+          ? -Math.abs(Number(entry.amount_inr) || 0)
+          : Number(entry.amount_inr) || 0,
+        status: entry.transaction_type === "reward_reversal"
+          ? "Reward reversed · " + String(entry.metadata?.orderNumber || entry.reference_id || "")
+          : String(entry.status || entry.transaction_type || "recorded"),
         requestedAt: entry.created_at || null,
-        kind: entry.transaction_type,
+        kind: entry.transaction_type === "reward_reversal"
+          ? "reward reversal"
+          : String(entry.transaction_type || "activity").replace(/_/g, " "),
       }));
 
       // Metadata may lag if a reward was committed to the ledger but the
