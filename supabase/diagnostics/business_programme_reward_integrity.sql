@@ -6,14 +6,19 @@
 with ledger as (
   select
     partner_user_id,
-    count(*) as reward_transactions,
-    coalesce(sum(amount_inr), 0)::numeric(12,2) as ledger_lifetime_rewards,
+    count(*) filter (where transaction_type = 'reward') as reward_transactions,
     coalesce(sum(case
-      when coalesce(metadata->>'billedAmountInr','') ~ '^[0-9]+(\.[0-9]+)?$'
-      then (metadata->>'billedAmountInr')::numeric
+      when transaction_type = 'reward' then amount_inr
+      when transaction_type = 'reward_reversal' then -amount_inr
+      else 0 end), 0)::numeric(12,2) as ledger_lifetime_rewards,
+    coalesce(sum(case
+      when transaction_type = 'reward' and coalesce(metadata->>'billedAmountInr','') ~ '^[0-9]+(\\.[0-9]+)?$'
+        then (metadata->>'billedAmountInr')::numeric
+      when transaction_type = 'reward_reversal' and coalesce(metadata->>'billedAmountInr','') ~ '^[0-9]+(\\.[0-9]+)?$'
+        then -(metadata->>'billedAmountInr')::numeric
       else 0 end), 0)::numeric(12,2) as ledger_total_sales
   from public.business_programme_wallet_transactions
-  where transaction_type = 'reward'
+  where transaction_type in ('reward', 'reward_reversal')
   group by partner_user_id
 )
 select
@@ -58,7 +63,13 @@ where abs(a.balance_inr - l.balance_after_inr) > 0.01;
 with active_rewards as (
   select
     s.partner_user_id,
-    coalesce(sum(t.amount_inr), 0)::numeric(12,2) as ledger_window_coins
+    coalesce(sum(t.amount_inr - coalesce((
+      select sum(r.amount_inr)
+      from public.business_programme_wallet_transactions r
+      where r.partner_user_id = t.partner_user_id
+        and r.transaction_type = 'reward_reversal'
+        and r.metadata->>'originalRewardTransactionId' = t.id::text
+    ), 0)), 0)::numeric(12,2) as ledger_window_coins
   from public.business_programme_partner_reward_state s
   left join public.business_programme_wallet_transactions t
     on t.partner_user_id = s.partner_user_id
@@ -87,3 +98,20 @@ from auth.users u
 left join public.business_programme_partner_reward_state s on s.partner_user_id = u.id
 where u.raw_app_meta_data ? 'marketing_partner'
   and s.partner_user_id is null;
+
+-- 6) Reward reversals without their original reward transaction. Expected: zero rows.
+select r.partner_user_id, r.reference_id, r.metadata->>'orderNumber' as order_number
+from public.business_programme_wallet_transactions r
+left join public.business_programme_wallet_transactions original
+  on original.id::text = r.metadata->>'originalRewardTransactionId'
+ and original.partner_user_id = r.partner_user_id
+ and original.transaction_type = 'reward'
+where r.transaction_type = 'reward_reversal'
+  and original.id is null;
+
+-- 7) More than one full reward reversal for an order. Expected: zero rows.
+select partner_user_id, metadata->>'orderNumber' as order_number, count(*) as reversal_count
+from public.business_programme_wallet_transactions
+where transaction_type = 'reward_reversal'
+group by partner_user_id, metadata->>'orderNumber'
+having count(*) > 1;
