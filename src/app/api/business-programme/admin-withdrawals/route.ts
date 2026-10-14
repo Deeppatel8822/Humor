@@ -89,13 +89,29 @@ export async function POST(req: NextRequest) {
     let nextBalance = Math.max(0, Number(partner.walletBalance || 0)) +
       (decision === "reject" ? Math.max(0, Number(request.amount || 0)) : 0);
     if (isWalletLedgerEnabled) {
+      // Atomically lock the final admin decision so concurrent approve/reject
+      // requests cannot record contradictory outcomes for the same withdrawal.
+      const { data: decisionResult, error: decisionError } = await auth.admin.rpc("business_programme_withdrawal_decide", {
+        p_partner_user_id: userId,
+        p_reference_id: referenceId,
+        p_decision: decision,
+        p_decided_by: auth.user.id,
+      });
+      if (decisionError) throw decisionError;
+      const decisionGuard = decisionResult as { conflict?: boolean; decision?: string } | null;
+      if (decisionGuard?.conflict) {
+        return NextResponse.json({
+          error: `This withdrawal was already recorded as ${decisionGuard.decision}.`,
+        }, { status: 409 });
+      }
+
       const wallet = await postWalletTransaction({
         partnerUserId: userId,
         type: decision === "approve" ? "withdrawal_paid" : "withdrawal_rejected",
         amountInr: Number(request.amount || 0),
         referenceId,
         description: decision === "approve" ? "Withdrawal approved for payout" : "Withdrawal rejected; reserved funds returned",
-        metadata: { requestedAt, decision },
+        metadata: { requestedAt, decision, decidedBy: auth.user.id },
       });
       nextBalance = Number(wallet.balance ?? nextBalance);
     }
