@@ -19,27 +19,38 @@ export async function POST(req: NextRequest) {
     const authHeader = req.headers.get("authorization") || "";
     const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
 
-    if (!Array.isArray(lines) || lines.length === 0) {
-      return NextResponse.json({ error: "Cart is empty." }, { status: 400 });
+    if (
+      !Array.isArray(lines) || lines.length === 0 || lines.length > 100 ||
+      lines.some((line) =>
+        !line ||
+        typeof line.productId !== "string" ||
+        (line.slug !== undefined && typeof line.slug !== "string") ||
+        !Number.isSafeInteger(line.quantity) ||
+        line.quantity < 1 ||
+        line.quantity > 100
+      )
+    ) {
+      return NextResponse.json({ error: "Cart is empty or contains invalid items." }, { status: 400 });
     }
 
     const products = await getAllProducts();
 
     // Recompute the total server-side from the trusted product catalog.
-    // TODO: once Supabase is connected, replace `products` with a live
-    // query against the `products` table (select id, price_inr, stock_quantity).
     let subtotalInr = 0;
+    const quantitiesByProduct = new Map<string, number>();
     for (const line of lines) {
       const product = products.find((p) => (p.id === line.productId || p.slug === line.slug) && p.status === "live");
       if (!product) {
         return NextResponse.json({ error: `Unknown product: ${line.productId}` }, { status: 400 });
       }
-      if (line.quantity < 1 || line.quantity > product.stock_quantity) {
+      const totalQuantity = (quantitiesByProduct.get(product.id) ?? 0) + line.quantity;
+      if (totalQuantity > product.stock_quantity) {
         return NextResponse.json(
           { error: `${product.name} has insufficient stock.` },
           { status: 400 }
         );
       }
+      quantitiesByProduct.set(product.id, totalQuantity);
       subtotalInr += product.price_inr * line.quantity;
     }
 
