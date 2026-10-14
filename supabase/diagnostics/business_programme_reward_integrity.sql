@@ -1,6 +1,6 @@
 -- Read-only Business Programme reward integrity checks.
 -- Run in Supabase SQL Editor AFTER applying 20261014050000_business_programme_atomic_rewards.sql.
--- These queries do not modify data. Review every returned row; an empty result is expected for the issue checks.
+-- These queries do not modify data. Legacy rewards may predate the ledger, so checks compare for under-counts rather than requiring exact equality.
 
 -- 1) Reward-state totals versus the canonical reward ledger.
 with ledger as (
@@ -26,8 +26,8 @@ select
   coalesce(l.reward_transactions, 0) as reward_transactions
 from public.business_programme_partner_reward_state s
 left join ledger l using (partner_user_id)
-where abs(s.lifetime_rewards - coalesce(l.ledger_lifetime_rewards, 0)) > 0.01
-   or abs(s.total_sales - coalesce(l.ledger_total_sales, 0)) > 0.01
+where s.lifetime_rewards + 0.01 < coalesce(l.ledger_lifetime_rewards, 0)
+   or s.total_sales + 0.01 < coalesce(l.ledger_total_sales, 0)
 order by s.updated_at desc;
 
 -- 2) Duplicate reward references. Expected: zero rows.
@@ -79,7 +79,7 @@ join active_rewards a using (partner_user_id)
 where s.qualification_period_started_at is not null
   and s.qualification_period_started_at <= now()
   and now() - s.qualification_period_started_at < interval '30 days'
-  and abs(s.qualification_coins - a.ledger_window_coins) > 0.01;
+  and s.qualification_coins + 0.01 < a.ledger_window_coins;
 
 -- 5) Missing canonical reward state for users with partner metadata. Expected: zero rows.
 select u.id as partner_user_id, u.raw_app_meta_data->'marketing_partner'->>'rewardTier' as metadata_tier
