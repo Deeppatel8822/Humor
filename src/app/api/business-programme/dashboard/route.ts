@@ -70,7 +70,16 @@ export async function GET(req: NextRequest) {
         const billed = Number(row.metadata?.billedAmountInr);
         return sum + (Number.isFinite(billed) ? Math.max(0, billed) : 0);
       }, 0);
-      const periodStart = partner.qualificationPeriodStartedAt ? new Date(partner.qualificationPeriodStartedAt) : null;
+      // Read canonical reward state before computing the qualification window.
+      // Auth metadata can lag after a successful atomic reward credit.
+      const { data: rewardState, error: rewardStateError } = await admin
+        .from("business_programme_partner_reward_state")
+        .select("reward_tier, qualification_coins, qualification_period_started_at, lifetime_rewards, total_sales, referred_orders, coupon_usage_count")
+        .eq("partner_user_id", data.user.id)
+        .maybeSingle();
+      if (rewardStateError) throw rewardStateError;
+      const canonicalPeriodStart = rewardState?.qualification_period_started_at || partner.qualificationPeriodStartedAt;
+      const periodStart = canonicalPeriodStart ? new Date(canonicalPeriodStart) : null;
       const now = Date.now();
       const periodStartMs = periodStart?.getTime() ?? Number.NaN;
       const elapsedSincePeriodStart = now - periodStartMs;
@@ -87,12 +96,6 @@ export async function GET(req: NextRequest) {
 
       // The atomic reward-state row is authoritative for tier/counters because
       // Auth metadata updates can race when separate orders complete together.
-      const { data: rewardState, error: rewardStateError } = await admin
-        .from("business_programme_partner_reward_state")
-        .select("reward_tier, qualification_coins, qualification_period_started_at, lifetime_rewards, total_sales, referred_orders, coupon_usage_count")
-        .eq("partner_user_id", data.user.id)
-        .maybeSingle();
-      if (rewardStateError) throw rewardStateError;
       if (rewardState) {
         partner.rewardTier = rewardState.reward_tier as "basic" | "silver" | "gold";
         partner.qualificationCoins = Number(rewardState.qualification_coins) || 0;
