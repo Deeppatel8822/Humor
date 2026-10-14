@@ -115,3 +115,17 @@ from public.business_programme_wallet_transactions
 where transaction_type = 'reward_reversal'
 group by partner_user_id, metadata->>'orderNumber'
 having count(*) > 1;
+-- 8) Reward reversals where the partner wallet could not cover the full amount.
+-- Informational: each row needs manual recovery/review before closing the refund case.
+select
+  partner_user_id,
+  metadata->>'orderNumber' as order_number,
+  metadata->>'refundReference' as refund_reference,
+  amount_inr as original_reward_amount,
+  coalesce((metadata->>'walletDebit')::numeric, 0) as recovered_from_wallet,
+  coalesce((metadata->>'unrecoveredAmount')::numeric, 0) as unrecovered_amount,
+  created_at as reversed_at
+from public.business_programme_wallet_transactions
+where transaction_type = 'reward_reversal'
+  and coalesce((metadata->>'unrecoveredAmount')::numeric, 0) > 0
+order by created_at desc;
