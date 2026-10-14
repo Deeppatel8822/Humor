@@ -104,8 +104,14 @@ export async function GET(req: NextRequest) {
       // Auth metadata updates can race when separate orders complete together.
       if (rewardState) {
         partner.rewardTier = rewardState.reward_tier as "basic" | "silver" | "gold";
-        partner.qualificationCoins = Number(rewardState.qualification_coins) || 0;
-        partner.qualificationPeriodStartedAt = rewardState.qualification_period_started_at || undefined;
+        // Qualification coins expire after 30 days; the tier itself remains permanent.
+        // The next reward credit will persist the next qualification period atomically.
+        partner.qualificationCoins = qualificationWindowValid
+          ? Math.max(0, Number(rewardState.qualification_coins) || 0)
+          : 0;
+        partner.qualificationPeriodStartedAt = qualificationWindowValid
+          ? rewardState.qualification_period_started_at || undefined
+          : undefined;
         partner.totalRewards = Number(rewardState.lifetime_rewards) || 0;
         partner.totalSales = Number(rewardState.total_sales) || 0;
         partner.referredCustomers = Number(rewardState.referred_orders) || 0;
