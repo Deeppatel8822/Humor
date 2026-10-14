@@ -30,8 +30,12 @@ export async function POST(req: NextRequest) {
     if (!businessType || !businessName || !mobile || !address || !proofPath) {
       return NextResponse.json({ error: "Please complete all registration details and upload business proof." }, { status: 400 });
     }
-    if (!proofPath.startsWith(user.id + "/")) {
-      return NextResponse.json({ error: "Please upload business proof to your own application folder." }, { status: 400 });
+    const proofPathParts = proofPath.split("/");
+    if (
+      !proofPath.startsWith(user.id + "/") ||
+      proofPathParts.some((part) => !part || part === "." || part === "..")
+    ) {
+      return NextResponse.json({ error: "Please upload business proof to your own application folder using a valid path." }, { status: 400 });
     }
     if (!termsAccepted || !termsVersion) {
       return NextResponse.json({ error: "Please accept the current Business Programme terms before payment." }, { status: 400 });
