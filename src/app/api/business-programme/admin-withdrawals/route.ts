@@ -121,6 +121,73 @@ export async function GET(req: NextRequest) {
         }
       }
     }
+    if (isWalletLedgerEnabled) {
+      // Keep approved-but-unpaid withdrawals visible so the admin can record the
+      // external transfer after it has actually settled.
+      const allDecisions: Array<{ partner_user_id: string; reference_id: string; decision: string }> = [];
+      for (let offset = 0; ; offset += 1000) {
+        const { data: page, error: pageError } = await auth.admin
+          .from("business_programme_withdrawal_decisions")
+          .select("partner_user_id, reference_id, decision")
+          .eq("decision", "approve")
+          .range(offset, offset + 999);
+        if (pageError) throw pageError;
+        allDecisions.push(...(page || []));
+        if (!page || page.length < 1000) break;
+      }
+      const approvedKeys = new Set(allDecisions.map((item) => `${item.partner_user_id}|${item.reference_id}`));
+      const paidKeys = new Set<string>();
+      for (let offset = 0; ; offset += 1000) {
+        const { data: page, error: pageError } = await auth.admin
+          .from("business_programme_wallet_transactions")
+          .select("partner_user_id, reference_id")
+          .eq("transaction_type", "withdrawal_paid")
+          .range(offset, offset + 999);
+        if (pageError) throw pageError;
+        for (const item of page || []) paidKeys.add(`${item.partner_user_id}|${item.reference_id}`);
+        if (!page || page.length < 1000) break;
+      }
+      const approvedRows: Array<{ partner_user_id: string; amount_inr: number; reference_id: string; created_at: string }> = [];
+      for (let offset = 0; ; offset += 1000) {
+        const { data: page, error: pageError } = await auth.admin
+          .from("business_programme_wallet_transactions")
+          .select("partner_user_id, amount_inr, reference_id, created_at")
+          .eq("transaction_type", "withdrawal_approved")
+          .order("created_at", { ascending: true })
+          .range(offset, offset + 999);
+        if (pageError) throw pageError;
+        approvedRows.push(...(page || []));
+        if (!page || page.length < 1000) break;
+      }
+      const userMap = new Map(users.map((user) => [user.id, user]));
+      const existingRequestKeys = new Set(requests.map((request) =>
+        `${request.userId}|${(request as typeof request & { referenceId?: string }).referenceId || ""}`
+      ));
+      for (const item of approvedRows) {
+        const key = `${item.partner_user_id}|${item.reference_id}`;
+        if (!approvedKeys.has(key) || paidKeys.has(key) || existingRequestKeys.has(key)) continue;
+        const user = userMap.get(item.partner_user_id);
+        if (!user) continue;
+        const partner = getPartner(user);
+        const { data: account, error: accountError } = await auth.admin
+          .from("business_programme_wallet_accounts")
+          .select("balance_inr")
+          .eq("partner_user_id", item.partner_user_id)
+          .maybeSingle();
+        if (accountError) throw accountError;
+        requests.push({
+          userId: item.partner_user_id,
+          email: user.email || "",
+          name: partner?.businessName || user.user_metadata?.full_name || user.user_metadata?.name || "Partner",
+          mobile: partner?.mobile || "",
+          amount: Number(item.amount_inr) || 0,
+          requestedAt: String(item.created_at || ""),
+          walletBalance: Number(account?.balance_inr ?? partner?.walletBalance) || 0,
+          status: "withdrawal:approved_unpaid",
+          referenceId: item.reference_id,
+        } as typeof requests[number] & { referenceId: string });
+      }
+    }
     requests.sort((a, b) => String(a.requestedAt).localeCompare(String(b.requestedAt)));
     return NextResponse.json({ requests });
   } catch {
@@ -137,7 +204,7 @@ export async function POST(req: NextRequest) {
     const requestedAt = String(body.requestedAt || "");
     const suppliedReferenceId = typeof body.referenceId === "string" ? body.referenceId : "";
     const decision = String(body.decision || "");
-    if (!userId || (!requestedAt && !suppliedReferenceId) || !["approve", "reject"].includes(decision)) {
+    if (!userId || (!requestedAt && !suppliedReferenceId) || !["approve", "reject", "mark_paid"].includes(decision)) {
       return NextResponse.json({ error: "Invalid withdrawal decision." }, { status: 400 });
     }
 
@@ -146,6 +213,64 @@ export async function POST(req: NextRequest) {
     const partner = getPartner(data.user);
     if (!partner) return NextResponse.json({ error: "Partner account not found." }, { status: 404 });
     const entries = Array.isArray(partner.withdrawalRequests) ? partner.withdrawalRequests : [];
+    if (decision === "mark_paid") {
+      if (!isWalletLedgerEnabled) {
+        return NextResponse.json({ error: "Payout recording requires the wallet ledger to be enabled." }, { status: 503 });
+      }
+      const payoutReference = String(body.payoutReference || "").trim();
+      if (!suppliedReferenceId || !payoutReference || payoutReference.length > 160) {
+        return NextResponse.json({ error: "A withdrawal reference and completed bank payout reference are required." }, { status: 400 });
+      }
+      const { data: approvedTransaction, error: approvedError } = await auth.admin
+        .from("business_programme_wallet_transactions")
+        .select("amount_inr, created_at")
+        .eq("partner_user_id", userId)
+        .eq("reference_id", suppliedReferenceId)
+        .eq("transaction_type", "withdrawal_approved")
+        .maybeSingle();
+      if (approvedError) throw approvedError;
+      if (!approvedTransaction) return NextResponse.json({ error: "Only an approved withdrawal can be marked paid." }, { status: 409 });
+
+      const { data: payoutResult, error: payoutError } = await auth.admin.rpc("business_programme_withdrawal_mark_paid", {
+        p_partner_user_id: userId,
+        p_reference_id: suppliedReferenceId,
+        p_amount_inr: Number(approvedTransaction.amount_inr),
+        p_payout_reference: payoutReference,
+        p_paid_by: auth.user.id,
+      });
+      if (payoutError) throw payoutError;
+      const payout = payoutResult as { success?: boolean; duplicate?: boolean; error?: string } | null;
+      if (!payout?.success) {
+        if (payout?.error === "PAYOUT_ALREADY_RECORDED") {
+          return NextResponse.json({ error: "A payout is already recorded for this withdrawal with a different amount or reference." }, { status: 409 });
+        }
+        return NextResponse.json({ error: payout?.error || "Could not record completed payout." }, { status: 409 });
+      }
+
+      const paidAt = new Date().toISOString();
+      const prior = entries.find((entry) => (entry as typeof entry & { referenceId?: string }).referenceId === suppliedReferenceId);
+      const paidEntry = {
+        amount: Number(approvedTransaction.amount_inr) || 0,
+        status: "withdrawal:paid",
+        requestedAt: prior?.requestedAt || String(approvedTransaction.created_at || paidAt),
+        referenceId: suppliedReferenceId,
+        payoutReference,
+        paidAt,
+      };
+      const nextEntries = [paidEntry, ...entries.filter((entry) =>
+        (entry as typeof entry & { referenceId?: string }).referenceId !== suppliedReferenceId
+      )].slice(0, 100);
+      const { error: metadataError } = await auth.admin.auth.admin.updateUserById(userId, {
+        app_metadata: { ...data.user.app_metadata, marketing_partner: { ...partner, withdrawalRequests: nextEntries } },
+      });
+      if (metadataError) console.error("Payout recorded in ledger but partner metadata sync failed:", metadataError);
+      return NextResponse.json({
+        success: true,
+        duplicate: Boolean(payout.duplicate),
+        message: payout.duplicate ? "This payout was already recorded." : "Completed bank payout recorded successfully.",
+      });
+    }
+
     let index = entries.findIndex((entry) =>
       entry.status === "withdrawal:pending" &&
       (entry.requestedAt === requestedAt ||
