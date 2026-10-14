@@ -84,6 +84,24 @@ export async function GET(req: NextRequest) {
       partner.totalRewards = Math.max(0, Number(partner.totalRewards) || 0, ledgerLifetimeRewards);
       partner.totalSales = Math.max(0, Number(partner.totalSales) || 0, ledgerLifetimeSales);
       if (qualificationWindowValid) partner.qualificationCoins = Math.max(0, Number(partner.qualificationCoins) || 0, ledgerWindowCoins);
+
+      // The atomic reward-state row is authoritative for tier/counters because
+      // Auth metadata updates can race when separate orders complete together.
+      const { data: rewardState, error: rewardStateError } = await admin
+        .from("business_programme_partner_reward_state")
+        .select("reward_tier, qualification_coins, qualification_period_started_at, lifetime_rewards, total_sales, referred_orders, coupon_usage_count")
+        .eq("partner_user_id", data.user.id)
+        .maybeSingle();
+      if (rewardStateError) throw rewardStateError;
+      if (rewardState) {
+        partner.rewardTier = rewardState.reward_tier as "basic" | "silver" | "gold";
+        partner.qualificationCoins = Number(rewardState.qualification_coins) || 0;
+        partner.qualificationPeriodStartedAt = rewardState.qualification_period_started_at || undefined;
+        partner.totalRewards = Number(rewardState.lifetime_rewards) || 0;
+        partner.totalSales = Number(rewardState.total_sales) || 0;
+        partner.referredCustomers = Number(rewardState.referred_orders) || 0;
+        partner.usageCount = Number(rewardState.coupon_usage_count) || 0;
+      }
     }
 
     return NextResponse.json({
