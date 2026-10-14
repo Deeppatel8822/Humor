@@ -32,12 +32,21 @@ export async function POST(req: NextRequest) {
 
   // 1. Verify the payment signature — this is the step that actually confirms
   // Razorpay processed the payment, rather than trusting the client's word for it.
+  const razorpaySecret = process.env.RAZORPAY_KEY_SECRET;
+  if (!razorpaySecret || !razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+    return NextResponse.json({ error: "Missing payment verification details or server configuration." }, { status: 400 });
+  }
   const expectedSignature = crypto
-    .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
+    .createHmac("sha256", razorpaySecret)
     .update(`${razorpay_order_id}|${razorpay_payment_id}`)
     .digest("hex");
 
-  if (expectedSignature !== razorpay_signature) {
+  const signatureBuffer = Buffer.from(razorpay_signature, "hex");
+  const expectedBuffer = Buffer.from(expectedSignature, "hex");
+  if (
+    signatureBuffer.length !== expectedBuffer.length ||
+    !crypto.timingSafeEqual(signatureBuffer, expectedBuffer)
+  ) {
     return NextResponse.json({ error: "Payment verification failed." }, { status: 400 });
   }
 
