@@ -174,6 +174,67 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Recover metadata when the database decision committed but the Auth metadata
+    // write failed. A decided request is no longer in the pending-ledger query,
+    // so retries must reconcile from the canonical decision and ledger records.
+    if (index < 0 && isWalletLedgerEnabled && suppliedReferenceId) {
+      const [{ data: recordedDecision, error: recordedDecisionError }, { data: recordedTransaction, error: recordedTransactionError }] = await Promise.all([
+        auth.admin
+          .from("business_programme_withdrawal_decisions")
+          .select("decision")
+          .eq("partner_user_id", userId)
+          .eq("reference_id", suppliedReferenceId)
+          .maybeSingle(),
+        auth.admin
+          .from("business_programme_wallet_transactions")
+          .select("amount_inr, created_at")
+          .eq("partner_user_id", userId)
+          .eq("reference_id", suppliedReferenceId)
+          .in("transaction_type", ["withdrawal_approved", "withdrawal_rejected"])
+          .maybeSingle(),
+      ]);
+      if (recordedDecisionError) throw recordedDecisionError;
+      if (recordedTransactionError) throw recordedTransactionError;
+      if (recordedDecision && recordedTransaction && recordedDecision.decision === decision) {
+        const reconciledAt = String(recordedTransaction.created_at || requestedAt || new Date().toISOString());
+        const reconciledEntry = {
+          amount: Number(recordedTransaction.amount_inr) || 0,
+          status: decision === "approve" ? "withdrawal:approved" : "withdrawal:rejected",
+          requestedAt: requestedAt || reconciledAt,
+          referenceId: suppliedReferenceId,
+        };
+        const reconciledEntries = [reconciledEntry, ...entries.filter((entry) =>
+          (entry as typeof entry & { referenceId?: string }).referenceId !== suppliedReferenceId
+        )].slice(0, 100);
+        let reconciledBalance = Math.max(0, Number(partner.walletBalance || 0));
+        const { data: walletAccount, error: walletAccountError } = await auth.admin
+          .from("business_programme_wallet_accounts")
+          .select("balance_inr")
+          .eq("partner_user_id", userId)
+          .maybeSingle();
+        if (walletAccountError) throw walletAccountError;
+        if (walletAccount) reconciledBalance = Number(walletAccount.balance_inr) || 0;
+        const { error: reconcileError } = await auth.admin.auth.admin.updateUserById(userId, {
+          app_metadata: {
+            ...data.user.app_metadata,
+            marketing_partner: {
+              ...partner,
+              walletBalance: reconciledBalance,
+              withdrawalRequests: reconciledEntries,
+            },
+          },
+        });
+        if (reconcileError) throw reconcileError;
+        return NextResponse.json({
+          success: true,
+          duplicate: true,
+          message: decision === "approve"
+            ? "Withdrawal approval was already recorded. External bank transfer must be verified separately."
+            : "Withdrawal rejection was already recorded and the wallet metadata has been reconciled.",
+        });
+      }
+    }
+
     let request: { amount: number; status: string; requestedAt: string; referenceId?: string } | undefined =
       index >= 0 ? { ...entries[index] } : undefined;
     let requestReferenceId = request && (request as typeof request & { referenceId?: unknown }).referenceId;
