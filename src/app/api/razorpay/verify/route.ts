@@ -27,9 +27,38 @@ interface VerifyBody {
 }
 
 export async function POST(req: NextRequest) {
-  const body: VerifyBody = await req.json();
+  let body: VerifyBody;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+  }
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature, lines, shipping, subtotalInr, shippingInr, vendorCode } = body;
+  if (
+    !Array.isArray(lines) || lines.length === 0 ||
+    !shipping || typeof shipping.fullName !== "string" ||
+    typeof shipping.email !== "string" || typeof shipping.phone !== "string" ||
+    typeof shipping.line1 !== "string" || typeof shipping.city !== "string" ||
+    typeof shipping.state !== "string" || typeof shipping.pincode !== "string" ||
+    !Number.isSafeInteger(subtotalInr) || subtotalInr < 0 ||
+    !Number.isSafeInteger(shippingInr) || shippingInr < 0 ||
+    lines.some((line) => !line || typeof line.productId !== "string" ||
+      !Number.isSafeInteger(line.quantity) || line.quantity < 1 || line.quantity > 100)
+  ) {
+    return NextResponse.json({ error: "Invalid checkout details." }, { status: 400 });
+  }
   const products = await getAllProducts();
+  let trustedSubtotalInr = 0;
+  for (const line of lines) {
+    const product = products.find((p) => (p.id === line.productId || p.slug === line.slug) && p.status === "live");
+    if (!product || line.quantity > product.stock_quantity) {
+      return NextResponse.json({ error: "Cart contains an unavailable product or quantity." }, { status: 400 });
+    }
+    trustedSubtotalInr += product.price_inr * line.quantity;
+  }
+  if (trustedSubtotalInr !== subtotalInr) {
+    return NextResponse.json({ error: "Checkout subtotal does not match current product prices." }, { status: 400 });
+  }
 
   // 1. Verify the payment signature — this is the step that actually confirms
   // Razorpay processed the payment, rather than trusting the client's word for it.
@@ -65,7 +94,8 @@ export async function POST(req: NextRequest) {
       razorpayOrder.id !== razorpay_order_id ||
       payment.currency !== "INR" ||
       payment.amount !== razorpayOrder.amount ||
-      razorpayOrder.currency !== "INR"
+      razorpayOrder.currency !== "INR" ||
+      razorpayOrder.amount !== Math.round(totalInr * 100)
     ) {
       return NextResponse.json({ error: "Payment is not captured or does not match the Razorpay order." }, { status: 400 });
     }
@@ -109,8 +139,14 @@ export async function POST(req: NextRequest) {
   const bundleSavingsInr = calculateBundleSavings(lines.map((line) => ({ slug: line.slug || products.find((p) => p.id === line.productId)?.slug || "", quantity: line.quantity })), products);
   const prepaidDiscountInr = Math.round(subtotalInr * (subtotalInr >= 1000 ? 0.04 : 0.03));
   const totalDiscountInr = firstOrderDiscountInr + partnerDiscountInr + prepaidDiscountInr + bundleSavingsInr;
-  const calculatedShippingInr = subtotalInr >= 299 ? 0 : 50;
+  // Keep shipping threshold aligned with create-order, which applies the
+  // threshold after bundle savings.
+  const shippingBaseInr = Math.max(0, subtotalInr - bundleSavingsInr);
+  const calculatedShippingInr = shippingBaseInr >= 299 ? 0 : 50;
   const totalInr = Math.max(0, subtotalInr - totalDiscountInr + calculatedShippingInr);
+  if (shippingInr !== calculatedShippingInr) {
+    return NextResponse.json({ error: "Shipping charge does not match checkout pricing." }, { status: 400 });
+  }
   // Use a high-entropy order number so collisions cannot cross-link reward ledger references.
   const orderNumber = `HL-${Date.now().toString(36).toUpperCase()}-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
 
