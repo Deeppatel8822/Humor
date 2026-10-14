@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { razorpayClient } from "@/lib/razorpay";
 import { getAllProducts } from "@/lib/catalog";
 import { calculateBundleSavings } from "@/lib/bundles";
+import { calculateCheckoutPricing } from "@/lib/checkoutPricing";
 import { calculatePartnerDiscount, findPartnerByCode } from "@/lib/marketingPartner";
 
 interface CartLineInput {
@@ -43,8 +44,6 @@ export async function POST(req: NextRequest) {
     }
 
     const bundleSavingsInr = calculateBundleSavings(lines.map((line) => ({ slug: line.slug || products.find((p) => p.id === line.productId)?.slug || "", quantity: line.quantity })), products);
-    const shippingBaseInr = Math.max(0, subtotalInr - bundleSavingsInr);
-    const shippingInr = shippingBaseInr >= 299 ? 0 : 50;
     let partnerDiscountInr = 0;
     let partnerMatch: Awaited<ReturnType<typeof findPartnerByCode>> = null;
     if (vendorCode) {
@@ -76,9 +75,13 @@ export async function POST(req: NextRequest) {
         }
       }
     }
-    const prepaidDiscountInr = Math.round(subtotalInr * (subtotalInr >= 1000 ? 0.04 : 0.03));
-    const totalDiscountInr = firstOrderDiscountInr + partnerDiscountInr + prepaidDiscountInr + bundleSavingsInr;
-    const totalInr = Math.max(0, subtotalInr - totalDiscountInr + shippingInr);
+    const pricing = calculateCheckoutPricing({
+      subtotalInr,
+      firstOrderDiscountInr,
+      partnerDiscountInr,
+      bundleSavingsInr,
+    });
+    const { shippingInr, totalDiscountInr, totalInr } = pricing;
 
     const order = await razorpayClient().orders.create({
       amount: totalInr * 100, // Razorpay expects paise
