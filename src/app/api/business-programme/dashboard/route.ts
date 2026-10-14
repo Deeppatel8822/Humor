@@ -52,14 +52,19 @@ export async function GET(req: NextRequest) {
       // subsequent Auth metadata write failed. Use ledger aggregates as a
       // lower bound while preserving older legacy totals not represented in
       // the ledger migration.
-      const { data: rewardRows, error: rewardRowsError } = await admin
-        .from("business_programme_wallet_transactions")
-        .select("amount_inr, metadata, created_at")
-        .eq("partner_user_id", data.user.id)
-        .eq("transaction_type", "reward")
-        .order("created_at", { ascending: false })
-        .limit(1000);
-      if (rewardRowsError) throw rewardRowsError;
+      const rewardRows: Array<{ amount_inr: number; metadata: Record<string, unknown> | null; created_at: string }> = [];
+      for (let offset = 0; ; offset += 1000) {
+        const { data: page, error: rewardRowsError } = await admin
+          .from("business_programme_wallet_transactions")
+          .select("amount_inr, metadata, created_at")
+          .eq("partner_user_id", data.user.id)
+          .eq("transaction_type", "reward")
+          .order("created_at", { ascending: false })
+          .range(offset, offset + 999);
+        if (rewardRowsError) throw rewardRowsError;
+        rewardRows.push(...(page || []));
+        if (!page || page.length < 1000) break;
+      }
       const ledgerLifetimeRewards = (rewardRows || []).reduce((sum, row) => sum + Math.max(0, Number(row.amount_inr) || 0), 0);
       const ledgerLifetimeSales = (rewardRows || []).reduce((sum, row) => {
         const billed = Number(row.metadata?.billedAmountInr);
