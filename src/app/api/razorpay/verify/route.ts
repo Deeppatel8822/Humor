@@ -72,6 +72,11 @@ export async function POST(req: NextRequest) {
     .update(`${razorpay_order_id}|${razorpay_payment_id}`)
     .digest("hex");
 
+  // Reject malformed signatures before hex decoding. Buffer.from(..., "hex")
+  // silently ignores a trailing non-hex suffix, which must never be accepted.
+  if (!/^[a-f0-9]{64}$/i.test(razorpay_signature)) {
+    return NextResponse.json({ error: "Payment verification failed." }, { status: 400 });
+  }
   const signatureBuffer = Buffer.from(razorpay_signature, "hex");
   const expectedBuffer = Buffer.from(expectedSignature, "hex");
   if (
