@@ -49,14 +49,21 @@ export async function findPartnerByCode(code: string) {
   const clean = code.trim().toUpperCase();
   if (!clean) return null;
   const admin = supabaseAdmin();
-  const { data, error } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
-  if (error) throw error;
-  const user = data.users.find((candidate) => {
-    const partner = getPartner(candidate);
-    return partnerIsActive(partner) && partner?.code?.toUpperCase() === clean;
-  });
-  if (!user) return null;
-  return { user, partner: getPartner(user)! };
+  const perPage = 1000;
+
+  // Supabase Auth only returns one page at a time. Search every page so active
+  // partners are still discoverable after the account count exceeds 1,000.
+  for (let page = 1; ; page += 1) {
+    const { data, error } = await admin.auth.admin.listUsers({ page, perPage });
+    if (error) throw error;
+
+    const user = data.users.find((candidate) => {
+      const partner = getPartner(candidate);
+      return partnerIsActive(partner) && partner?.code?.toUpperCase() === clean;
+    });
+    if (user) return { user, partner: getPartner(user)! };
+    if (data.users.length < perPage) return null;
+  }
 }
 
 export function calculatePartnerDiscount(lines: { quantity: number; priceInr: number }[]) {
