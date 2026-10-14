@@ -134,6 +134,9 @@ export async function creditPartnerReward(
     // reconciliation from ledger can correct counters if the first metadata
     // write failed after the ledger commit.
     if (wallet.duplicate) {
+      // Repair only the missing per-order marker and balance here. Aggregate
+      // reward/sales/qualification totals are deliberately not incremented on a
+      // duplicate ledger post, because that would double-count concurrent retries.
       next = {
         ...partner,
         walletBalance: Number(wallet.balance ?? partner.walletBalance ?? 0),
