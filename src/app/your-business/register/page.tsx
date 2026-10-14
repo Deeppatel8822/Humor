@@ -28,6 +28,7 @@ export default function YourBusinessPage() {
   const [error, setError] = useState("");
   const [registered, setRegistered] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [razorpayReady, setRazorpayReady] = useState(false);
 
   useEffect(() => {
     import("@/lib/supabase").then(async ({ getSupabase }) => {
@@ -158,7 +159,7 @@ export default function YourBusinessPage() {
 
   return (
     <>
-      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" onReady={() => setRazorpayReady(true)} onError={() => setError("Secure payment checkout could not load. Please refresh and try again.")} />
       <main className="relative min-h-[calc(100vh-180px)] overflow-hidden bg-[var(--paper)]">
         <div aria-hidden="true" className="absolute inset-0">
           <div className="h-full scale-[1.03] bg-[var(--velvet-gradient-soft)] opacity-55 blur-[7px]">
@@ -236,8 +237,8 @@ export default function YourBusinessPage() {
               {error && <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
               {message && <p className="rounded-xl bg-green-50 px-4 py-3 text-sm text-green-700">{message}</p>}
 
-              <button type="submit" disabled={submitting} className="w-full rounded-full bg-[var(--deep-wine)] px-6 py-4 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(111,74,154,0.20)] transition-all hover:-translate-y-0.5 hover:bg-[var(--wine-soft)] disabled:cursor-not-allowed disabled:opacity-50">
-                {submitting ? "Preparing ₹9 Payment…" : "Continue & Pay ₹9 →"}
+              <button type="submit" disabled={submitting || !razorpayReady} className="w-full rounded-full bg-[var(--deep-wine)] px-6 py-4 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(111,74,154,0.20)] transition-all hover:-translate-y-0.5 hover:bg-[var(--wine-soft)] disabled:cursor-not-allowed disabled:opacity-50">
+                {submitting ? "Preparing ₹9 Payment…" : !razorpayReady ? "Loading secure payment…" : "Continue & Pay ₹9 →"}
               </button>
               <p className="text-center text-[11px] text-[var(--muted)]">Secure payment powered by Razorpay. Registration activates only after successful payment.</p>
             </div>
