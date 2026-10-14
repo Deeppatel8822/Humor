@@ -58,7 +58,7 @@ export async function POST(request: Request) {
     if (reversalError) throw reversalError;
     const result = reversal as {
       success?: boolean; error?: string; refundReference?: string; duplicate?: boolean;
-      no_partner_reward?: boolean; balance?: number; reward?: number; unrecoveredAmount?: number;
+      no_partner_reward?: boolean; partnerUserId?: string; balance?: number; reward?: number; unrecoveredAmount?: number;
       rewardTier?: string; qualificationCoins?: number; lifetimeRewards?: number; totalSales?: number;
       referredOrders?: number; couponUsageCount?: number;
     } | null;
@@ -76,14 +76,8 @@ export async function POST(request: Request) {
       .eq("payment_status", "paid");
     if (orderUpdateError) throw orderUpdateError;
 
-    if (result.balance !== undefined && !result.no_partner_reward) {
-      const { data: authData, error: authError } = await admin.auth.admin.getUserById(
-        String((await admin.from("business_programme_wallet_transactions")
-          .select("partner_user_id")
-          .eq("transaction_type", "reward")
-          .eq("reference_id", "order:" + orderNumber)
-          .maybeSingle()).data?.partner_user_id || "")
-      );
+    if (result.balance !== undefined && !result.no_partner_reward && result.partnerUserId) {
+      const { data: authData, error: authError } = await admin.auth.admin.getUserById(result.partnerUserId);
       if (!authError && authData.user) {
         const current = authData.user.app_metadata?.marketing_partner;
         if (current && typeof current === "object") {
