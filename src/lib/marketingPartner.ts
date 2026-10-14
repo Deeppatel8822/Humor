@@ -96,7 +96,9 @@ export async function creditPartnerReward(
   const now = new Date();
   const nowIso = now.toISOString();
   const periodStart = partner.qualificationPeriodStartedAt ? new Date(partner.qualificationPeriodStartedAt) : now;
-  const periodIsValid = Number.isFinite(periodStart.getTime()) && now.getTime() - periodStart.getTime() < 30 * 24 * 60 * 60 * 1000;
+  const periodStartMs = periodStart.getTime();
+  const elapsedSincePeriodStart = now.getTime() - periodStartMs;
+  const periodIsValid = Number.isFinite(periodStartMs) && elapsedSincePeriodStart >= 0 && elapsedSincePeriodStart < 30 * 24 * 60 * 60 * 1000;
   const qualificationPeriodStartedAt = periodIsValid ? periodStart.toISOString() : nowIso;
   const coinsBeforeOrderInWindow = periodIsValid ? Math.max(0, Number(partner.qualificationCoins ?? 0)) : 0;
   const currentTier = partner.rewardTier ?? "basic";
