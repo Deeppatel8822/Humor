@@ -79,7 +79,7 @@ export default function BusinessProgrammeAdminPage() {
   return <main className="min-h-screen bg-[var(--ink)] px-5 py-10 text-[var(--milk-sage)] md:px-8"><div className="mx-auto max-w-7xl">
     <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--warm-gold)]">Humor Luxury · Internal</p>
     <h1 className="mt-2 font-display text-4xl text-white md:text-5xl">Withdrawal Review</h1>
-    <p className="mt-3 text-sm text-white/60">Approve a request only after the payout details and identity checks are complete. Approval here records the decision; it does not transfer money.</p>
+    <p className="mt-3 text-sm text-white/60">Approve only after payout details and identity checks are complete. After the bank transfer actually completes, use Record Payout to save the UTR/reference. This page never transfers money.</p>
     {error && <p className="mt-5 rounded-xl border border-red-300/30 bg-red-950/20 p-4 text-sm text-white/80">{error}</p>}
     {message && <p className="mt-5 rounded-xl border border-emerald-300/20 bg-emerald-950/20 p-4 text-sm text-white/80">{message}</p>}
     <div className="mt-7 overflow-x-auto rounded-2xl border border-white/10 bg-white/[0.04]">
