@@ -16,10 +16,15 @@ async function authorized() {
 export async function GET() {
   if (!(await authorized())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const admin = supabaseAdmin();
-  const { data, error } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
-  if (error) return NextResponse.json({ error: "Could not load applications." }, { status: 500 });
+  const users: Array<{ id: string; email?: string; phone?: string; user_metadata?: Record<string, any>; app_metadata?: Record<string, any> }> = [];
+  for (let page = 1; ; page += 1) {
+    const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 1000 });
+    if (error) return NextResponse.json({ error: "Could not load applications." }, { status: 500 });
+    users.push(...data.users);
+    if (data.users.length < 1000) break;
+  }
   const applications = [];
-  for (const user of data.users) {
+  for (const user of users) {
     const marketingApplication = user.user_metadata?.marketing_partner_application;
     const businessProgramme = user.user_metadata?.business_programme;
     const isMarketingPending = marketingApplication?.status === "pending";
