@@ -78,8 +78,26 @@ export async function POST(req: NextRequest) {
     const partner = getPartner(data.user);
     if (!partner) return NextResponse.json({ error: "Partner account not found." }, { status: 404 });
     const entries = Array.isArray(partner.withdrawalRequests) ? partner.withdrawalRequests : [];
-    const index = entries.findIndex((entry) => entry.status === "withdrawal:pending" && entry.requestedAt === requestedAt);
-    if (index < 0) return NextResponse.json({ error: "This request was already handled or could not be found." }, { status: 409 });
+    let index = entries.findIndex((entry) => entry.status === "withdrawal:pending" && entry.requestedAt === requestedAt);
+    if (index < 0) {
+      // A previous decision may have reached the ledger but failed while
+      // updating Auth metadata. If the same decision is already reflected in
+      // metadata, make retries safe and return an idempotent success.
+      const completed = entries.find((entry) =>
+        entry.requestedAt === requestedAt &&
+        entry.status === (decision === "approve" ? "withdrawal:approved" : "withdrawal:rejected")
+      );
+      if (completed) {
+        return NextResponse.json({
+          success: true,
+          duplicate: true,
+          message: decision === "approve"
+            ? "This withdrawal was already approved. Complete or verify the external bank transfer separately."
+            : "This withdrawal was already rejected.",
+        });
+      }
+      return NextResponse.json({ error: "This request was already handled or could not be found." }, { status: 409 });
+    }
 
     const request = entries[index];
     const requestReferenceId = (request as unknown as { referenceId?: unknown }).referenceId;
