@@ -130,10 +130,14 @@ export async function POST(req: NextRequest) {
       // A previous decision may have reached the ledger but failed while
       // updating Auth metadata. If the same decision is already reflected in
       // metadata, make retries safe and return an idempotent success.
-      const completed = entries.find((entry) =>
-        (!requestedAt || entry.requestedAt === requestedAt) &&
-        entry.status === (decision === "approve" ? "withdrawal:approved" : "withdrawal:rejected")
-      );
+      const completed = entries.find((entry) => {
+        const entryReferenceId = (entry as typeof entry & { referenceId?: unknown }).referenceId;
+        const sameRequest = suppliedReferenceId
+          ? entryReferenceId === suppliedReferenceId
+          : Boolean(requestedAt) && entry.requestedAt === requestedAt;
+        return sameRequest &&
+          entry.status === (decision === "approve" ? "withdrawal:approved" : "withdrawal:rejected");
+      });
       if (completed) {
         return NextResponse.json({
           success: true,
