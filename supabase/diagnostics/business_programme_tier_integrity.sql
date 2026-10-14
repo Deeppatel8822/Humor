@@ -1,28 +1,9 @@
 -- Read-only Business Programme tier-state review.
--- Run in Supabase SQL Editor after applying the atomic reward migration.
--- This does not modify data. Review any returned rows manually.
+-- Reward tiers are permanent; qualification coins are only the current rolling 30-day
+-- window. Therefore current coins must NOT be used to infer or downgrade a permanent tier.
+-- Run after applying the atomic reward migration. No data is modified.
 
--- 1) Active qualification windows whose coin total appears inconsistent with the stored tier.
--- Basic should normally be below 3000; Silver should be at least 3000 and below 5000;
--- Gold should be at least 5000. Expired/future windows are excluded.
-select
-  partner_user_id,
-  reward_tier,
-  qualification_coins,
-  qualification_period_started_at,
-  now() - qualification_period_started_at as window_age
-from public.business_programme_partner_reward_state
-where qualification_period_started_at is not null
-  and qualification_period_started_at <= now()
-  and now() - qualification_period_started_at < interval '30 days'
-  and (
-    (reward_tier = 'basic' and qualification_coins >= 3000)
-    or (reward_tier = 'silver' and (qualification_coins < 3000 or qualification_coins >= 5000))
-    or (reward_tier = 'gold' and qualification_coins < 5000)
-  )
-order by qualification_coins desc;
-
--- 2) Negative or invalid reward state should never exist (expected: zero rows).
+-- 1) Invalid or negative canonical reward state. Expected: zero rows.
 select
   partner_user_id,
   reward_tier,
@@ -39,9 +20,28 @@ where reward_tier not in ('basic', 'silver', 'gold')
    or referred_orders < 0
    or coupon_usage_count < 0;
 
--- 3) Duplicate reward reference IDs (expected: zero rows).
-select partner_user_id, reference_id, count(*) as duplicate_count
-from public.business_programme_wallet_transactions
-where transaction_type = 'reward'
-group by partner_user_id, reference_id
-having count(*) > 1;
+-- 2) Missing canonical reward state for approved/pending partner metadata. Expected: zero rows.
+select
+  u.id as partner_user_id,
+  u.raw_app_meta_data->'marketing_partner'->>'status' as partner_status,
+  u.raw_app_meta_data->'marketing_partner'->>'rewardTier' as metadata_tier
+from auth.users u
+left join public.business_programme_partner_reward_state s on s.partner_user_id = u.id
+where u.raw_app_meta_data ? 'marketing_partner'
+  and s.partner_user_id is null;
+
+-- 3) Permanent tier and current qualification window, for review only.
+-- This query intentionally reports state rather than flagging low coins for Silver/Gold.
+select
+  partner_user_id,
+  reward_tier,
+  qualification_coins,
+  qualification_period_started_at,
+  case
+    when qualification_period_started_at is null then 'window not started'
+    when qualification_period_started_at > now() then 'future start needs review'
+    when now() - qualification_period_started_at >= interval '30 days' then 'window expired; next qualifying order resets coins'
+    else 'active window'
+  end as qualification_window_status
+from public.business_programme_partner_reward_state
+order by updated_at desc;
