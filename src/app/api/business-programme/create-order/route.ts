@@ -31,13 +31,32 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Please complete all registration details and upload business proof." }, { status: 400 });
     }
     const proofPathParts = proofPath.split("/");
+    const allowedBusinessTypes = [
+      "Influencer / Content Creator",
+      "Salon / Parlour",
+      "Beauty Professional",
+      "Home Beauty Business",
+      "Beauty Store / Retailer",
+      "Other",
+    ];
+    if (!allowedBusinessTypes.includes(businessType)) {
+      return NextResponse.json({ error: "Please select a valid business type." }, { status: 400 });
+    }
     if (
-      !proofPath.startsWith(user.id + "/") ||
+      proofPathParts.length !== 2 ||
+      proofPathParts[0] !== user.id ||
       proofPathParts.some((part) => !part || part === "." || part === "..")
     ) {
       return NextResponse.json({ error: "Please upload business proof to your own application folder using a valid path." }, { status: 400 });
     }
-    if (!termsAccepted || !termsVersion) {
+    const { data: proofFiles, error: proofError } = await supabaseAdmin()
+      .storage.from("business-programme-proofs")
+      .list(user.id, { limit: 100, search: proofPathParts[1] });
+    if (proofError) throw proofError;
+    if (!(proofFiles || []).some((file) => file.name === proofPathParts[1])) {
+      return NextResponse.json({ error: "Your business proof could not be found. Please upload it again." }, { status: 400 });
+    }
+    if (!termsAccepted || termsVersion !== "2026-10-12-v1") {
       return NextResponse.json({ error: "Please accept the current Business Programme terms before payment." }, { status: 400 });
     }
     if (!/^\d{10}$/.test(mobile)) return NextResponse.json({ error: "Enter a valid 10-digit mobile number." }, { status: 400 });
