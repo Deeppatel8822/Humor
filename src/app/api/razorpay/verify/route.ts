@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { razorpayClient } from "@/lib/razorpay";
 import { getAllProducts } from "@/lib/catalog";
 import { calculateBundleSavings } from "@/lib/bundles";
 import { calculatePartnerDiscount, creditPartnerReward, findPartnerByCode } from "@/lib/marketingPartner";
@@ -48,6 +49,29 @@ export async function POST(req: NextRequest) {
     !crypto.timingSafeEqual(signatureBuffer, expectedBuffer)
   ) {
     return NextResponse.json({ error: "Payment verification failed." }, { status: 400 });
+  }
+
+  // A valid callback signature alone does not prove that the payment is
+  // captured or that the amount matches the Razorpay order created server-side.
+  try {
+    const razorpay = razorpayClient();
+    const [payment, razorpayOrder] = await Promise.all([
+      razorpay.payments.fetch(razorpay_payment_id),
+      razorpay.orders.fetch(razorpay_order_id),
+    ]);
+    if (
+      payment.order_id !== razorpay_order_id ||
+      payment.status !== "captured" ||
+      razorpayOrder.id !== razorpay_order_id ||
+      payment.currency !== "INR" ||
+      payment.amount !== razorpayOrder.amount ||
+      razorpayOrder.currency !== "INR"
+    ) {
+      return NextResponse.json({ error: "Payment is not captured or does not match the Razorpay order." }, { status: 400 });
+    }
+  } catch (error) {
+    console.error("Razorpay payment status lookup failed:", error);
+    return NextResponse.json({ error: "Could not confirm captured payment with Razorpay. Please retry." }, { status: 503 });
   }
 
   const authHeader = req.headers.get("authorization") || "";
