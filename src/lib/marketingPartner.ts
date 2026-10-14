@@ -91,6 +91,51 @@ export async function creditPartnerReward(
   const alreadyCredited = existingOrders.some((entry) => entry.status === `reward:${orderNumber}` || entry.status.startsWith(`reward:${orderNumber}:`));
   if (alreadyCredited) return latestPartner;
 
+  // When the canonical ledger is enabled, calculate and post the reward inside
+  // one database transaction. This serializes concurrent orders for this partner.
+  if (isWalletLedgerEnabled) {
+    const { data: rpcData, error: rpcError } = await admin.rpc("business_programme_reward_credit", {
+      p_partner_user_id: userId,
+      p_order_number: orderNumber,
+      p_billed_amount_inr: billedAmountInr,
+    });
+    if (rpcError) throw new Error(`Atomic partner reward failed: ${rpcError.message}`);
+    const result = rpcData as {
+      success?: boolean; duplicate?: boolean; reward?: number; rewardRate?: number;
+      rewardTier?: "basic" | "silver" | "gold"; rewardTierAfter?: "basic" | "silver" | "gold";
+      balance?: number; qualificationCoins?: number; qualificationPeriodStartedAt?: string | null;
+      totalRewards?: number; totalSales?: number; referredCustomers?: number; usageCount?: number;
+    } | null;
+    if (!result?.success) throw new Error("Atomic partner reward failed.");
+
+    const reward = Math.max(0, Number(result.reward) || 0);
+    const rate = Number(result.rewardRate) || PARTNER_REWARD_RATE;
+    const tierBefore = result.rewardTier || latestPartner.rewardTier || "basic";
+    const nowIso = new Date().toISOString();
+    const marker = {
+      amount: reward,
+      status: `reward:${orderNumber}:rate:${Math.round(rate * 100)}:tier:${tierBefore}`,
+      requestedAt: nowIso,
+    };
+    const next: MarketingPartner = {
+      ...latestPartner,
+      rewardTier: result.rewardTierAfter || latestPartner.rewardTier || "basic",
+      qualificationCoins: Math.max(0, Number(result.qualificationCoins) || 0),
+      qualificationPeriodStartedAt: result.qualificationPeriodStartedAt || undefined,
+      walletBalance: Math.max(0, Number(result.balance) || 0),
+      totalRewards: Math.max(0, Number(result.totalRewards) || 0),
+      totalSales: Math.max(0, Number(result.totalSales) || 0),
+      referredCustomers: Math.max(0, Number(result.referredCustomers) || 0),
+      usageCount: Math.max(0, Number(result.usageCount) || 0),
+      withdrawalRequests: [marker, ...existingOrders].slice(0, 100),
+    };
+    const { error: metadataError } = await admin.auth.admin.updateUserById(userId, {
+      app_metadata: { ...currentData.user.app_metadata, marketing_partner: next },
+    });
+    if (metadataError) throw metadataError;
+    return next;
+  }
+
   // All reward calculations below use the freshest persisted partner state.
   partner = latestPartner;
   const now = new Date();
