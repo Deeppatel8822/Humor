@@ -69,7 +69,7 @@ export default function YourBusinessPage() {
     const createRes = await fetch("/api/business-programme/create-order", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-      body: JSON.stringify({ ...form, proofPath: finalProofPath }),
+      body: JSON.stringify({ ...form, proofPath: finalProofPath, termsAccepted: acceptedTerms, termsVersion: "2026-10-12-v1" }),
     });
     const createData = await createRes.json();
     if (!createRes.ok) throw new Error(createData.error || "Could not start payment.");
@@ -158,7 +158,7 @@ export default function YourBusinessPage() {
 
   return (
     <>
-      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
       <main className="relative min-h-[calc(100vh-180px)] overflow-hidden bg-[var(--paper)]">
         <div aria-hidden="true" className="absolute inset-0">
           <div className="h-full scale-[1.03] bg-[var(--velvet-gradient-soft)] opacity-55 blur-[7px]">
