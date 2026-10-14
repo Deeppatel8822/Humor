@@ -40,6 +40,9 @@ export async function GET(req: NextRequest) {
           requestedAt: entry.requestedAt,
           walletBalance: Number(partner.walletBalance) || 0,
           status: entry.status,
+          ...((entry as typeof entry & { referenceId?: string }).referenceId
+            ? { referenceId: (entry as typeof entry & { referenceId?: string }).referenceId }
+            : {}),
         }));
     });
     if (isWalletLedgerEnabled) {
@@ -82,10 +85,15 @@ export async function GET(req: NextRequest) {
         if (!user) continue;
         const partner = getPartner(user);
         const requestedAt = String(item.created_at || item.metadata?.requestedAt || "");
-        const alreadyVisible = requests.some((request) =>
-          request.userId === item.partner_user_id &&
-          (request.requestedAt === requestedAt || request.requestedAt === item.metadata?.requestedAt)
-        );
+        const alreadyVisible = requests.some((request) => {
+          if (request.userId !== item.partner_user_id) return false;
+          const visibleReferenceId = (request as typeof request & { referenceId?: string }).referenceId;
+          if (visibleReferenceId && item.reference_id) return visibleReferenceId === item.reference_id;
+          // Legacy metadata entries may not have a reference ID. Fall back to
+          // timestamp plus amount so simultaneous requests aren't accidentally merged.
+          return Number(request.amount) === Number(item.amount_inr) &&
+            (request.requestedAt === requestedAt || request.requestedAt === item.metadata?.requestedAt);
+        });
         if (alreadyVisible) continue;
         requests.push({
           userId: item.partner_user_id,
