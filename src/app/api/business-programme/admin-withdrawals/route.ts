@@ -209,10 +209,22 @@ export async function POST(req: NextRequest) {
           .eq("reference_id", referenceId)
           .maybeSingle();
         if (existingTransactionError) throw existingTransactionError;
-        if (!existingTransaction) {
-          return NextResponse.json({ error: "Decision was recorded but wallet reconciliation is incomplete. Retry this same decision." }, { status: 503 });
+        if (existingTransaction) {
+          nextBalance = Number(existingTransaction.balance_after_inr);
+        } else {
+          // The decision row may have committed just before a transient wallet
+          // failure. Re-post the same transaction type/reference; the wallet
+          // RPC is idempotent and will refund at most once.
+          const wallet = await postWalletTransaction({
+            partnerUserId: userId,
+            type: txType,
+            amountInr: Number(request.amount || 0),
+            referenceId,
+            description: decision === "approve" ? "Withdrawal approved; external payout not yet confirmed" : "Withdrawal rejected; reserved funds returned",
+            metadata: { requestedAt, decision, decidedBy: auth.user.id },
+          });
+          nextBalance = Number(wallet.balance ?? nextBalance);
         }
-        nextBalance = Number(existingTransaction.balance_after_inr);
       } else {
         const wallet = await postWalletTransaction({
           partnerUserId: userId,
