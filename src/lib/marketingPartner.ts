@@ -128,10 +128,23 @@ export async function creditPartnerReward(
       description: `Partner reward for order ${orderNumber}`,
       metadata: { orderNumber, rewardRate, rewardTier: currentTier, billedAmountInr },
     });
-    // The ledger is authoritative for money. If the transaction already exists
-    // but partner metadata is missing its reward record, continue below to repair
-    // the metadata instead of returning early and leaving dashboard totals stale.
-    next = { ...next, walletBalance: Number(wallet.balance ?? next.walletBalance ?? 0) };
+    // The ledger is authoritative for money. If a concurrent callback already
+    // posted this reward, do not increment aggregate metadata a second time.
+    // We still repair the missing per-order marker and wallet balance. Aggregate
+    // reconciliation from ledger can correct counters if the first metadata
+    // write failed after the ledger commit.
+    if (wallet.duplicate) {
+      next = {
+        ...partner,
+        walletBalance: Number(wallet.balance ?? partner.walletBalance ?? 0),
+        withdrawalRequests: [
+          { amount: reward, status: `reward:${orderNumber}:rate:${Math.round(rewardRate * 100)}:tier:${currentTier}`, requestedAt: nowIso },
+          ...existingOrders,
+        ].slice(0, 100),
+      };
+    } else {
+      next = { ...next, walletBalance: Number(wallet.balance ?? next.walletBalance ?? 0) };
+    }
   }
 
   const { error } = await admin.auth.admin.updateUserById(userId, {
