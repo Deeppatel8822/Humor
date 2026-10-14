@@ -66,8 +66,8 @@ begin
   if p_partner_user_id is null or p_order_number is null or length(trim(p_order_number)) = 0 then
     raise exception 'Partner and order reference are required';
   end if;
-  if p_billed_amount_inr is null or p_billed_amount_inr < 0 then
-    raise exception 'Billed amount must be non-negative';
+  if p_billed_amount_inr is null or p_billed_amount_inr <= 0 then
+    raise exception 'Billed amount must be positive';
   end if;
 
   insert into public.business_programme_wallet_accounts(partner_user_id, balance_inr)
@@ -132,7 +132,7 @@ begin
     partner_user_id, transaction_type, amount_inr, balance_after_inr,
     reference_id, status, description, metadata
   ) values (
-    p_partner_user_id, 'reward', greatest(v_reward, 0.01), v_balance,
+    p_partner_user_id, 'reward', v_reward, v_balance,
     'order:' || p_order_number, 'completed',
     'Partner reward for order ' || p_order_number,
     jsonb_build_object('orderNumber', p_order_number, 'rewardRate', v_rate,
