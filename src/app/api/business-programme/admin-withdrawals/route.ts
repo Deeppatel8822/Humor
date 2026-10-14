@@ -45,19 +45,36 @@ export async function GET(req: NextRequest) {
     if (isWalletLedgerEnabled) {
       // Include ledger-pending withdrawals even if the Auth metadata write failed
       // after reserving funds. This keeps orphaned requests visible to admins.
-      const { data: ledgerRequests, error: ledgerError } = await auth.admin
-        .from("business_programme_wallet_transactions")
-        .select("partner_user_id, amount_inr, reference_id, created_at, metadata")
-        .eq("transaction_type", "withdrawal_request")
-        .eq("status", "pending")
-        .order("created_at", { ascending: true })
-        .limit(1000);
-      if (ledgerError) throw ledgerError;
-      const { data: decisions, error: decisionsError } = await auth.admin
-        .from("business_programme_withdrawal_decisions")
-        .select("partner_user_id, reference_id");
-      if (decisionsError) throw decisionsError;
-      const decidedKeys = new Set((decisions || []).map((item) => `${item.partner_user_id}|${item.reference_id}`));
+      const ledgerRequests: Array<{
+        partner_user_id: string;
+        amount_inr: number;
+        reference_id: string;
+        created_at: string;
+        metadata: Record<string, unknown> | null;
+      }> = [];
+      for (let offset = 0; ; offset += 1000) {
+        const { data: page, error: ledgerError } = await auth.admin
+          .from("business_programme_wallet_transactions")
+          .select("partner_user_id, amount_inr, reference_id, created_at, metadata")
+          .eq("transaction_type", "withdrawal_request")
+          .eq("status", "pending")
+          .order("created_at", { ascending: true })
+          .range(offset, offset + 999);
+        if (ledgerError) throw ledgerError;
+        ledgerRequests.push(...(page || []));
+        if (!page || page.length < 1000) break;
+      }
+      const decisions: Array<{ partner_user_id: string; reference_id: string }> = [];
+      for (let offset = 0; ; offset += 1000) {
+        const { data: page, error: decisionsError } = await auth.admin
+          .from("business_programme_withdrawal_decisions")
+          .select("partner_user_id, reference_id")
+          .range(offset, offset + 999);
+        if (decisionsError) throw decisionsError;
+        decisions.push(...(page || []));
+        if (!page || page.length < 1000) break;
+      }
+      const decidedKeys = new Set(decisions.map((item) => `${item.partner_user_id}|${item.reference_id}`));
       const userMap = new Map(users.map((user) => [user.id, user]));
       for (const item of ledgerRequests || []) {
         if (decidedKeys.has(`${item.partner_user_id}|${item.reference_id}`)) continue;
