@@ -23,8 +23,9 @@ export async function POST(req: NextRequest) {
     const mobile = String(body.mobile || "").trim();
     const address = String(body.address || "").trim();
     const proofPath = String(body.proofPath || "").trim();
-    const termsAccepted = body.termsAccepted === true;
-    const termsVersion = String(body.termsVersion || "").trim();
+    const registration = body.registration && typeof body.registration === "object" ? body.registration : {};
+    const termsAccepted = body.termsAccepted === true || registration.termsAccepted === true;
+    const termsVersion = String(body.termsVersion || registration.termsVersion || "").trim();
 
     if (!businessType || !businessName || !mobile || !address || !proofPath) {
       return NextResponse.json({ error: "Please complete all registration details and upload business proof." }, { status: 400 });
