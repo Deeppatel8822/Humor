@@ -69,7 +69,7 @@ begin
     from public.business_programme_partner_reward_state
     where partner_user_id = v_reward.partner_user_id;
     return jsonb_build_object('success', true, 'duplicate', true, 'balance', coalesce(v_balance,0),
-      'reward', v_reward.amount_inr,
+      'reward', v_reward.amount_inr, 'partnerUserId', v_reward.partner_user_id,
       'unrecoveredAmount', coalesce((v_existing.metadata->>'unrecoveredAmount')::numeric,0),
       'rewardTier', v_state.reward_tier, 'qualificationCoins', v_state.qualification_coins,
       'lifetimeRewards', v_state.lifetime_rewards, 'totalSales', v_state.total_sales,
@@ -124,6 +124,7 @@ begin
     jsonb_build_object(
       'orderNumber', trim(p_order_number),
       'refundReference', trim(p_refund_reference),
+      'partnerUserId', v_reward.partner_user_id,
       'originalRewardTransactionId', v_reward.id,
       'originalRewardAmount', v_reward.amount_inr,
       'walletDebit', v_wallet_debit,
@@ -148,7 +149,7 @@ begin
 
   return jsonb_build_object(
     'success', true, 'duplicate', false, 'balance', v_balance,
-    'reward', v_reward.amount_inr, 'walletDebit', v_wallet_debit,
+    'reward', v_reward.amount_inr, 'partnerUserId', v_reward.partner_user_id, 'walletDebit', v_wallet_debit,
     'unrecoveredAmount', v_unrecovered, 'rewardTier', v_state.reward_tier,
     'qualificationCoins', v_state.qualification_coins,
     'lifetimeRewards', v_state.lifetime_rewards, 'totalSales', v_state.total_sales,
