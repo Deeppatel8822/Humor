@@ -142,6 +142,38 @@ export async function POST(req: NextRequest) {
     ) {
       return NextResponse.json({ error: "Payment is not captured or does not match the Razorpay order." }, { status: 400 });
     }
+
+    // The cart and partner code must match the immutable values saved when
+    // the Razorpay order was created, not merely add up to the same amount.
+    let createdLines: { productId?: string; slug?: string; quantity?: number }[];
+    try {
+      createdLines = JSON.parse(String(razorpayOrder.notes?.lines ?? ""));
+    } catch {
+      return NextResponse.json({ error: "Razorpay order is missing valid cart details." }, { status: 400 });
+    }
+    if (!Array.isArray(createdLines)) {
+      return NextResponse.json({ error: "Razorpay order is missing valid cart details." }, { status: 400 });
+    }
+    const normalizeCart = (items: { productId?: string; slug?: string; quantity?: number }[]) => {
+      const totals = new Map<string, number>();
+      for (const item of items) {
+        if (!item || !Number.isSafeInteger(item.quantity) || Number(item.quantity) < 1) return null;
+        const product = products.find((p) => p.id === item.productId || p.slug === item.slug);
+        if (!product || product.status !== "live") return null;
+        totals.set(product.id, (totals.get(product.id) ?? 0) + Number(item.quantity));
+      }
+      return [...totals.entries()].sort(([a], [b]) => a.localeCompare(b));
+    };
+    const submittedCart = normalizeCart(lines);
+    const createdCart = normalizeCart(createdLines);
+    const savedVendorCode = String(razorpayOrder.notes?.vendorCode ?? "").trim().toUpperCase();
+    if (
+      !submittedCart || !createdCart ||
+      JSON.stringify(submittedCart) !== JSON.stringify(createdCart) ||
+      savedVendorCode !== String(vendorCode ?? "").trim().toUpperCase()
+    ) {
+      return NextResponse.json({ error: "Cart or partner code differs from the original Razorpay checkout." }, { status: 400 });
+    }
   } catch (error) {
     console.error("Razorpay payment status lookup failed:", error);
     return NextResponse.json({ error: "Could not confirm captured payment with Razorpay. Please retry." }, { status: 503 });
