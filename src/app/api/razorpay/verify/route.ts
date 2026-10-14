@@ -78,7 +78,8 @@ export async function POST(req: NextRequest) {
   const totalDiscountInr = firstOrderDiscountInr + partnerDiscountInr + prepaidDiscountInr + bundleSavingsInr;
   const calculatedShippingInr = subtotalInr >= 299 ? 0 : 50;
   const totalInr = Math.max(0, subtotalInr - totalDiscountInr + calculatedShippingInr);
-  const orderNumber = `HL-${Math.floor(10000 + Math.random() * 90000)}`;
+  // Use a high-entropy order number so collisions cannot cross-link reward ledger references.
+  const orderNumber = `HL-${Date.now().toString(36).toUpperCase()}-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
 
   // 2. Persist the order. If Supabase isn't configured yet (local dev before
   // the project is set up), skip persistence but still confirm the payment —
