@@ -72,7 +72,9 @@ export async function GET(req: NextRequest) {
       }, 0);
       const periodStart = partner.qualificationPeriodStartedAt ? new Date(partner.qualificationPeriodStartedAt) : null;
       const now = Date.now();
-      const qualificationWindowValid = Boolean(periodStart && Number.isFinite(periodStart.getTime()) && now - periodStart.getTime() < 30 * 24 * 60 * 60 * 1000);
+      const periodStartMs = periodStart?.getTime() ?? Number.NaN;
+      const elapsedSincePeriodStart = now - periodStartMs;
+      const qualificationWindowValid = Boolean(periodStart && Number.isFinite(periodStartMs) && elapsedSincePeriodStart >= 0 && elapsedSincePeriodStart < 30 * 24 * 60 * 60 * 1000);
       const ledgerWindowCoins = (rewardRows || []).reduce((sum, row) => {
         const createdAt = new Date(row.created_at).getTime();
         return sum + (qualificationWindowValid && Number.isFinite(createdAt) && createdAt >= periodStart!.getTime()
