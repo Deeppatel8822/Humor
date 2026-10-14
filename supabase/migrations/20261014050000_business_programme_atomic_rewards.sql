@@ -92,6 +92,9 @@ begin
     and transaction_type = 'reward'
     and reference_id = 'order:' || p_order_number;
   if found then
+    if coalesce((v_tx.metadata->>'billedAmountInr')::numeric, p_billed_amount_inr) <> p_billed_amount_inr then
+      return jsonb_build_object('success', false, 'duplicate', true, 'error', 'ORDER_AMOUNT_MISMATCH');
+    end if;
     return jsonb_build_object(
       'success', true, 'duplicate', true, 'reward', v_tx.amount_inr,
       'rewardRate', coalesce((v_tx.metadata->>'rewardRate')::numeric, 0.25),
@@ -115,6 +118,11 @@ begin
   v_tier_before := v_state.reward_tier;
   v_rate := case v_tier_before when 'gold' then 0.30 when 'silver' then 0.27 else 0.25 end;
   v_reward := round(p_billed_amount_inr * v_rate, 0);
+  -- The ledger requires a positive transaction. Tiny billed amounts that
+  -- round to zero are rejected rather than creating a zero-value reward.
+  if v_reward <= 0 then
+    return jsonb_build_object('success', false, 'error', 'REWARD_ROUNDS_TO_ZERO');
+  end if;
   v_tier_after := v_tier_before;
   if v_tier_after in ('basic','silver') and v_period_coins + v_reward >= 3000 then
     v_tier_after := 'silver';
