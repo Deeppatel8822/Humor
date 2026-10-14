@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     const razorpayOrderId = String(body.razorpay_order_id || "");
     const razorpayPaymentId = String(body.razorpay_payment_id || "");
     const razorpaySignature = String(body.razorpay_signature || "");
-    const registration = body.registration || {};
+    const registration = body.registration && typeof body.registration === "object" ? body.registration : {};
 
     if (!razorpayOrderId || !razorpayPaymentId || !razorpaySignature) {
       return NextResponse.json({ error: "Payment details are incomplete." }, { status: 400 });
@@ -75,13 +75,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "A Business Programme application is already submitted for this account." }, { status: 409 });
     }
 
-    const businessType = String(registration.businessType || "").trim();
-    const businessName = String(registration.businessName || "").trim();
-    const mobile = String(registration.mobile || "").trim();
-    const address = String(registration.address || "").trim();
-    const proofPath = String(registration.proofPath || "").trim();
-    const termsAccepted = registration.termsAccepted === true;
-    const termsVersion = String(registration.termsVersion || "");
+    // Accept both supported request shapes: top-level fields and a nested registration object.
+    const businessType = String(registration.businessType || body.businessType || "").trim();
+    const businessName = String(registration.businessName || body.businessName || "").trim();
+    const mobile = String(registration.mobile || body.mobile || "").trim();
+    const address = String(registration.address || body.address || "").trim();
+    const proofPath = String(registration.proofPath || body.proofPath || "").trim();
+    const termsAccepted = registration.termsAccepted === true || body.termsAccepted === true;
+    const termsVersion = String(registration.termsVersion || body.termsVersion || "").trim();
 
     const proofPathParts = proofPath.split("/");
     if (
