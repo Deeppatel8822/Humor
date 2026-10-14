@@ -94,7 +94,7 @@ export async function POST(request: Request) {
       }, ...requests].slice(0, 100),
     };
 
-    const { error } = await admin.auth.admin.updateUserById(authAuthUserId(authData.user.id), {
+    const { error } = await admin.auth.admin.updateUserById(authData.user.id, {
       app_metadata: { ...latest.user.app_metadata, marketing_partner: next },
     });
     if (error) throw error;
@@ -106,6 +106,3 @@ export async function POST(request: Request) {
   }
 }
 
-function authAuthUserId(userId: string) {
-  return userId;
-}
