@@ -12,9 +12,9 @@ with ledger as (
       when transaction_type = 'reward_reversal' then -amount_inr
       else 0 end), 0)::numeric(12,2) as ledger_lifetime_rewards,
     coalesce(sum(case
-      when transaction_type = 'reward' and coalesce(metadata->>'billedAmountInr','') ~ '^[0-9]+(\\.[0-9]+)?$'
+      when transaction_type = 'reward' and coalesce(metadata->>'billedAmountInr','') ~ '^[0-9]+(\.[0-9]+)?$'
         then (metadata->>'billedAmountInr')::numeric
-      when transaction_type = 'reward_reversal' and coalesce(metadata->>'billedAmountInr','') ~ '^[0-9]+(\\.[0-9]+)?$'
+      when transaction_type = 'reward_reversal' and coalesce(metadata->>'billedAmountInr','') ~ '^[0-9]+(\.[0-9]+)?$'
         then -(metadata->>'billedAmountInr')::numeric
       else 0 end), 0)::numeric(12,2) as ledger_total_sales
   from public.business_programme_wallet_transactions
