@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { getSupabase } from "@/lib/supabase";
 
-type RequestRow = { userId: string; email: string; name: string; mobile: string; amount: number; requestedAt: string; walletBalance: number; status: string };
+type RequestRow = { userId: string; email: string; name: string; mobile: string; amount: number; requestedAt: string; walletBalance: number; status: string; referenceId?: string };
 const inr = (n: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
 
 export default function BusinessProgrammeAdminPage() {
@@ -57,7 +57,7 @@ export default function BusinessProgrammeAdminPage() {
       const res = await fetch("/api/business-programme/admin-withdrawals", {
         method: "POST",
         headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: row.userId, requestedAt: row.requestedAt, decision }),
+        body: JSON.stringify({ userId: row.userId, requestedAt: row.requestedAt, referenceId: row.referenceId, decision }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Could not update request.");
