@@ -351,6 +351,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ orderNumber, orderId: order.id, persisted: true, totalInr, discountInr: totalDiscountInr });
   } catch (err) {
     console.error("Order persistence failed after successful payment:", err);
-    return NextResponse.json({ orderNumber, persisted: false, totalInr, discountInr: totalDiscountInr, warning: "Order recorded, but confirmation email may be delayed." });
+    return NextResponse.json({
+      orderNumber,
+      persisted: false,
+      totalInr,
+      discountInr: totalDiscountInr,
+      warning: "Your payment was captured, but the order could not be fully saved. Do not pay again. Please contact Humor support with this order reference.",
+    }, { status: 503 });
   }
 }
