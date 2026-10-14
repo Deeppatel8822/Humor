@@ -88,8 +88,6 @@ export async function creditPartnerReward(
   const latestPartner = getPartner(currentData.user);
   if (!latestPartner) throw new Error("Partner account not found.");
   const existingOrders = Array.isArray(latestPartner.withdrawalRequests) ? latestPartner.withdrawalRequests : [];
-  const alreadyCredited = existingOrders.some((entry) => entry.status === `reward:${orderNumber}` || entry.status.startsWith(`reward:${orderNumber}:`));
-  if (alreadyCredited) return latestPartner;
 
   // When the canonical ledger is enabled, calculate and post the reward inside
   // one database transaction. This serializes concurrent orders for this partner.
@@ -143,6 +141,12 @@ export async function creditPartnerReward(
     if (metadataError) throw metadataError;
     return next;
   }
+
+  // Without the canonical ledger, Auth metadata is the idempotency source.
+  // With the ledger enabled, always call the atomic RPC above: a legacy metadata
+  // marker alone must not hide a missing ledger credit or prevent reconciliation.
+  const alreadyCredited = existingOrders.some((entry) => entry.status === `reward:${orderNumber}` || entry.status.startsWith(`reward:${orderNumber}:`));
+  if (alreadyCredited) return latestPartner;
 
   // All reward calculations below use the freshest persisted partner state.
   partner = latestPartner;
