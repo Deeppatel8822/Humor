@@ -18,12 +18,23 @@ export async function GET(req: NextRequest) {
 
     const entries = Array.isArray(partner.withdrawalRequests) ? partner.withdrawalRequests : [];
     let walletBalance = Math.max(0, Number(partner.walletBalance || 0));
-    let history = entries.slice(0, 100).map((entry) => ({
-      amount: Number(entry.amount) || 0,
-      status: String(entry.status || "recorded"),
-      requestedAt: entry.requestedAt || null,
-      kind: String(entry.status || "").startsWith("reward:") ? "reward" : "withdrawal",
-    }));
+    let history = entries.slice(0, 100).map((entry) => {
+      const status = String(entry.status || "recorded");
+      const rawAmount = Number(entry.amount) || 0;
+      const amount = status === "withdrawal:pending"
+        ? -Math.abs(rawAmount)
+        : status === "withdrawal:rejected"
+          ? Math.abs(rawAmount)
+          : status === "withdrawal:approved" || status === "withdrawal:paid"
+            ? 0
+            : rawAmount;
+      return {
+        amount,
+        status,
+        requestedAt: entry.requestedAt || null,
+        kind: status.startsWith("reward:") ? "reward" : "withdrawal",
+      };
+    });
 
     if (isWalletLedgerEnabled) {
       const { data: account, error: accountError } = await admin
@@ -41,18 +52,29 @@ export async function GET(req: NextRequest) {
         .order("created_at", { ascending: false })
         .limit(100);
       if (transactionsError) throw transactionsError;
-      history = (transactions || []).map((entry) => ({
-        amount: entry.transaction_type === "reward_reversal"
-          ? -Math.abs(Number(entry.amount_inr) || 0)
-          : Number(entry.amount_inr) || 0,
-        status: entry.transaction_type === "reward_reversal"
-          ? "Reward reversed · " + String(entry.metadata?.orderNumber || entry.reference_id || "")
-          : String(entry.status || entry.transaction_type || "recorded"),
-        requestedAt: entry.created_at || null,
-        kind: entry.transaction_type === "reward_reversal"
-          ? "reward reversal"
-          : String(entry.transaction_type || "activity").replace(/_/g, " "),
-      }));
+      history = (transactions || []).map((entry) => {
+        const type = String(entry.transaction_type || "");
+        const rawAmount = Number(entry.amount_inr) || 0;
+        // Show the wallet impact, not a positive-looking amount for an event
+        // that merely records approval or payout of funds already reserved.
+        const amount = type === "reward_reversal" || type === "withdrawal_request" || type === "wallet_spend"
+          ? -Math.abs(rawAmount)
+          : type === "withdrawal_rejected" || type === "wallet_refund" || type === "reward"
+            ? Math.abs(rawAmount)
+            : type === "withdrawal_approved" || type === "withdrawal_paid"
+              ? 0
+              : rawAmount;
+        return {
+          amount,
+          status: type === "reward_reversal"
+            ? "Reward reversed · " + String(entry.metadata?.orderNumber || entry.reference_id || "")
+            : String(entry.status || type || "recorded"),
+          requestedAt: entry.created_at || null,
+          kind: type === "reward_reversal"
+            ? "reward reversal"
+            : type.replace(/_/g, " ") || "activity",
+        };
+      });
 
       // Metadata may lag if a reward was committed to the ledger but the
       // subsequent Auth metadata write failed. Use ledger aggregates as a
