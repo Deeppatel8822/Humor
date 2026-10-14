@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { getPartner } from "@/lib/marketingPartner";
-import { isWalletLedgerEnabled, postWalletTransaction } from "@/lib/businessProgrammeWallet";
+import { isWalletLedgerEnabled } from "@/lib/businessProgrammeWallet";
 
 async function getAdmin(req: NextRequest) {
   const header = req.headers.get("authorization") || "";
