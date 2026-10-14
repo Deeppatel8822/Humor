@@ -101,12 +101,20 @@ export async function creditPartnerReward(
     });
     if (rpcError) throw new Error(`Atomic partner reward failed: ${rpcError.message}`);
     const result = rpcData as {
-      success?: boolean; duplicate?: boolean; reward?: number; rewardRate?: number;
+      success?: boolean; duplicate?: boolean; error?: string; reward?: number; rewardRate?: number;
       rewardTier?: "basic" | "silver" | "gold"; rewardTierAfter?: "basic" | "silver" | "gold";
       balance?: number; qualificationCoins?: number; qualificationPeriodStartedAt?: string | null;
       totalRewards?: number; totalSales?: number; referredCustomers?: number; usageCount?: number;
     } | null;
-    if (!result?.success) throw new Error("Atomic partner reward failed.");
+    if (!result?.success) {
+      if (result?.error === "ORDER_AMOUNT_MISMATCH") {
+        throw new Error("This order reference was already credited with a different billed amount.");
+      }
+      if (result?.error === "REWARD_ROUNDS_TO_ZERO") {
+        throw new Error("Billed amount is too small to produce a positive partner reward.");
+      }
+      throw new Error(result?.error || "Atomic partner reward failed.");
+    }
 
     const reward = Math.max(0, Number(result.reward) || 0);
     const rate = Number(result.rewardRate) || PARTNER_REWARD_RATE;
