@@ -42,16 +42,59 @@ export async function GET(req: NextRequest) {
           status: entry.status,
         }));
     });
-    if (isWalletLedgerEnabled && requests.length > 0) {
+    if (isWalletLedgerEnabled) {
+      // Include ledger-pending withdrawals even if the Auth metadata write failed
+      // after reserving funds. This keeps orphaned requests visible to admins.
+      const { data: ledgerRequests, error: ledgerError } = await auth.admin
+        .from("business_programme_wallet_transactions")
+        .select("partner_user_id, amount_inr, reference_id, created_at, metadata")
+        .eq("transaction_type", "withdrawal_request")
+        .eq("status", "pending")
+        .order("created_at", { ascending: true })
+        .limit(1000);
+      if (ledgerError) throw ledgerError;
+      const { data: decisions, error: decisionsError } = await auth.admin
+        .from("business_programme_withdrawal_decisions")
+        .select("partner_user_id, reference_id");
+      if (decisionsError) throw decisionsError;
+      const decidedKeys = new Set((decisions || []).map((item) => `${item.partner_user_id}|${item.reference_id}`));
+      const visibleKeys = new Set(requests.map((item) => `${item.userId}|${item.requestedAt}`));
+      const userMap = new Map(users.map((user) => [user.id, user]));
+      for (const item of ledgerRequests || []) {
+        if (decidedKeys.has(`${item.partner_user_id}|${item.reference_id}`)) continue;
+        const user = userMap.get(item.partner_user_id);
+        if (!user) continue;
+        const partner = getPartner(user);
+        const requestedAt = String(item.created_at || item.metadata?.requestedAt || "");
+        const alreadyVisible = requests.some((request) =>
+          request.userId === item.partner_user_id &&
+          (request.requestedAt === requestedAt || request.requestedAt === item.metadata?.requestedAt)
+        );
+        if (alreadyVisible) continue;
+        requests.push({
+          userId: item.partner_user_id,
+          email: user.email || "",
+          name: partner?.businessName || user.user_metadata?.full_name || user.user_metadata?.name || "Partner",
+          mobile: partner?.mobile || "",
+          amount: Number(item.amount_inr) || 0,
+          requestedAt,
+          walletBalance: Number(partner?.walletBalance) || 0,
+          status: "withdrawal:pending",
+          referenceId: item.reference_id,
+        } as typeof requests[number] & { referenceId: string });
+      }
+
       const partnerIds = [...new Set(requests.map((request) => request.userId))];
-      const { data: accounts, error: accountsError } = await auth.admin
-        .from("business_programme_wallet_accounts")
-        .select("partner_user_id, balance_inr")
-        .in("partner_user_id", partnerIds);
-      if (accountsError) throw accountsError;
-      const balances = new Map((accounts || []).map((account) => [account.partner_user_id, Number(account.balance_inr) || 0]));
-      for (const request of requests) {
-        if (balances.has(request.userId)) request.walletBalance = balances.get(request.userId)!;
+      if (partnerIds.length > 0) {
+        const { data: accounts, error: accountsError } = await auth.admin
+          .from("business_programme_wallet_accounts")
+          .select("partner_user_id, balance_inr")
+          .in("partner_user_id", partnerIds);
+        if (accountsError) throw accountsError;
+        const balances = new Map((accounts || []).map((account) => [account.partner_user_id, Number(account.balance_inr) || 0]));
+        for (const request of requests) {
+          if (balances.has(request.userId)) request.walletBalance = balances.get(request.userId)!;
+        }
       }
     }
     requests.sort((a, b) => String(a.requestedAt).localeCompare(String(b.requestedAt)));
