@@ -3,6 +3,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 export type WalletTransactionType =
   | "reward"
   | "withdrawal_request"
+  | "withdrawal_approved"
   | "withdrawal_rejected"
   | "withdrawal_paid"
   | "wallet_spend"
