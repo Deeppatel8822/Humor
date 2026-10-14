@@ -198,10 +198,10 @@ export async function POST(req: NextRequest) {
 
       const wallet = await postWalletTransaction({
         partnerUserId: userId,
-        type: decision === "approve" ? "withdrawal_paid" : "withdrawal_rejected",
+        type: decision === "approve" ? "withdrawal_approved" : "withdrawal_rejected",
         amountInr: Number(request.amount || 0),
         referenceId,
-        description: decision === "approve" ? "Withdrawal approved for payout" : "Withdrawal rejected; reserved funds returned",
+        description: decision === "approve" ? "Withdrawal approved; external payout not yet confirmed" : "Withdrawal rejected; reserved funds returned",
         metadata: { requestedAt, decision, decidedBy: auth.user.id },
       });
       nextBalance = Number(wallet.balance ?? nextBalance);
