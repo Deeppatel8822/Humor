@@ -37,9 +37,12 @@ export default function CheckoutPage() {
   });
 
   const freeShippingThresholdInr = 299;
-  const shippingInr = subtotalInr >= freeShippingThresholdInr ? 0 : 50;
-  const amountToFreeShippingInr = Math.max(0, freeShippingThresholdInr - subtotalInr);
-  const qualifiesForFreeShipping = subtotalInr >= freeShippingThresholdInr;
+  // Match the server's shipping threshold base after bundle savings, so the
+  // checkout preview and Razorpay verification use the same shipping amount.
+  const shippingBaseInr = Math.max(0, subtotalInr - bundleSavingsInr);
+  const shippingInr = shippingBaseInr >= freeShippingThresholdInr ? 0 : 50;
+  const amountToFreeShippingInr = Math.max(0, freeShippingThresholdInr - shippingBaseInr);
+  const qualifiesForFreeShipping = shippingBaseInr >= freeShippingThresholdInr;
   const firstOrderDiscountInr = isLoggedIn && isFirstOrder ? Math.round(subtotalInr * 0.10) : 0;
   const prepaidDiscountRate = subtotalInr >= 1000 ? 0.04 : 0.03;
   const prepaidDiscountInr = paymentMethod === "online" ? Math.round(subtotalInr * prepaidDiscountRate) : 0;
