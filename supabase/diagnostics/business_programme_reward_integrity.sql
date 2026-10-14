@@ -1,0 +1,89 @@
+-- Read-only Business Programme reward integrity checks.
+-- Run in Supabase SQL Editor AFTER applying 20261014050000_business_programme_atomic_rewards.sql.
+-- These queries do not modify data. Review every returned row; an empty result is expected for the issue checks.
+
+-- 1) Reward-state totals versus the canonical reward ledger.
+with ledger as (
+  select
+    partner_user_id,
+    count(*) as reward_transactions,
+    coalesce(sum(amount_inr), 0)::numeric(12,2) as ledger_lifetime_rewards,
+    coalesce(sum(case
+      when coalesce(metadata->>'billedAmountInr','') ~ '^[0-9]+(\.[0-9]+)?$'
+      then (metadata->>'billedAmountInr')::numeric
+      else 0 end), 0)::numeric(12,2) as ledger_total_sales
+  from public.business_programme_wallet_transactions
+  where transaction_type = 'reward'
+  group by partner_user_id
+)
+select
+  s.partner_user_id,
+  s.reward_tier,
+  s.lifetime_rewards as state_lifetime_rewards,
+  coalesce(l.ledger_lifetime_rewards, 0) as ledger_lifetime_rewards,
+  s.total_sales as state_total_sales,
+  coalesce(l.ledger_total_sales, 0) as ledger_total_sales,
+  coalesce(l.reward_transactions, 0) as reward_transactions
+from public.business_programme_partner_reward_state s
+left join ledger l using (partner_user_id)
+where abs(s.lifetime_rewards - coalesce(l.ledger_lifetime_rewards, 0)) > 0.01
+   or abs(s.total_sales - coalesce(l.ledger_total_sales, 0)) > 0.01
+order by s.updated_at desc;
+
+-- 2) Duplicate reward references. Expected: zero rows.
+select partner_user_id, reference_id, count(*) as duplicate_count
+from public.business_programme_wallet_transactions
+where transaction_type = 'reward'
+group by partner_user_id, reference_id
+having count(*) > 1;
+
+-- 3) Wallet account balance versus latest transaction snapshot. Expected: zero rows.
+with latest as (
+  select distinct on (partner_user_id)
+    partner_user_id, balance_after_inr, created_at, id
+  from public.business_programme_wallet_transactions
+  order by partner_user_id, created_at desc, id desc
+)
+select
+  a.partner_user_id,
+  a.balance_inr as account_balance,
+  l.balance_after_inr as latest_ledger_balance,
+  l.created_at as latest_transaction_at
+from public.business_programme_wallet_accounts a
+join latest l using (partner_user_id)
+where abs(a.balance_inr - l.balance_after_inr) > 0.01;
+
+-- 4) Qualification coins versus reward rows in the active 30-day window.
+-- Expected: zero rows. A row may need investigation if older rewards predate the ledger.
+with active_rewards as (
+  select
+    s.partner_user_id,
+    coalesce(sum(t.amount_inr), 0)::numeric(12,2) as ledger_window_coins
+  from public.business_programme_partner_reward_state s
+  left join public.business_programme_wallet_transactions t
+    on t.partner_user_id = s.partner_user_id
+   and t.transaction_type = 'reward'
+   and s.qualification_period_started_at is not null
+   and s.qualification_period_started_at <= now()
+   and t.created_at >= s.qualification_period_started_at
+   and t.created_at < s.qualification_period_started_at + interval '30 days'
+  group by s.partner_user_id
+)
+select
+  s.partner_user_id,
+  s.qualification_coins as state_qualification_coins,
+  a.ledger_window_coins,
+  s.qualification_period_started_at
+from public.business_programme_partner_reward_state s
+join active_rewards a using (partner_user_id)
+where s.qualification_period_started_at is not null
+  and s.qualification_period_started_at <= now()
+  and now() - s.qualification_period_started_at < interval '30 days'
+  and abs(s.qualification_coins - a.ledger_window_coins) > 0.01;
+
+-- 5) Missing canonical reward state for users with partner metadata. Expected: zero rows.
+select u.id as partner_user_id, u.raw_app_meta_data->'marketing_partner'->>'rewardTier' as metadata_tier
+from auth.users u
+left join public.business_programme_partner_reward_state s on s.partner_user_id = u.id
+where u.raw_app_meta_data ? 'marketing_partner'
+  and s.partner_user_id is null;
