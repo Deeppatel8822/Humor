@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
       !businessType || !businessName || !mobile || !address || !proofPath ||
       !proofPath.startsWith(authData.user.id + "/") ||
       proofPathParts.some((part: string) => !part || part === "." || part === "..") ||
-      !/^\\d{10}$/.test(mobile) ||
+      !/^\d{10}$/.test(mobile) ||
       !termsAccepted || !termsVersion
     ) {
       return NextResponse.json({ error: "Registration details are incomplete or invalid." }, { status: 400 });
