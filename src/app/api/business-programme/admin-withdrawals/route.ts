@@ -111,8 +111,9 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const userId = String(body.userId || "");
     const requestedAt = String(body.requestedAt || "");
+    const suppliedReferenceId = typeof body.referenceId === "string" ? body.referenceId : "";
     const decision = String(body.decision || "");
-    if (!userId || !requestedAt || !["approve", "reject"].includes(decision)) {
+    if (!userId || (!requestedAt && !suppliedReferenceId) || !["approve", "reject"].includes(decision)) {
       return NextResponse.json({ error: "Invalid withdrawal decision." }, { status: 400 });
     }
 
@@ -121,13 +122,17 @@ export async function POST(req: NextRequest) {
     const partner = getPartner(data.user);
     if (!partner) return NextResponse.json({ error: "Partner account not found." }, { status: 404 });
     const entries = Array.isArray(partner.withdrawalRequests) ? partner.withdrawalRequests : [];
-    let index = entries.findIndex((entry) => entry.status === "withdrawal:pending" && entry.requestedAt === requestedAt);
+    let index = entries.findIndex((entry) =>
+      entry.status === "withdrawal:pending" &&
+      (entry.requestedAt === requestedAt ||
+        (suppliedReferenceId && (entry as typeof entry & { referenceId?: string }).referenceId === suppliedReferenceId))
+    );
     if (index < 0) {
       // A previous decision may have reached the ledger but failed while
       // updating Auth metadata. If the same decision is already reflected in
       // metadata, make retries safe and return an idempotent success.
       const completed = entries.find((entry) =>
-        entry.requestedAt === requestedAt &&
+        (!requestedAt || entry.requestedAt === requestedAt) &&
         entry.status === (decision === "approve" ? "withdrawal:approved" : "withdrawal:rejected")
       );
       if (completed) {
@@ -142,11 +147,33 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "This request was already handled or could not be found." }, { status: 409 });
     }
 
-    const request = entries[index];
-    const requestReferenceId = (request as unknown as { referenceId?: unknown }).referenceId;
-    const referenceId = typeof requestReferenceId === "string"
+    let request = index >= 0 ? entries[index] : undefined;
+    let requestReferenceId = request && (request as typeof request & { referenceId?: unknown }).referenceId;
+    let referenceId = typeof requestReferenceId === "string"
       ? requestReferenceId
-      : `withdrawal:${userId}:${requestedAt}`;
+      : suppliedReferenceId || `withdrawal:${userId}:${requestedAt}`;
+
+    // Admin can act on a ledger-only request that was not saved to Auth metadata.
+    if (!request && isWalletLedgerEnabled && suppliedReferenceId) {
+      const { data: ledgerRequest, error: ledgerRequestError } = await auth.admin
+        .from("business_programme_wallet_transactions")
+        .select("amount_inr, reference_id, created_at, metadata")
+        .eq("partner_user_id", userId)
+        .eq("transaction_type", "withdrawal_request")
+        .eq("reference_id", suppliedReferenceId)
+        .eq("status", "pending")
+        .maybeSingle();
+      if (ledgerRequestError) throw ledgerRequestError;
+      if (!ledgerRequest) return NextResponse.json({ error: "This withdrawal was already handled or could not be found." }, { status: 409 });
+      request = {
+        amount: Number(ledgerRequest.amount_inr),
+        status: "withdrawal:pending",
+        requestedAt: String(ledgerRequest.created_at || requestedAt || ledgerRequest.metadata?.requestedAt || ""),
+        referenceId: ledgerRequest.reference_id,
+      };
+      index = entries.length;
+    }
+    if (!request) return NextResponse.json({ error: "This request was already handled or could not be found." }, { status: 409 });
     let nextBalance = Math.max(0, Number(partner.walletBalance || 0)) +
       (decision === "reject" ? Math.max(0, Number(request.amount || 0)) : 0);
     if (isWalletLedgerEnabled) {
