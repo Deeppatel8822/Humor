@@ -80,30 +80,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Payment verification failed." }, { status: 400 });
   }
 
-  // A valid callback signature alone does not prove that the payment is
-  // captured or that the amount matches the Razorpay order created server-side.
-  try {
-    const razorpay = razorpayClient();
-    const [payment, razorpayOrder] = await Promise.all([
-      razorpay.payments.fetch(razorpay_payment_id),
-      razorpay.orders.fetch(razorpay_order_id),
-    ]);
-    if (
-      payment.order_id !== razorpay_order_id ||
-      payment.status !== "captured" ||
-      razorpayOrder.id !== razorpay_order_id ||
-      payment.currency !== "INR" ||
-      payment.amount !== razorpayOrder.amount ||
-      razorpayOrder.currency !== "INR" ||
-      razorpayOrder.amount !== Math.round(totalInr * 100)
-    ) {
-      return NextResponse.json({ error: "Payment is not captured or does not match the Razorpay order." }, { status: 400 });
-    }
-  } catch (error) {
-    console.error("Razorpay payment status lookup failed:", error);
-    return NextResponse.json({ error: "Could not confirm captured payment with Razorpay. Please retry." }, { status: 503 });
-  }
-
   const authHeader = req.headers.get("authorization") || "";
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
   let firstOrderDiscountInr = 0;
@@ -146,6 +122,29 @@ export async function POST(req: NextRequest) {
   const totalInr = Math.max(0, subtotalInr - totalDiscountInr + calculatedShippingInr);
   if (shippingInr !== calculatedShippingInr) {
     return NextResponse.json({ error: "Shipping charge does not match checkout pricing." }, { status: 400 });
+  }
+
+  // Confirm the captured payment against the trusted, server-calculated total.
+  try {
+    const razorpay = razorpayClient();
+    const [payment, razorpayOrder] = await Promise.all([
+      razorpay.payments.fetch(razorpay_payment_id),
+      razorpay.orders.fetch(razorpay_order_id),
+    ]);
+    if (
+      payment.order_id !== razorpay_order_id ||
+      payment.status !== "captured" ||
+      razorpayOrder.id !== razorpay_order_id ||
+      payment.currency !== "INR" ||
+      payment.amount !== razorpayOrder.amount ||
+      razorpayOrder.currency !== "INR" ||
+      razorpayOrder.amount !== Math.round(totalInr * 100)
+    ) {
+      return NextResponse.json({ error: "Payment is not captured or does not match the Razorpay order." }, { status: 400 });
+    }
+  } catch (error) {
+    console.error("Razorpay payment status lookup failed:", error);
+    return NextResponse.json({ error: "Could not confirm captured payment with Razorpay. Please retry." }, { status: 503 });
   }
   // Use a high-entropy order number so collisions cannot cross-link reward ledger references.
   const orderNumber = `HL-${Date.now().toString(36).toUpperCase()}-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
