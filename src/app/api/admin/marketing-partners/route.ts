@@ -30,7 +30,10 @@ export async function GET() {
     const isMarketingPending = marketingApplication?.status === "pending";
     const isBusinessPending = businessProgramme?.status === "pending_verification";
     if (!isMarketingPending && !isBusinessPending) continue;
-    const application = isMarketingPending ? marketingApplication : {
+    // If an account has both legacy and Business Programme applications, keep
+    // the selected source and displayed fields aligned with the action target.
+    const isBusinessProgramme = isBusinessPending;
+    const application = isBusinessProgramme ? {
       status: "pending",
       businessType: businessProgramme.businessType,
       businessName: businessProgramme.businessName,
@@ -44,7 +47,7 @@ export async function GET() {
       termsAcceptedAt: businessProgramme.termsAcceptedAt,
       appliedAt: businessProgramme.registeredAt,
       registrationFeeInr: businessProgramme.registrationFeeInr,
-    };
+    } : marketingApplication;
     const photoPaths = Array.isArray(application.photoPaths) ? application.photoPaths : [];
     const signed = photoPaths.length ? await admin.storage.from("vendor-business-photos").createSignedUrls(photoPaths, 3600) : { data: [] };
     let proofUrl: string | null = null;
@@ -72,14 +75,15 @@ export async function POST(request: Request) {
     const marketingApplication = data.user.user_metadata?.marketing_partner_application;
     const businessProgramme = data.user.user_metadata?.business_programme;
     const isBusinessProgramme = businessProgramme?.status === "pending_verification";
-    const application = marketingApplication?.status === "pending" ? marketingApplication : isBusinessProgramme ? {
+    const isMarketingPending = marketingApplication?.status === "pending";
+    const application = isBusinessProgramme ? {
       businessName: businessProgramme.businessName,
       businessType: businessProgramme.businessType,
       address: businessProgramme.address,
       mobile: businessProgramme.mobile,
       proofPath: businessProgramme.proofPath,
       appliedAt: businessProgramme.registeredAt,
-    } : null;
+    } : isMarketingPending ? marketingApplication : null;
     if (!application) return NextResponse.json({ error: "Application is not pending." }, { status: 409 });
 
     if (action === "reject") {
