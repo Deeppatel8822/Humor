@@ -32,6 +32,7 @@ Source migrations in the repo include:
 11. `20261014090000_orders_razorpay_order_unique.sql`
 12. `20261015100000_business_programme_registration_claim.sql`
 13. `20261015110000_business_programme_registration_order_reservation.sql`
+14. `20261015120000_business_programme_withdrawal_decided_by_index.sql`
 
 The order unique-index migration may skip creating its index if duplicate Razorpay order IDs exist. Review duplicates before retrying; never delete paid-order records to force the index through.
 
@@ -54,7 +55,7 @@ Supabase's security advisor reports that leaked-password protection is disabled.
 
 The advisor also reports tables with RLS enabled but no policies. The Business Programme ledger tables are intentionally server-only and have no grants to `anon` or `authenticated`; do not add broad policies merely to silence the advisor. Other tables in the advisor output should be reviewed against their actual access pattern before changing policies.
 
-Performance advisors report unindexed foreign keys and unused indexes. These include unrelated application tables; do not drop indexes solely because they are currently unused. Review query patterns before changing them.
+Performance advisors report unindexed foreign keys and unused indexes. The Business Programme `decided_by` foreign key now has the additive index `business_programme_withdrawal_decisions_decided_by_idx` (migration recorded as `20261015091658`). Other findings include unrelated application tables; do not drop indexes solely because they are currently unused. Review query patterns before changing them.
 
 ## 5. Read-only integrity diagnostics
 
