@@ -80,16 +80,19 @@ export async function POST(req: NextRequest) {
         const alreadyListed = entries.some((entry) =>
           (entry as typeof entry & { referenceId?: string }).referenceId === reservedReferenceId
         );
-        if (!alreadyListed) {
+        const metadataBalance = Math.max(0, Number(partner.walletBalance || 0));
+        if (!alreadyListed || metadataBalance !== balance) {
           const recoveredPartner = {
             ...partner,
             walletBalance: balance,
-            withdrawalRequests: [{
-              amount,
-              status: "withdrawal:pending",
-              requestedAt,
-              referenceId: reservedReferenceId,
-            }, ...entries].slice(0, 100),
+            withdrawalRequests: alreadyListed
+              ? entries
+              : [{
+                  amount,
+                  status: "withdrawal:pending",
+                  requestedAt,
+                  referenceId: reservedReferenceId,
+                }, ...entries].slice(0, 100),
           };
           const { error: recoveryError } = await admin.auth.admin.updateUserById(data.user.id, {
             app_metadata: { ...latest.user.app_metadata, marketing_partner: recoveredPartner },
