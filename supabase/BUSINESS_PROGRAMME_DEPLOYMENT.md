@@ -5,7 +5,7 @@ This checklist documents the Humor Luxury Business Programme. Real payment and e
 ## 1. Current production verification (15 October 2026)
 
 - Supabase project `kxccwbahakfvdujrbard` reports `ACTIVE_HEALTHY`.
-- Vercel's check for the current `main` commit reported `success`: https://vercel.com/nexus-2d75/humor/ACM2sTJbBak8XMPu1ZSe148dSthk
+- Vercel's check for commit `7500483d7355cd4581f9e2ec9584fd0793eb8de6` reported `success` on 15 October 2026: https://vercel.com/nexus-2d75/humor/5sNGo5eecXuYVG19PSHo8DPkLgyr
 - Read-only integrity checks returned no rows for duplicate active registration reservations, stale/malformed registration records, duplicate Razorpay order IDs, missing reward state, reward ledger inconsistencies, withdrawal/ledger mismatches, and missing payout records for approved withdrawals.
 - Registration reservation and claim RPCs are restricted to `service_role`; `anon` and `authenticated` cannot execute them.
 - The wallet ledger and reward RPCs are also restricted to `service_role`. The trigger helper `business_programme_sync_withdrawal_reservation_status` is not directly executable by application roles.
