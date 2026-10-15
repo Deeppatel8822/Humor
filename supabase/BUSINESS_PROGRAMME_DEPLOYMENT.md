@@ -51,7 +51,7 @@ After changing environment variables, redeploy production. Never paste secret va
 
 ## 4. Security advisor follow-up
 
-Supabase's security advisor reports that leaked-password protection is disabled. Enable it in the Supabase Dashboard under Authentication password/security settings. The available Supabase connector cannot change this Auth configuration, so this setting is not marked complete.
+Supabase's security advisor reports that leaked-password protection is disabled. The user confirmed that the setting is available only on the Supabase Pro plan. **This is a known Free-plan limitation and is not an available configuration change on the current plan.** Do not keep searching for a missing toggle or treat it as completed. Revisit this control if the project plan changes.
 
 The advisor also reports tables with RLS enabled but no policies. The Business Programme ledger tables are intentionally server-only and have no grants to `anon` or `authenticated`; do not add broad policies merely to silence the advisor. Other tables in the advisor output should be reviewed against their actual access pattern before changing policies.
 
