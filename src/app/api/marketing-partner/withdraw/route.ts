@@ -58,21 +58,24 @@ export async function POST(request: Request) {
       reservedReferenceId = result.reference_id || referenceId;
       requestedAt = result.created_at || now;
       if (result.duplicate) {
-        // The ledger is canonical. If a previous request reserved funds but its
-        // Auth metadata write failed, repair the dashboard copy on retry.
+        // The ledger is canonical. Repair missing request metadata and stale
+        // cached balances when a previous metadata write failed or was outdated.
         const alreadyListed = requests.some((entry) =>
           (entry as typeof entry & { referenceId?: string }).referenceId === reservedReferenceId
         );
-        if (!alreadyListed) {
+        const metadataBalance = Math.max(0, Number(partner.walletBalance || 0));
+        if (!alreadyListed || metadataBalance !== nextBalance) {
           const recoveredPartner = {
             ...partner,
             walletBalance: nextBalance,
-            withdrawalRequests: [{
-              amount,
-              status: "withdrawal:pending",
-              requestedAt,
-              referenceId: reservedReferenceId,
-            }, ...requests].slice(0, 100),
+            withdrawalRequests: alreadyListed
+              ? requests
+              : [{
+                  amount,
+                  status: "withdrawal:pending",
+                  requestedAt,
+                  referenceId: reservedReferenceId,
+                }, ...requests].slice(0, 100),
           };
           const { error: recoveryError } = await admin.auth.admin.updateUserById(authData.user.id, {
             app_metadata: { ...latest.user.app_metadata, marketing_partner: recoveredPartner },
