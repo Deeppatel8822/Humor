@@ -67,6 +67,7 @@ SQL diagnostics live in `supabase/diagnostics/`:
 - `business_programme_reward_integrity.sql`
 - `business_programme_tier_integrity.sql`
 - `business_programme_withdrawal_integrity.sql`
+- `business_programme_migration_history_audit.sql` (read-only inventory of key live objects; does not repair or modify migration history)
 
 Review returned rows before manually changing production data. Some results are informational rather than automatic errors.
 
