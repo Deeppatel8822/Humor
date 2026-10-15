@@ -38,16 +38,27 @@ The order unique-index migration may skip creating its index if duplicate Razorp
 
 ## 3. Deployment environment checklist
 
-These settings must be checked in the production deployment provider. The current connector access does not expose Vercel environment-variable values, so their presence and correctness are **not verified** here.
+The current connector access does not expose Vercel environment-variable values. The following names are derived from the current application source, but their presence and correctness in Vercel are **not verified** until checked in Vercel Dashboard → Humor → Settings → Environment Variables.
 
+Required for Supabase-backed application routes:
 - `NEXT_PUBLIC_SUPABASE_URL`
-- `SUPABASE_SERVICE_ROLE_KEY` (server-side only, never expose to browser code)
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` (public/anon key; safe for browser use with RLS)
+- `SUPABASE_SERVICE_ROLE_KEY` (server-side only; never expose to browser code)
 - `BUSINESS_PROGRAMME_WALLET_LEDGER_ENABLED=true`
-- `BUSINESS_PROGRAMME_ADMIN_EMAILS` with authorised admin emails separated by commas
-- `ADMIN_EMAIL` if existing admin partner/refund routes use the HMAC admin cookie flow
-- `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` are required by the payment integration, which is outside this non-payment completion pass
+- `BUSINESS_PROGRAMME_ADMIN_EMAILS` with authorised admin emails separated by commas (admin withdrawal review)
 
-After changing environment variables, redeploy production. Never paste secret values into GitHub, source code, issue comments, or chat.
+Admin login / OTP:
+- `ADMIN_EMAIL` (registered admin email and OTP destination)
+- `ADMIN_MOBILE` if admin login by mobile number is intended
+- `RESEND_API_KEY` (required to send email OTP)
+- `RESEND_FROM_EMAIL` (optional; source has a fallback sender, but use a verified sender for production)
+- `ADMIN_OTP_SECRET` (optional; source falls back to `SUPABASE_SERVICE_ROLE_KEY` when absent)
+
+Payment integration is intentionally outside this non-payment completion pass:
+- `RAZORPAY_KEY_ID`
+- `RAZORPAY_KEY_SECRET`
+
+After changing any Vercel environment variable, redeploy production. Never paste secret values into GitHub, source code, issue comments, or chat. Check only that names exist and the intended environment is selected; keep secret values private.
 
 ## 4. Security advisor follow-up
 
