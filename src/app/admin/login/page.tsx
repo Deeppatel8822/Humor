@@ -13,7 +13,7 @@ export default function AdminLoginPage() {
 
   async function sendOtp(e: React.FormEvent) {
     e.preventDefault(); setLoading(true); setError("");
-    const res = await fetch("/api/admin/send-otp", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ identifier }) });
+    const res = await fetch("/api/admin/request-otp", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ identifier }) });
     const data = await res.json();
     if (!res.ok) setError(data.error || "Could not send OTP."); else setSent(true);
     setLoading(false);
@@ -38,7 +38,7 @@ export default function AdminLoginPage() {
         {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
         <button disabled={loading} className="w-full bg-[var(--deep-wine)] text-white rounded-full py-3.5 text-sm font-medium disabled:opacity-50">{loading ? "Sending OTP…" : "Send OTP"}</button>
       </form> : <form onSubmit={verifyOtp}>
-        <p className="text-sm text-[var(--muted)] mb-5">Enter the 6-digit OTP sent to your registered email and mobile.</p>
+        <p className="text-sm text-[var(--muted)] mb-5">Enter the 6-digit OTP sent to your registered admin email.</p>
         <input value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" autoComplete="one-time-code" required placeholder="000000" className="w-full border border-[var(--line)] rounded-xl px-4 py-3 mb-5 text-center text-xl tracking-[0.35em] outline-none" />
         {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
         <button disabled={loading || otp.length !== 6} className="w-full bg-[var(--deep-wine)] text-white rounded-full py-3.5 text-sm font-medium disabled:opacity-50">{loading ? "Verifying…" : "Verify & Continue"}</button>
