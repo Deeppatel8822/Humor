@@ -131,15 +131,26 @@ export async function POST(req: NextRequest) {
       registeredAt: new Date().toISOString(),
     };
 
-    const { error } = await admin.auth.admin.updateUserById(authData.user.id, {
-      user_metadata: {
-        ...authData.user.user_metadata,
-        business_programme: programme,
-      },
+    // Claim the application under a database row lock so concurrent captured
+    // registration payments cannot overwrite one another's application metadata.
+    const { data: claim, error: claimError } = await admin.rpc("business_programme_registration_claim", {
+      p_user_id: authData.user.id,
+      p_programme: programme,
     });
-    if (error) throw error;
+    if (claimError) throw claimError;
+    if (claim?.conflict) {
+      return NextResponse.json(
+        { error: "A Business Programme application is already submitted for this account." },
+        { status: 409 }
+      );
+    }
+    if (!claim?.success) throw new Error("Business Programme registration could not be claimed.");
 
-    return NextResponse.json({ success: true, programme });
+    return NextResponse.json({
+      success: true,
+      duplicate: claim.duplicate === true,
+      programme: claim.programme || programme,
+    });
   } catch (error) {
     console.error("Business programme payment verification failed:", error);
     return NextResponse.json({ error: "Could not complete registration after payment. Please contact Humor support." }, { status: 500 });
