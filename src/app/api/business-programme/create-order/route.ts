@@ -77,7 +77,29 @@ export async function POST(req: NextRequest) {
     const { data: reservation, error: reservationError } = await admin.rpc("business_programme_registration_order_reserve", {
       p_user_id: user.id,
     });
-    if (reservationError) throw reservationError;
+    if (reservationError) {
+      // Keep registration available during staged rollout if the database migration
+      // has not yet been applied. The reservation protection becomes active as soon
+      // as the RPC exists in Supabase; this fallback preserves the previous flow only.
+      const message = String(reservationError.message || "");
+      const missingReservationRpc = reservationError.code === "PGRST202" ||
+        /business_programme_registration_order_reserve.*(not found|schema cache)|could not find the function/i.test(message);
+      if (!missingReservationRpc) throw reservationError;
+
+      console.error("Business Programme order reservation migration is not applied yet; using legacy order creation.");
+      const order = await razorpayClient().orders.create({
+        amount: REGISTRATION_FEE_INR * 100,
+        currency: "INR",
+        receipt: "hb_" + Date.now(),
+        notes: { userId: user.id, programme: "humor_business", businessName },
+      });
+      return NextResponse.json({
+        razorpayOrderId: order.id,
+        amountInr: REGISTRATION_FEE_INR,
+        keyId: process.env.RAZORPAY_KEY_ID,
+        reservationProtectionPending: true,
+      });
+    }
     if (!reservation?.success) {
       if (reservation?.conflict) {
         return NextResponse.json({ error: "Your Business Programme application is already submitted or awaiting verification." }, { status: 409 });
