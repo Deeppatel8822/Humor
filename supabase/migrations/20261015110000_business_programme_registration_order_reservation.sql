@@ -190,7 +190,7 @@ begin
   for update;
 
   if found then
-    if v_order.status not in ('created', 'submitted') then
+    if v_order.status <> 'created' then
       return jsonb_build_object('success', false, 'conflict', true, 'error', 'REGISTRATION_ORDER_NOT_ACTIVE');
     end if;
     update public.business_programme_registration_orders
