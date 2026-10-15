@@ -13,9 +13,13 @@ async function getUser(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  let reservationId: string | null = null;
+  let userId: string | null = null;
+
   try {
     const user = await getUser(req);
     if (!user) return NextResponse.json({ error: "Please login or create your Humor account first." }, { status: 401 });
+    userId = user.id;
 
     const body = await req.json();
     const businessType = String(body.businessType || "").trim();
@@ -30,6 +34,7 @@ export async function POST(req: NextRequest) {
     if (!businessType || !businessName || !mobile || !address || !proofPath) {
       return NextResponse.json({ error: "Please complete all registration details and upload business proof." }, { status: 400 });
     }
+
     const proofPathParts = proofPath.split("/");
     const allowedBusinessTypes = [
       "Influencer / Content Creator",
@@ -49,7 +54,9 @@ export async function POST(req: NextRequest) {
     ) {
       return NextResponse.json({ error: "Please upload business proof to your own application folder using a valid path." }, { status: 400 });
     }
-    const { data: proofFiles, error: proofError } = await supabaseAdmin()
+
+    const admin = supabaseAdmin();
+    const { data: proofFiles, error: proofError } = await admin
       .storage.from("business-programme-proofs")
       .list(user.id, { limit: 100, search: proofPathParts[1] });
     if (proofError) throw proofError;
@@ -66,6 +73,53 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Your application is already submitted and is awaiting or has completed verification." }, { status: 409 });
     }
 
+    // Reserve one active registration order per account before creating a provider order.
+    const { data: reservation, error: reservationError } = await admin.rpc("business_programme_registration_order_reserve", {
+      p_user_id: user.id,
+    });
+    if (reservationError) throw reservationError;
+    if (!reservation?.success) {
+      if (reservation?.conflict) {
+        return NextResponse.json({ error: "Your Business Programme application is already submitted or awaiting verification." }, { status: 409 });
+      }
+      if (reservation?.busy) {
+        return NextResponse.json({ error: "Your registration payment is being prepared. Please wait a minute and try again." }, { status: 409 });
+      }
+      throw new Error(reservation?.error || "Could not reserve a registration order.");
+    }
+
+    reservationId = String(reservation.reservationId || "");
+    if (!reservationId) throw new Error("Registration order reservation did not return an ID.");
+
+    if (reservation.duplicate === true && reservation.razorpayOrderId) {
+      const existingOrder = await razorpayClient().orders.fetch(String(reservation.razorpayOrderId));
+      if (
+        Number(existingOrder.amount) !== REGISTRATION_FEE_INR * 100 ||
+        existingOrder.currency !== "INR" ||
+        String(existingOrder.notes?.userId || "") !== user.id ||
+        String(existingOrder.notes?.programme || "") !== "humor_business"
+      ) {
+        throw new Error("Existing registration order failed ownership or amount validation.");
+      }
+      if (existingOrder.status === "paid") {
+        return NextResponse.json({
+          error: "A previous registration payment may already be complete. Do not pay again. Please contact Humor support to verify your application.",
+        }, { status: 409 });
+      }
+      if (!["created", "attempted"].includes(String(existingOrder.status || ""))) {
+        return NextResponse.json({
+          error: "Your previous registration order cannot be reused. Please contact Humor support before making another payment.",
+        }, { status: 409 });
+      }
+
+      return NextResponse.json({
+        razorpayOrderId: existingOrder.id,
+        amountInr: REGISTRATION_FEE_INR,
+        keyId: process.env.RAZORPAY_KEY_ID,
+        reused: true,
+      });
+    }
+
     const order = await razorpayClient().orders.create({
       amount: REGISTRATION_FEE_INR * 100,
       currency: "INR",
@@ -73,12 +127,30 @@ export async function POST(req: NextRequest) {
       notes: { userId: user.id, programme: "humor_business", businessName },
     });
 
+    const { data: attached, error: attachError } = await admin.rpc("business_programme_registration_order_attach", {
+      p_user_id: user.id,
+      p_reservation_id: reservationId,
+      p_razorpay_order_id: order.id,
+    });
+    if (attachError) throw attachError;
+    if (!attached?.success) throw new Error("Could not safely attach the Razorpay order to the registration reservation.");
+
     return NextResponse.json({
       razorpayOrderId: order.id,
       amountInr: REGISTRATION_FEE_INR,
       keyId: process.env.RAZORPAY_KEY_ID,
     });
   } catch (error) {
+    if (reservationId && userId) {
+      try {
+        await supabaseAdmin().rpc("business_programme_registration_order_release", {
+          p_user_id: userId,
+          p_reservation_id: reservationId,
+        });
+      } catch (releaseError) {
+        console.error("Could not release empty Business Programme registration reservation:", releaseError);
+      }
+    }
     console.error("Business programme payment order failed:", error);
     return NextResponse.json({ error: "Could not start the ₹9 payment. Please try again." }, { status: 500 });
   }
