@@ -50,6 +50,14 @@ export default async function BundlesPage() {
       name: "Protein Shake Anti Hairfall Shampoo + Milk Shake Repairing Smooth Hair Mask",
       items: [bySlug("repair-shampoo"), bySlug("repair-hair-mask")].filter(Boolean) as Product[],
     },
+    {
+      name: "Smooth Shake Daily Shampoo + Milk Shake Repairing Smooth Hair Mask",
+      items: [bySlug("smooth-shake-daily-shampoo"), bySlug("repair-hair-mask")].filter(Boolean) as Product[],
+    },
+    {
+      name: "Smooth Shake Complete Hair Care",
+      items: [bySlug("smooth-shake-daily-shampoo"), bySlug("repair-hair-mask"), bySlug("repair-conditioner")].filter(Boolean) as Product[],
+    },
   ];
 
   return (
