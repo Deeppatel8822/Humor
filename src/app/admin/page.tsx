@@ -163,8 +163,7 @@ function csvCell(value: unknown) {
   return '"' + text.replace(/"/g, '""') + '"';
 }
 function downloadCsv(filename: string, headers: string[], rows: unknown[][]) {
-  const csv = [headers, ...rows].map((row) => row.map(csvCell).join(",")).join("\r
-");
+  const csv = [headers, ...rows].map((row) => row.map(csvCell).join(",")).join("\\r\\n");
   const blob = new Blob(["\\uFEFF", csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
