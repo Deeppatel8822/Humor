@@ -81,13 +81,13 @@ export default function SiteHeader() {
               <Image src="/humor-logo.svg" alt="Humor Luxury" width={180} height={54} priority className="h-10 md:h-12 w-auto object-contain" />
             </Link>
 
-            <nav className="hidden lg:flex items-center gap-8 text-[13px] font-medium text-[var(--ink)]">
+            <nav className="hidden xl:flex items-center gap-6 text-[13px] font-medium text-[var(--ink)]">
               {mobileLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
                   className={link.featured
-                    ? "business-cta rounded-full px-4 py-2 text-[11px] font-semibold text-white transition-all hover:-translate-y-0.5"
+                    ? "rounded-full border border-[#C7A5DE] bg-gradient-to-r from-[#50336F] via-[#7047A0] to-[#8A62B0] px-4 py-2 text-[11px] font-semibold text-white shadow-[0_0_0_2px_rgba(197,162,220,0.18),0_4px_14px_rgba(112,71,160,0.28)] transition-all hover:-translate-y-0.5 hover:shadow-[0_0_0_3px_rgba(197,162,220,0.24),0_6px_18px_rgba(112,71,160,0.35)]"
                     : "hover:text-[var(--deep-wine)] transition-colors"}
                 >
                   {link.label}
@@ -95,7 +95,7 @@ export default function SiteHeader() {
               ))}
             </nav>
 
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1">\n              <Link href="/your-business" className="xl:hidden mr-1 whitespace-nowrap rounded-full border border-[#C7A5DE] bg-gradient-to-r from-[#50336F] via-[#7047A0] to-[#8A62B0] px-2.5 py-2 text-[10px] font-semibold text-white shadow-[0_0_0_2px_rgba(197,162,220,0.18),0_4px_12px_rgba(112,71,160,0.25)] sm:px-3 sm:text-[11px]">Start Business · ₹9</Link>
               {customerName && (
                 <button type="button" onClick={openAccount} aria-label={"Open " + customerName + "'s account"} className="hidden sm:inline-flex items-center mr-1 px-2 py-2 text-xs font-medium text-[var(--deep-wine)] hover:text-[var(--warm-gold)] transition-colors">
                   Hi {customerName}
@@ -173,24 +173,6 @@ export default function SiteHeader() {
           </div>
         </div>
       </header>
-      <style jsx>{`
-        .business-cta {
-          background: linear-gradient(115deg, #50336F 0%, #7047A0 48%, #8A62B0 100%);
-          border: 1px solid rgba(197, 162, 220, 0.7);
-          box-shadow: 0 3px 12px rgba(112, 71, 160, 0.18), 0 0 0 1px rgba(197, 162, 220, 0.12);
-          animation: businessGlow 3.4s ease-in-out infinite;
-        }
-        .business-cta:hover {
-          box-shadow: 0 5px 18px rgba(112, 71, 160, 0.3), 0 0 0 3px rgba(197, 162, 220, 0.15);
-        }
-        @keyframes businessGlow {
-          0%, 100% { box-shadow: 0 3px 12px rgba(112, 71, 160, 0.18), 0 0 0 1px rgba(197, 162, 220, 0.12); }
-          50% { box-shadow: 0 4px 16px rgba(112, 71, 160, 0.28), 0 0 0 3px rgba(197, 162, 220, 0.18); }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .business-cta { animation: none; }
-        }
-      `}</style>
-    </div>
+   </div>
   );
 }
