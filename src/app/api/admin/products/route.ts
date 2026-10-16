@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import crypto from "crypto";
 import { supabaseAdmin } from "@/lib/supabase";
+import { PROFIT_COOKIE, validProfitCookie } from "@/lib/profitAccess";
 
 const COOKIE_NAME = "humor_admin";
 
@@ -40,6 +41,13 @@ export async function PATCH(request: Request) {
     const hasName = body.name !== undefined;
     const stock = Number(body.stock_quantity);
     const price = Number(body.price_inr);
+    if (hasPrice || hasCompareAt || hasName) {
+      const cookieStore = await cookies();
+      const { data: access, error: accessError } = await supabaseAdmin().from("profit_management_access").select("password_hash").eq("id", "owner").maybeSingle();
+      if (accessError || !access?.password_hash || !validProfitCookie(cookieStore.get("humor_profit_access")?.value, access.password_hash)) {
+        return NextResponse.json({ error: "Unlock PDPP before changing product names, prices or MRP." }, { status: 401 });
+      }
+    }
 
     if (!id || (!hasStock && !hasPrice && !hasCompareAt && !hasName)) {
       return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
