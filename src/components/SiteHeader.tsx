@@ -87,7 +87,7 @@ export default function SiteHeader() {
                   key={link.href}
                   href={link.href}
                   className={link.featured
-                    ? "rounded-full bg-[var(--deep-wine)] px-4 py-2 text-[11px] font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-[var(--wine-soft)]"
+                    ? "business-cta rounded-full px-4 py-2 text-[11px] font-semibold text-white transition-all hover:-translate-y-0.5"
                     : "hover:text-[var(--deep-wine)] transition-colors"}
                 >
                   {link.label}
@@ -158,7 +158,7 @@ export default function SiteHeader() {
                         href={link.href}
                         onClick={() => setMenuOpen(false)}
                         className={link.featured
-                          ? "block rounded-xl bg-[var(--deep-wine)] px-4 py-3 text-sm font-semibold text-white"
+                          ? "business-cta block rounded-xl px-4 py-3 text-sm font-semibold text-white"
                           : "block rounded-xl px-4 py-3 text-sm font-medium text-[var(--ink)] hover:bg-[var(--milk-sage)] hover:text-[var(--deep-wine)]"}
                       >
                         {link.label}
@@ -173,6 +173,24 @@ export default function SiteHeader() {
           </div>
         </div>
       </header>
+      <style jsx>{`
+        .business-cta {
+          background: linear-gradient(115deg, #50336F 0%, #7047A0 48%, #8A62B0 100%);
+          border: 1px solid rgba(197, 162, 220, 0.7);
+          box-shadow: 0 3px 12px rgba(112, 71, 160, 0.18), 0 0 0 1px rgba(197, 162, 220, 0.12);
+          animation: businessGlow 3.4s ease-in-out infinite;
+        }
+        .business-cta:hover {
+          box-shadow: 0 5px 18px rgba(112, 71, 160, 0.3), 0 0 0 3px rgba(197, 162, 220, 0.15);
+        }
+        @keyframes businessGlow {
+          0%, 100% { box-shadow: 0 3px 12px rgba(112, 71, 160, 0.18), 0 0 0 1px rgba(197, 162, 220, 0.12); }
+          50% { box-shadow: 0 4px 16px rgba(112, 71, 160, 0.28), 0 0 0 3px rgba(197, 162, 220, 0.18); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .business-cta { animation: none; }
+        }
+      `}</style>
     </div>
   );
 }
