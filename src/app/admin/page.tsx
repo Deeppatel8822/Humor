@@ -50,7 +50,10 @@ export default function AdminPage() {
   const [email, setEmail] = useState(""); const [password, setPassword] = useState(""); const [loggedIn, setLoggedIn] = useState(false);
   const [products, setProducts] = useState<Product[]>([]); const [orders, setOrders] = useState<Order[]>([]);
   const [tab, setTab] = useState<"orders" | "products" | "pricing" | "profit" | "customers" | "coupons" | "crm" | "cartActivity" | "marketingPartners">("orders");
-  const [customers, setCustomers] = useState<Customer[]>([]);\n  const [pricingProducts, setPricingProducts] = useState<PricingProduct[]>([]);\n  const [pricingSettings, setPricingSettings] = useState<PricingSettings | null>(null);\n  const [pricingBusy, setPricingBusy] = useState(false);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [pricingProducts, setPricingProducts] = useState<PricingProduct[]>([]);
+  const [pricingSettings, setPricingSettings] = useState<PricingSettings | null>(null);
+  const [pricingBusy, setPricingBusy] = useState(false);
   const [coupons, setCoupons] = useState<Coupon[]>([]); const [partnerApps, setPartnerApps] = useState<PartnerApplication[]>([]); const [partnerLoading, setPartnerLoading] = useState(false); const [stage, setStage] = useState<StageKey>("new");
   const [search, setSearch] = useState(""); const [orderSearch, setOrderSearch] = useState(""); const [error, setError] = useState(""); const [loading, setLoading] = useState(false); const [saving, setSaving] = useState<string | null>(null);
   async function loadAdminData() {
@@ -58,13 +61,17 @@ export default function AdminPage() {
       fetch("/api/admin/products", { cache: "no-store" }),
       fetch("/api/admin/orders", { cache: "no-store" }),
       fetch("/api/admin/customers", { cache: "no-store" }),
-      fetch("/api/admin/coupons", { cache: "no-store" }),\n      fetch("/api/admin/pricing", { cache: "no-store" }),
+      fetch("/api/admin/coupons", { cache: "no-store" }),
+      fetch("/api/admin/pricing", { cache: "no-store" }),
     ]);
     if (!productsRes.ok || !ordersRes.ok) { setLoggedIn(false); return; }
     const productsData = await productsRes.json();
     const ordersData = await ordersRes.json();
     const customersData = customersRes.ok ? await customersRes.json() : { customers: [] };
-    const couponsData = couponsRes.ok ? await couponsRes.json() : { coupons: [] };\n    const pricingData = pricingRes.ok ? await pricingRes.json() : {};\n    setPricingProducts(pricingData.products ?? []);\n    if (pricingData.settings) setPricingSettings(pricingData.settings);
+    const couponsData = couponsRes.ok ? await couponsRes.json() : { coupons: [] };
+    const pricingData = pricingRes.ok ? await pricingRes.json() : {};
+    setPricingProducts(pricingData.products ?? []);
+    if (pricingData.settings) setPricingSettings(pricingData.settings);
     setProducts(productsData.products ?? []);
     setOrders(ordersData.orders ?? []);
     setCustomers(customersData.customers ?? []);
@@ -156,7 +163,8 @@ function csvCell(value: unknown) {
   return '"' + text.replace(/"/g, '""') + '"';
 }
 function downloadCsv(filename: string, headers: string[], rows: unknown[][]) {
-  const csv = [headers, ...rows].map((row) => row.map(csvCell).join(",")).join("\r\n");
+  const csv = [headers, ...rows].map((row) => row.map(csvCell).join(",")).join("\r
+");
   const blob = new Blob(["\\uFEFF", csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
