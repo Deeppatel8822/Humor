@@ -81,13 +81,13 @@ export default function SiteHeader() {
               <Image src="/humor-logo.svg" alt="Humor Luxury" width={180} height={54} priority className="h-10 md:h-12 w-auto object-contain" />
             </Link>
 
-            <nav className="hidden xl:flex items-center gap-6 text-[13px] font-medium text-[var(--ink)]">
+            <nav className="hidden xl:flex items-center gap-4 text-[12px] font-medium text-[var(--ink)]">
               {mobileLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
                   className={link.featured
-                    ? "rounded-full border border-[#C7A5DE] bg-gradient-to-r from-[#50336F] via-[#7047A0] to-[#8A62B0] px-4 py-2 text-[11px] font-semibold text-white shadow-[0_0_0_2px_rgba(197,162,220,0.18),0_4px_14px_rgba(112,71,160,0.28)] transition-all hover:-translate-y-0.5 hover:shadow-[0_0_0_3px_rgba(197,162,220,0.24),0_6px_18px_rgba(112,71,160,0.35)]"
+                    ? "rounded-full px-4 py-2 text-[11px] font-bold text-white transition-all hover:-translate-y-0.5"
                     : "hover:text-[var(--deep-wine)] transition-colors"}
                 >
                   {link.label}
