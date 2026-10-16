@@ -209,3 +209,16 @@ a {
     transition: none;
   }
 }
+
+
+/* Gentle live glow for the existing Start Your Business link only. */
+@keyframes businessCtaLiveGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(112, 71, 160, 0.22), 0 0 0 rgba(112, 71, 160, 0); }
+  50% { box-shadow: 0 0 0 5px rgba(112, 71, 160, 0.10), 0 0 16px 3px rgba(112, 71, 160, 0.30); }
+}
+.business-cta-live {
+  animation: businessCtaLiveGlow 2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .business-cta-live { animation: none; }
+}
