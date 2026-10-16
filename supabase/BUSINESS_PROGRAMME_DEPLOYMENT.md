@@ -2,7 +2,7 @@
 
 This checklist documents the Humor Luxury Business Programme. Real payment and end-to-end tests are intentionally deferred.
 
-## 1. Current production verification (15 October 2026)
+## 1. Current production verification (16 October 2026)
 
 - Supabase project `kxccwbahakfvdujrbard` reports `ACTIVE_HEALTHY`.
 - Vercel's check for commit `7500483d7355cd4581f9e2ec9584fd0793eb8de6` reported `success` on 15 October 2026: https://vercel.com/nexus-2d75/humor/5sNGo5eecXuYVG19PSHo8DPkLgyr
@@ -33,6 +33,7 @@ Source migrations in the repo include:
 12. `20261015100000_business_programme_registration_claim.sql`
 13. `20261015110000_business_programme_registration_order_reservation.sql`
 14. `20261015120000_business_programme_withdrawal_decided_by_index.sql`
+15. `20261016071056_admin_otp_rate_limit.sql`
 
 The order unique-index migration may skip creating its index if duplicate Razorpay order IDs exist. Review duplicates before retrying; never delete paid-order records to force the index through.
 
@@ -53,6 +54,8 @@ Admin login / OTP:
 - `RESEND_API_KEY` (required to send email OTP)
 - `RESEND_FROM_EMAIL` (optional; source has a fallback sender, but use a verified sender for production)
 - `ADMIN_OTP_SECRET` (optional; source falls back to `SUPABASE_SERVICE_ROLE_KEY` when absent)
+
+Admin OTP now uses a persistent database-backed rate limiter: maximum 3 OTP requests per 15 minutes and 5 verification attempts per 10 minutes per hashed IP + admin identifier. It fails closed with HTTP 503 if the shared limiter cannot be reached. This requires the Supabase URL and `SUPABASE_SERVICE_ROLE_KEY` to be present in Vercel Production.
 
 Payment integration is intentionally outside this non-payment completion pass:
 - `RAZORPAY_KEY_ID`
