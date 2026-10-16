@@ -6,7 +6,7 @@ import { getAllProducts } from "@/lib/catalog";
 import { calculateBundleSavings } from "@/lib/bundles";
 import { calculateCheckoutPricing } from "@/lib/checkoutPricing";
 import { calculatePartnerDiscount, creditPartnerReward, findPartnerByCode } from "@/lib/marketingPartner";
-import { getStorePricingSettings, discountAmount } from "@/lib/storePricing";
+import { getStorePricingSettings } from "@/lib/storePricing";
 
 interface VerifyBody {
   razorpay_order_id: string;
