@@ -264,7 +264,7 @@ export default function ProfitManagementPanel() {
         </section>
         <section className="rounded-2xl border border-[#e8ded7] bg-white p-5"><h3 className="font-display text-lg text-[#351724]">Order-wise profit</h3><p className="mb-4 mt-1 text-xs text-[#6d6260]">Delivered and shipped orders are counted once each. Cancelled and refunded orders are excluded.</p><div className="overflow-x-auto"><table className="w-full min-w-[720px] text-left text-sm"><thead><tr className="border-b border-[#e8ded7] text-xs uppercase text-[#6d6260]"><th className="p-3">Order</th><th className="p-3">Status group</th><th className="p-3">Sales excl. GST</th><th className="p-3">Purchase cost</th><th className="p-3">Shipping</th><th className="p-3">Net profit</th></tr></thead><tbody>{orderSummary.rows.map(r => <tr key={r.order.id} className="border-b border-[#f0e9e4]"><td className="p-3"><p className="font-medium">#{r.order.order_number}</p><p className="text-xs text-[#8a7e7a]">{new Date(r.order.created_at).toLocaleDateString("en-IN")}</p></td><td className="p-3">{r.group}</td><td className="p-3">{money(r.salesNet)}</td><td className="p-3">{money(r.cogs)}</td><td className="p-3">{money(r.ship)}</td><td className={`p-3 font-semibold ${r.netProfit < 0 ? "text-red-700" : "text-green-800"}`}>{money(r.netProfit)}</td></tr>)}{!orderSummary.rows.length && <tr><td colSpan={6} className="p-8 text-center text-[#6d6260]">No shipped or delivered orders found yet.</td></tr>}</tbody></table></div></section>
         <section className="rounded-2xl border border-[#e8ded7] bg-white p-5"><h3 className="font-display text-lg text-[#351724]">Change section password</h3><p className="mt-1 text-sm text-[#6d6260]">Use at least 10 characters. Forgot password sends a one-time link to the registered admin email.</p><ChangePassword onChange={async (currentPassword,newPassword) => { const changed = await submitAccess("change",{currentPassword,newPassword}); if (changed) setUnlocked(false); }} busy={busy} /></section>
-      </div> : tab === "pricing" ? <PricingManagementSection /> : <div />}
+      </div> : tab === "pricing" ? <PricingManagementSection onProductSaved={loadData} /> : <div />}
       {tab !== "pricing" && <p className="mt-8 text-xs leading-5 text-[#8a7e7a]">Profit estimates exclude payment gateway fees, packaging and other extra costs as requested. Product costs must be entered before actual profit figures are considered complete.</p>}
     </div>
   </div>;
@@ -288,7 +288,7 @@ function ChangePassword({ onChange, busy }: { onChange: (currentPassword: string
 type PricingProduct = { id: string; slug: string; name: string; sku: string; price_inr: number; compare_at_price_inr: number | null; status: string };
 type PricingSettings = { discounts: Record<string, { enabled: boolean; type: "percent" | "fixed"; value: number; startsAt?: string | null; endsAt?: string | null }>; updatedAt?: string | null };
 
-function PricingManagementSection() {
+function PricingManagementSection({ onProductSaved }: { onProductSaved: () => Promise<void> }) {
   const [products, setProducts] = useState<PricingProduct[]>([]);
   const [settings, setSettings] = useState<PricingSettings | null>(null);
   const [busy, setBusy] = useState(false);
@@ -317,6 +317,7 @@ function PricingManagementSection() {
       if (!res.ok) throw new Error(json.error || "Could not save product price.");
       setProducts(current => current.map(p => p.id === product.id ? { ...p, name, price_inr: price, compare_at_price_inr: compareAt } : p));
       setNotice("Product name, website price and MRP saved.");
+      await onProductSaved();
     } catch (e) { setError(e instanceof Error ? e.message : "Could not save product price."); }
     finally { setBusy(false); }
   }
