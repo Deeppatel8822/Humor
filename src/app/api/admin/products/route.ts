@@ -35,11 +35,11 @@ export async function PATCH(request: Request) {
     const body = await request.json();
     const id = String(body.id || "").trim();
     const hasStock = body.stock_quantity !== undefined;
-    const hasPrice = body.price_inr !== undefined;
+    const hasPrice = body.price_inr !== undefined;\n    const hasCompareAt = body.compare_at_price_inr !== undefined;
     const stock = Number(body.stock_quantity);
     const price = Number(body.price_inr);
 
-    if (!id || (!hasStock && !hasPrice)) {
+    if (!id || (!hasStock && !hasPrice && !hasCompareAt)) {
       return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
     }
     if (hasStock && (!Number.isInteger(stock) || stock < 0)) {
@@ -51,13 +51,13 @@ export async function PATCH(request: Request) {
 
     const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (hasStock) updates.stock_quantity = stock;
-    if (hasPrice) updates.price_inr = price;
+    if (hasPrice) updates.price_inr = price;\n    if (hasCompareAt) { const compareAt = body.compare_at_price_inr === null ? null : Number(body.compare_at_price_inr); if (compareAt !== null && (!Number.isInteger(compareAt) || compareAt < 0)) return NextResponse.json({ error: "Invalid MRP." }, { status: 400 }); updates.compare_at_price_inr = compareAt; }
 
     const { data, error } = await supabaseAdmin()
       .from("products")
       .update(updates)
       .eq("id", id)
-      .select("id, name, price_inr, stock_quantity")
+      .select("id, name, price_inr, compare_at_price_inr, stock_quantity")
       .single();
 
     if (error) {
