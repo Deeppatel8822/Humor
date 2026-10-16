@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Product } from "@/types/product";
 import { useCart } from "@/context/CartContext";
 import { getRoutineUpsells } from "@/lib/bundles";
@@ -9,7 +9,9 @@ export default function RoutineUpsell({ product, products }: { product: Product;
   const { lines, addItem, removeItem } = useCart();
   const [added, setAdded] = useState<string | null>(null);
   const [addedSlugs, setAddedSlugs] = useState<string[]>([]);
-  const offers = getRoutineUpsells(product, products);
+  const [bundleDiscountPercent, setBundleDiscountPercent] = useState(8);
+  useEffect(() => { fetch("/api/admin/pricing", { cache: "no-store" }).then(r => r.ok ? r.json() : null).then(data => { const rule = data?.discounts?.bundle ?? data?.settings?.discounts?.bundle; if (rule) setBundleDiscountPercent(rule.enabled && rule.type === "percent" ? Number(rule.value) || 0 : 0); }).catch(() => {}); }, []);
+  const offers = getRoutineUpsells(product, products, bundleDiscountPercent);
 
   if (!offers.length) return null;
 
