@@ -30,7 +30,7 @@ export default function ProfitManagementPage() {
   const [purchaseCost, setPurchaseCost] = useState("0");
   const [websitePrice, setWebsitePrice] = useState("");
   const [firstDiscount, setFirstDiscount] = useState(10);
-  const [bundleDiscount, setBundleDiscount] = useState(12);
+  const [bundleDiscount, setBundleDiscount] = useState(8);
   const [prepaidDiscount, setPrepaidDiscount] = useState(3);
   const [businessDiscount, setBusinessDiscount] = useState(10);
   const [applyFirstDiscount, setApplyFirstDiscount] = useState(true);
