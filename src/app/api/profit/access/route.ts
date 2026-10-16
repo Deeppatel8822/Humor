@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { supabaseAdmin } from "@/lib/supabase";
+import { checkAdminOtpRateLimit } from "@/lib/adminAuth";
 import { PROFIT_COOKIE, COOKIE_TTL_SECONDS, hashPassword, verifyPassword, profitCookieValue, validProfitCookie } from "@/lib/profitAccess";
 
 export const dynamic = "force-dynamic";
@@ -55,6 +56,8 @@ export async function POST(request: NextRequest) {
     const access = await getAccess();
 
     if (action === "login") {
+      const rate = await checkAdminOtpRateLimit(request, "profit-management-password", "verify");
+      if (!rate.allowed) return NextResponse.json({ error: rate.unavailable ? "Password access is temporarily unavailable. Try again shortly." : "Too many password attempts. Please wait before trying again." }, { status: rate.unavailable ? 503 : 429, headers: { "Retry-After": String(rate.retryAfterSeconds) } });
       const password = typeof body.password === "string" ? body.password : "";
       if (!verifyPassword(password, access.password_hash)) return NextResponse.json({ error: "Incorrect password." }, { status: 401 });
       return sessionResponse(access.password_hash);
@@ -74,6 +77,8 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === "forgot") {
+      const rate = await checkAdminOtpRateLimit(request, "profit-management-reset", "request");
+      if (!rate.allowed) return NextResponse.json({ error: rate.unavailable ? "Password reset is temporarily unavailable. Try again shortly." : "Too many reset requests. Please wait before trying again." }, { status: rate.unavailable ? 503 : 429, headers: { "Retry-After": String(rate.retryAfterSeconds) } });
       const requested = String(body.email || "").trim().toLowerCase();
       const owner = adminEmail();
       if (!owner || requested !== owner) return genericForgot();
