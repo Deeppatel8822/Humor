@@ -4,7 +4,7 @@ import { getAllProducts } from "@/lib/catalog";
 import { calculateBundleSavings } from "@/lib/bundles";
 import { calculateCheckoutPricing } from "@/lib/checkoutPricing";
 import { calculatePartnerDiscount, findPartnerByCode } from "@/lib/marketingPartner";
-import { getStorePricingSettings, discountAmount } from "@/lib/storePricing";
+import { getStorePricingSettings } from "@/lib/storePricing";
 
 interface CartLineInput {
   productId: string;
