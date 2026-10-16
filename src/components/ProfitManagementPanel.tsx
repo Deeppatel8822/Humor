@@ -25,7 +25,7 @@ export default function ProfitManagementPanel() {
   const [busy, setBusy] = useState(false);
   const [data, setData] = useState<Data>({ products: [], costs: [], orders: [] });
   const [costInputs, setCostInputs] = useState<Record<string, string>>({});
-  const [tab, setTab] = useState<"calculate" | "current">("calculate");
+  const [tab, setTab] = useState<"calculate" | "current" | "pricing">("calculate");
   const [selectedProduct, setSelectedProduct] = useState("");
   const [purchaseCost, setPurchaseCost] = useState("0");
   const [websitePrice, setWebsitePrice] = useState("");
@@ -204,7 +204,7 @@ export default function ProfitManagementPanel() {
   if (!unlocked) return <div className="min-h-screen bg-[#f7f3ee] flex items-center justify-center p-5">
     <div className="w-full max-w-md rounded-3xl border border-[#e8ded7] bg-white p-8 shadow-sm">
       <p className="text-xs uppercase tracking-[0.24em] text-[#b07b35]">Humor Luxury</p>
-      <h1 className="mt-3 font-display text-3xl text-[#351724]">Profit Management</h1>
+      <h1 className="mt-3 font-display text-3xl text-[#351724]">PDPP</h1>
       <p className="mt-2 mb-7 text-sm text-[#6d6260]">Enter the section password to continue.</p>
       {!showForgot ? <form onSubmit={e => { e.preventDefault(); submitAccess("login", { password }); }}>
         <label className="mb-2 block text-sm">Section password</label>
@@ -226,8 +226,8 @@ export default function ProfitManagementPanel() {
   return <div className="min-h-screen bg-[#f7f3ee] px-4 py-8 md:px-8 md:py-12">
     <div className="mx-auto max-w-7xl">
       <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div><p className="text-xs uppercase tracking-[0.24em] text-[#b07b35]">Humor Luxury · Admin</p><h1 className="mt-2 font-display text-3xl text-[#351724] md:text-4xl">Profit Management</h1><p className="mt-2 text-sm text-[#6d6260]">GST-adjusted sales, purchase costs, shipping and Business Programme rewards.</p></div>
-        <div className="flex flex-wrap gap-2"><button onClick={() => { setTab("calculate"); }} className={`rounded-full border px-4 py-2.5 text-sm ${tab === "calculate" ? "border-[#351724] bg-[#351724] text-white" : "border-[#e8ded7] bg-white text-[#351724]"}`}>Calculate Profit</button><button onClick={() => setTab("current")} className={`rounded-full border px-4 py-2.5 text-sm ${tab === "current" ? "border-[#351724] bg-[#351724] text-white" : "border-[#e8ded7] bg-white text-[#351724]"}`}>Your Current Profit</button><button onClick={async () => { setBusy(true); try { await fetch("/api/profit/access", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "logout" }) }); } finally { setUnlocked(false); setData({ products: [], costs: [], orders: [] }); setNotice(""); setError(""); setPassword(""); setBusy(false); } }} className="rounded-full border border-[#e8ded7] bg-white px-4 py-2.5 text-sm text-[#351724]">Lock</button></div>
+        <div><p className="text-xs uppercase tracking-[0.24em] text-[#b07b35]">Humor Luxury · Admin</p><h1 className="mt-2 font-display text-3xl text-[#351724] md:text-4xl">PDPP</h1><p className="mt-2 text-sm text-[#6d6260]">Pricing, Discounts & Profit Planning. All controls are protected by the PDPP password.</p></div>
+        <div className="flex flex-wrap gap-2"><button onClick={() => { setTab("calculate"); }} className={`rounded-full border px-4 py-2.5 text-sm ${tab === "calculate" ? "border-[#351724] bg-[#351724] text-white" : "border-[#e8ded7] bg-white text-[#351724]"}`}>Calculate Profit</button><button onClick={() => setTab("current")} className={`rounded-full border px-4 py-2.5 text-sm ${tab === "current" ? "border-[#351724] bg-[#351724] text-white" : "border-[#e8ded7] bg-white text-[#351724]"}`}>Your Current Profit</button><button onClick={() => setTab("pricing")} className={`rounded-full border px-4 py-2.5 text-sm ${tab === "pricing" ? "border-[#351724] bg-[#351724] text-white" : "border-[#e8ded7] bg-white text-[#351724]"}`}>Pricing & Discounts</button><button onClick={async () => { setBusy(true); try { await fetch("/api/profit/access", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "logout" }) }); } finally { setUnlocked(false); setData({ products: [], costs: [], orders: [] }); setNotice(""); setError(""); setPassword(""); setBusy(false); } }} className="rounded-full border border-[#e8ded7] bg-white px-4 py-2.5 text-sm text-[#351724]">Lock</button></div>
       </div>
       {error && unlocked && <div className="mb-4 rounded-xl border border-red-200 bg-white px-4 py-3 text-sm text-red-700">{error}</div>}
       {notice && unlocked && <div className="mb-4 rounded-xl border border-green-200 bg-white px-4 py-3 text-sm text-green-800">{notice}</div>}
@@ -264,8 +264,8 @@ export default function ProfitManagementPanel() {
         </section>
         <section className="rounded-2xl border border-[#e8ded7] bg-white p-5"><h3 className="font-display text-lg text-[#351724]">Order-wise profit</h3><p className="mb-4 mt-1 text-xs text-[#6d6260]">Delivered and shipped orders are counted once each. Cancelled and refunded orders are excluded.</p><div className="overflow-x-auto"><table className="w-full min-w-[720px] text-left text-sm"><thead><tr className="border-b border-[#e8ded7] text-xs uppercase text-[#6d6260]"><th className="p-3">Order</th><th className="p-3">Status group</th><th className="p-3">Sales excl. GST</th><th className="p-3">Purchase cost</th><th className="p-3">Shipping</th><th className="p-3">Net profit</th></tr></thead><tbody>{orderSummary.rows.map(r => <tr key={r.order.id} className="border-b border-[#f0e9e4]"><td className="p-3"><p className="font-medium">#{r.order.order_number}</p><p className="text-xs text-[#8a7e7a]">{new Date(r.order.created_at).toLocaleDateString("en-IN")}</p></td><td className="p-3">{r.group}</td><td className="p-3">{money(r.salesNet)}</td><td className="p-3">{money(r.cogs)}</td><td className="p-3">{money(r.ship)}</td><td className={`p-3 font-semibold ${r.netProfit < 0 ? "text-red-700" : "text-green-800"}`}>{money(r.netProfit)}</td></tr>)}{!orderSummary.rows.length && <tr><td colSpan={6} className="p-8 text-center text-[#6d6260]">No shipped or delivered orders found yet.</td></tr>}</tbody></table></div></section>
         <section className="rounded-2xl border border-[#e8ded7] bg-white p-5"><h3 className="font-display text-lg text-[#351724]">Change section password</h3><p className="mt-1 text-sm text-[#6d6260]">Use at least 10 characters. Forgot password sends a one-time link to the registered admin email.</p><ChangePassword onChange={async (currentPassword,newPassword) => { const changed = await submitAccess("change",{currentPassword,newPassword}); if (changed) setUnlocked(false); }} busy={busy} /></section>
-      </div>}
-      <p className="mt-8 text-xs leading-5 text-[#8a7e7a]">Profit estimates exclude payment gateway fees, packaging and other extra costs as requested. Product costs must be entered before actual profit figures are considered complete.</p>
+      </div> : tab === "pricing" ? <PricingManagementSection /> : <div />}
+      {tab !== "pricing" && <p className="mt-8 text-xs leading-5 text-[#8a7e7a]">Profit estimates exclude payment gateway fees, packaging and other extra costs as requested. Product costs must be entered before actual profit figures are considered complete.</p>}
     </div>
   </div>;
 }
@@ -282,4 +282,92 @@ function ChangePassword({ onChange, busy }: { onChange: (currentPassword: string
     {localError && <p className="text-sm text-red-600 md:col-span-3">{localError}</p>}
     <button disabled={busy} className="rounded-full bg-[#351724] px-5 py-3 text-sm font-semibold text-white md:col-span-3 disabled:opacity-50">{busy ? "Saving…" : "Change password"}</button>
   </form>;
+}
+
+
+type PricingProduct = { id: string; slug: string; name: string; sku: string; price_inr: number; compare_at_price_inr: number | null; status: string };
+type PricingSettings = { discounts: Record<string, { enabled: boolean; type: "percent" | "fixed"; value: number; startsAt?: string | null; endsAt?: string | null }>; updatedAt?: string | null };
+
+function PricingManagementSection() {
+  const [products, setProducts] = useState<PricingProduct[]>([]);
+  const [settings, setSettings] = useState<PricingSettings | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+
+  async function load() {
+    setError("");
+    try {
+      const res = await fetch("/api/admin/pricing", { cache: "no-store" });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Could not load pricing settings.");
+      setProducts(json.products ?? []);
+      setSettings(json.settings ?? null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not load pricing settings.");
+    }
+  }
+  useEffect(() => { void load(); }, []);
+
+  async function saveProduct(product: PricingProduct, name: string, price: number, compareAt: number | null) {
+    setBusy(true); setError(""); setNotice("");
+    try {
+      const res = await fetch("/api/admin/products", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: product.id, name, price_inr: price, compare_at_price_inr: compareAt }) });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Could not save product price.");
+      setProducts(current => current.map(p => p.id === product.id ? { ...p, name, price_inr: price, compare_at_price_inr: compareAt } : p));
+      setNotice("Product name, website price and MRP saved.");
+    } catch (e) { setError(e instanceof Error ? e.message : "Could not save product price."); }
+    finally { setBusy(false); }
+  }
+  async function publish(next: PricingSettings) {
+    setBusy(true); setError(""); setNotice("");
+    try {
+      const res = await fetch("/api/admin/pricing", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ settings: next }) });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Could not publish discount rules.");
+      setSettings(json.settings);
+      setNotice("Discount settings published successfully.");
+    } catch (e) { setError(e instanceof Error ? e.message : "Could not publish discount rules."); }
+    finally { setBusy(false); }
+  }
+
+  const labels: Record<string,string> = { firstOrder:"First-time customer", bundle:"Bundle", prepaid:"Prepaid", businessProgramme:"Business Programme", festival:"Festival Discount", special:"Special Discount" };
+  return <div className="space-y-5">
+    <section className="rounded-2xl border border-[#e8ded7] bg-white p-5 md:p-6">
+      <div className="mb-4"><h2 className="font-display text-2xl text-[#351724]">Live product prices</h2><p className="mt-1 text-sm text-[#6d6260]">Edit product name, website price and MRP here. These are the live catalog values.</p></div>
+      {error && <p className="mb-3 rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+      {notice && <p className="mb-3 rounded-xl bg-green-50 p-3 text-sm text-green-800">{notice}</p>}
+      {products.length ? <div className="space-y-3">{products.map(p => <PDPPPriceEditor key={p.id} product={p} busy={busy} onSave={saveProduct} />)}</div> : <p className="text-sm text-[#6d6260]">Loading products or no products found.</p>}
+    </section>
+    <section className="rounded-2xl border border-[#e8ded7] bg-white p-5 md:p-6">
+      <h2 className="font-display text-2xl text-[#351724]">Discount rules</h2><p className="mb-4 mt-1 text-sm text-[#6d6260]">Festival and Special discounts remain inactive until enabled. Changes are not live until published.</p>
+      {!settings ? <p className="text-sm text-[#6d6260]">Loading discount settings…</p> : <PDPPDiscountEditor settings={settings} busy={busy} labels={labels} onPublish={publish} />}
+    </section>
+  </div>;
+}
+
+function PDPPPriceEditor({ product, busy, onSave }: { product: PricingProduct; busy: boolean; onSave: (p: PricingProduct, name: string, price: number, compareAt: number | null) => void }) {
+  const [name, setName] = useState(product.name);
+  const [price, setPrice] = useState(String(product.price_inr));
+  const [mrp, setMrp] = useState(String(product.compare_at_price_inr ?? ""));
+  useEffect(() => { setName(product.name); setPrice(String(product.price_inr)); setMrp(String(product.compare_at_price_inr ?? "")); }, [product.name, product.price_inr, product.compare_at_price_inr]);
+  return <div className="grid gap-3 rounded-xl border border-[#e8ded7] p-3 md:grid-cols-[minmax(220px,1fr)_120px_120px_auto] md:items-center">
+    <div><label className="block text-xs">Product name<input type="text" maxLength={120} value={name} onChange={e => setName(e.target.value)} className="mt-1 w-full rounded-lg border border-[#e8ded7] p-2 text-sm font-medium" /></label><div className="mt-1 text-xs text-[#6d6260]">{product.sku} · {product.slug}</div></div>
+    <label className="text-xs">Website price ₹<input type="number" min="1" value={price} onChange={e => setPrice(e.target.value)} className="mt-1 w-full rounded-lg border border-[#e8ded7] p-2 text-sm" /></label>
+    <label className="text-xs">MRP ₹<input type="number" min="0" value={mrp} onChange={e => setMrp(e.target.value)} className="mt-1 w-full rounded-lg border border-[#e8ded7] p-2 text-sm" /></label>
+    <button disabled={busy || !name.trim() || !Number.isInteger(Number(price)) || Number(price) <= 0 || (mrp.trim() !== "" && (!Number.isInteger(Number(mrp)) || Number(mrp) < 0))} onClick={() => onSave(product, name.trim(), Number(price), mrp.trim() === "" ? null : Number(mrp))} className="rounded-full border border-[#e8ded7] px-4 py-2 text-xs font-semibold disabled:opacity-50">{busy ? "Saving…" : "Save changes"}</button>
+  </div>;
+}
+
+function PDPPDiscountEditor({ settings, busy, labels, onPublish }: { settings: PricingSettings; busy: boolean; labels: Record<string,string>; onPublish: (s: PricingSettings) => void }) {
+  const [draft, setDraft] = useState<PricingSettings>(settings);
+  useEffect(() => { setDraft(settings); }, [settings]);
+  function change(key: string, field: "enabled" | "type" | "value", value: boolean | string | number) {
+    setDraft(current => ({ ...current, discounts: { ...current.discounts, [key]: { ...current.discounts[key], [field]: value } } }));
+  }
+  return <div>
+    <div className="space-y-3">{Object.entries(labels).map(([key,label]) => { const d = draft.discounts[key]; if (!d) return null; return <div key={key} className="grid gap-3 rounded-xl border border-[#e8ded7] p-4 md:grid-cols-[1fr_auto_130px_130px] md:items-center"><label className="text-sm font-medium">{label}</label><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={d.enabled} onChange={e=>change(key,"enabled",e.target.checked)} />Active</label><select value={d.type} onChange={e=>change(key,"type",e.target.value)} className="rounded-lg border border-[#e8ded7] p-2 text-sm"><option value="percent">Percentage %</option><option value="fixed">Fixed ₹</option></select><input type="number" min="0" max={d.type === "percent" ? 100 : undefined} value={d.value} onChange={e=>change(key,"value",Number(e.target.value))} className="rounded-lg border border-[#e8ded7] p-2 text-sm" /></div>})}</div>
+    <button disabled={busy} onClick={()=>onPublish(draft)} className="mt-5 rounded-full bg-[#351724] px-6 py-3 text-sm font-semibold text-white disabled:opacity-50">{busy ? "Saving…" : "Publish discount rules"}</button>
+  </div>;
 }
