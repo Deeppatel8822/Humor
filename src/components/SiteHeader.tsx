@@ -81,13 +81,13 @@ export default function SiteHeader() {
               <Image src="/humor-logo.svg" alt="Humor Luxury" width={180} height={54} priority className="h-10 md:h-12 w-auto object-contain" />
             </Link>
 
-            <nav className="hidden xl:flex items-center gap-4 text-[12px] font-medium text-[var(--ink)]">
+            <nav className="hidden lg:flex items-center gap-8 text-[13px] font-medium text-[var(--ink)]">
               {mobileLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
                   className={link.featured
-                    ? "rounded-full px-4 py-2 text-[11px] font-bold text-white transition-all hover:-translate-y-0.5"
+                    ? "rounded-full bg-[var(--deep-wine)] px-4 py-2 text-[11px] font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-[var(--wine-soft)]"
                     : "hover:text-[var(--deep-wine)] transition-colors"}
                 >
                   {link.label}
@@ -96,7 +96,6 @@ export default function SiteHeader() {
             </nav>
 
             <div className="flex items-center gap-1">
-              <Link href="/your-business" className="xl:hidden mr-1 shrink-0 whitespace-nowrap rounded-full px-3 py-2 text-[10px] font-bold text-white sm:text-[11px]" style={{ background: "linear-gradient(115deg, #50336F 0%, #7047A0 52%, #8A62B0 100%)", border: "1px solid #C7A5DE", boxShadow: "0 0 0 2px rgba(197,162,220,0.2), 0 4px 14px rgba(112,71,160,0.3)" }}>Start Business · ₹9</Link>
               {customerName && (
                 <button type="button" onClick={openAccount} aria-label={"Open " + customerName + "'s account"} className="hidden sm:inline-flex items-center mr-1 px-2 py-2 text-xs font-medium text-[var(--deep-wine)] hover:text-[var(--warm-gold)] transition-colors">
                   Hi {customerName}
@@ -159,7 +158,7 @@ export default function SiteHeader() {
                         href={link.href}
                         onClick={() => setMenuOpen(false)}
                         className={link.featured
-                          ? "business-cta block rounded-xl px-4 py-3 text-sm font-semibold text-white"
+                          ? "block rounded-xl bg-[var(--deep-wine)] px-4 py-3 text-sm font-semibold text-white"
                           : "block rounded-xl px-4 py-3 text-sm font-medium text-[var(--ink)] hover:bg-[var(--milk-sage)] hover:text-[var(--deep-wine)]"}
                       >
                         {link.label}
@@ -174,6 +173,6 @@ export default function SiteHeader() {
           </div>
         </div>
       </header>
-   </div>
+    </div>
   );
 }
