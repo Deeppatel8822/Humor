@@ -32,6 +32,10 @@ export default function ProfitManagementPage() {
   const [bundleDiscount, setBundleDiscount] = useState(12);
   const [prepaidDiscount, setPrepaidDiscount] = useState(3);
   const [businessDiscount, setBusinessDiscount] = useState(10);
+  const [applyFirstDiscount, setApplyFirstDiscount] = useState(true);
+  const [applyBundleDiscount, setApplyBundleDiscount] = useState(false);
+  const [applyPrepaidDiscount, setApplyPrepaidDiscount] = useState(false);
+  const [applyBusinessDiscount, setApplyBusinessDiscount] = useState(false);
   const [shipping, setShipping] = useState("50");
   const [rewardRate, setRewardRate] = useState(27);
 
@@ -92,19 +96,21 @@ export default function ProfitManagementPage() {
     if (!selected) return null;
     const price = Math.max(0, selected.price_inr);
     const cogs = Math.max(0, Number(purchaseCost) || 0);
-    const rates = [firstDiscount, bundleDiscount, prepaidDiscount, businessDiscount].map(clampPct);
-    const finalInclusive = rates.reduce((amount, pct) => amount * (1 - pct / 100), price);
-    const maxInclusive = finalInclusive;
+    const allRates = [firstDiscount, bundleDiscount, prepaidDiscount, businessDiscount].map(clampPct);
+    const activeRates = [applyFirstDiscount, applyBundleDiscount, applyPrepaidDiscount, applyBusinessDiscount];
+    const finalInclusive = allRates.reduce((amount, pct, index) => activeRates[index] ? amount * (1 - pct / 100) : amount, price);
+    const maxInclusive = allRates.reduce((amount, pct) => amount * (1 - pct / 100), price);
     const gst = gstRate(selected.category, selected.name);
     const salesNet = netOfGst(finalInclusive, gst);
     const maxSalesNet = netOfGst(maxInclusive, gst);
     const shippingCost = Math.max(0, Number(shipping) || 0);
     const rewardCost = finalInclusive * clampPct(rewardRate) / 100;
+    const maxRewardCost = maxInclusive * clampPct(rewardRate) / 100;
     const profit = salesNet - cogs - shippingCost - rewardCost;
-    const maxProfit = maxSalesNet - cogs - shippingCost - rewardCost;
+    const maxProfit = maxSalesNet - cogs - shippingCost - maxRewardCost;
     const discountAmount = price - finalInclusive;
-    return { price, cogs, gst, finalInclusive, salesNet, shippingCost, rewardCost, profit, margin: salesNet ? profit / salesNet * 100 : 0, discountAmount, maxInclusive, maxProfit, maxMargin: maxSalesNet ? maxProfit / maxSalesNet * 100 : 0 };
-  }, [selected, purchaseCost, firstDiscount, bundleDiscount, prepaidDiscount, businessDiscount, shipping, rewardRate]);
+    return { price, cogs, gst, finalInclusive, salesNet, shippingCost, rewardCost, profit, margin: salesNet ? profit / salesNet * 100 : 0, discountAmount: price - finalInclusive, maxInclusive, maxProfit, maxRewardCost, maxMargin: maxSalesNet ? maxProfit / maxSalesNet * 100 : 0 };
+  }, [selected, purchaseCost, firstDiscount, bundleDiscount, prepaidDiscount, businessDiscount, applyFirstDiscount, applyBundleDiscount, applyPrepaidDiscount, applyBusinessDiscount, shipping, rewardRate]);
 
   const orderSummary = useMemo(() => {
     const costs = new Map(data.costs.map(c => [c.product_id, Number(c.purchase_cost_inr)]));
@@ -198,14 +204,21 @@ export default function ProfitManagementPage() {
           <label className="mb-2 block text-sm font-medium">Product</label><select value={selectedProduct} onChange={e => setSelectedProduct(e.target.value)} className="mb-4 w-full rounded-xl border border-[#e8ded7] px-3 py-3 text-sm">{data.products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
           {selected && <div className="mb-4 grid grid-cols-2 gap-3"><div className="rounded-xl bg-[#f7f3ee] p-3"><p className="text-xs text-[#6d6260]">Website price</p><p className="mt-1 font-semibold">{money(selected.price_inr)}</p></div><div className="rounded-xl bg-[#f7f3ee] p-3"><p className="text-xs text-[#6d6260]">GST rate</p><p className="mt-1 font-semibold">{gstRate(selected.category, selected.name) * 100}%</p></div></div>}
           <label className="mb-2 block text-sm font-medium">Humor purchase cost (GST excluded)</label><input type="number" min="0" step="0.01" value={purchaseCost} onChange={e => setPurchaseCost(e.target.value)} className="mb-4 w-full rounded-xl border border-[#e8ded7] px-3 py-3 text-sm" />
-          <div className="space-y-4">{[[ "First-time login discount (%)", firstDiscount, setFirstDiscount ],[ "Average bundle discount (%)", bundleDiscount, setBundleDiscount ],[ "Prepaid discount (%)", prepaidDiscount, setPrepaidDiscount ],[ "Business Programme coupon discount (%)", businessDiscount, setBusinessDiscount ]].map(([label, value, setter]) => <label key={String(label)} className="grid grid-cols-[1fr_100px] items-center gap-3 text-sm"><span>{String(label)}</span><input type="number" min="0" max="100" step="0.5" value={Number(value)} onChange={e => (setter as (v:number)=>void)(clampPct(Number(e.target.value)))} className="w-full rounded-xl border border-[#e8ded7] px-3 py-2.5 text-right" /></label>)}</div>
+          <div className="space-y-3">
+            {[
+              { label: "First-time login discount (%)", value: firstDiscount, setter: setFirstDiscount, checked: applyFirstDiscount, toggle: setApplyFirstDiscount },
+              { label: "Average bundle discount (%)", value: bundleDiscount, setter: setBundleDiscount, checked: applyBundleDiscount, toggle: setApplyBundleDiscount },
+              { label: "Prepaid discount (%)", value: prepaidDiscount, setter: setPrepaidDiscount, checked: applyPrepaidDiscount, toggle: setApplyPrepaidDiscount },
+              { label: "Business Programme coupon discount (%)", value: businessDiscount, setter: setBusinessDiscount, checked: applyBusinessDiscount, toggle: setApplyBusinessDiscount },
+            ].map(item => <div key={item.label} className="grid grid-cols-[1fr_100px] items-center gap-3 text-sm"><label className="flex items-center gap-2"><input type="checkbox" checked={item.checked} onChange={e => item.toggle(e.target.checked)} /><span>{item.label}</span></label><input type="number" min="0" max="100" step="0.5" value={item.value} onChange={e => item.setter(clampPct(Number(e.target.value)))} className="w-full rounded-xl border border-[#e8ded7] px-3 py-2.5 text-right" /></div>)}
+          </div>
           <div className="mt-5 grid grid-cols-2 gap-3"><label className="text-sm">Shipping per order (₹)<input type="number" min="0" step="1" value={shipping} onChange={e => setShipping(e.target.value)} className="mt-2 w-full rounded-xl border border-[#e8ded7] px-3 py-3" /></label><label className="text-sm">Business Programme reward (%)<input type="number" min="0" max="100" step="1" value={rewardRate} onChange={e => setRewardRate(clampPct(Number(e.target.value)))} className="mt-2 w-full rounded-xl border border-[#e8ded7] px-3 py-3" /></label></div>
           <p className="mt-4 text-xs leading-5 text-[#8a7e7a]">GST rates are fixed in this calculator: shampoo 5%, all other products 18%. Reward cost is calculated on the final customer payment, after discounts.</p>
         </section>
         <section className="space-y-5">
           <div className="rounded-2xl bg-[#351724] p-6 text-white"><p className="text-sm text-white/70">Estimated net profit per unit</p><p className="mt-2 text-4xl font-semibold">{money(calc?.profit || 0)}</p><p className="mt-2 text-sm text-white/70">Profit margin on sales excluding GST: {(calc?.margin || 0).toFixed(1)}%</p></div>
-          <div className="rounded-2xl border border-[#e8ded7] bg-white p-5"><h3 className="font-display text-lg text-[#351724]">Discounted scenario breakdown</h3><div className="mt-4 space-y-3 text-sm">{[[ "Website price (GST inclusive)", calc?.price || 0 ],[ "Customer discount total", -(calc?.discountAmount || 0) ],[ "Customer pays", calc?.finalInclusive || 0 ],[ "Sales value excluding GST", calc?.salesNet || 0 ],[ "Purchase cost", -(calc?.cogs || 0) ],[ "Shipping", -(calc?.shippingCost || 0) ],[ "27% average reward cost (editable rate)", -(calc?.rewardCost || 0) ]].map(([label, amount]) => <div key={String(label)} className="flex items-center justify-between gap-4 border-b border-[#f0e9e4] pb-2"><span className="text-[#6d6260]">{String(label)}</span><span className="font-medium">{money(Number(amount))}</span></div>)}</div></div>
-          <div className="rounded-2xl border border-[#e8ded7] bg-white p-5"><div className="flex items-start justify-between gap-3"><div><h3 className="font-display text-lg text-[#351724]">Maximum-discount scenario</h3><p className="mt-1 text-xs text-[#6d6260]">Uses all four entered discounts sequentially.</p></div><span className="rounded-full bg-[#f7f3ee] px-3 py-1 text-xs">Stress test</span></div><div className="mt-4 grid grid-cols-2 gap-3"><div className="rounded-xl bg-[#f7f3ee] p-4"><p className="text-xs text-[#6d6260]">Customer pays</p><p className="mt-1 text-lg font-semibold">{money(calc?.maxInclusive || 0)}</p></div><div className="rounded-xl bg-[#f7f3ee] p-4"><p className="text-xs text-[#6d6260]">Net profit</p><p className="mt-1 text-lg font-semibold">{money(calc?.maxProfit || 0)}</p><p className="mt-1 text-xs text-[#6d6260]">Margin {(calc?.maxMargin || 0).toFixed(1)}%</p></div></div></div>
+          <div className="rounded-2xl border border-[#e8ded7] bg-white p-5"><h3 className="font-display text-lg text-[#351724]">Discounted scenario breakdown</h3><div className="mt-4 space-y-3 text-sm">{[[ "Website price (GST inclusive)", calc?.price || 0 ],[ "Applied customer discount", -(calc?.discountAmount || 0) ]],[ "Customer pays", calc?.finalInclusive || 0 ],[ "Sales value excluding GST", calc?.salesNet || 0 ],[ "Purchase cost", -(calc?.cogs || 0) ],[ "Shipping", -(calc?.shippingCost || 0) ],[ "Business Programme reward cost", -(calc?.rewardCost || 0) ]].map(([label, amount]) => <div key={String(label)} className="flex items-center justify-between gap-4 border-b border-[#f0e9e4] pb-2"><span className="text-[#6d6260]">{String(label)}</span><span className="font-medium">{money(Number(amount))}</span></div>)}</div></div>
+          <div className="rounded-2xl border border-[#e8ded7] bg-white p-5"><div className="flex items-start justify-between gap-3"><div><h3 className="font-display text-lg text-[#351724]">Maximum-discount scenario</h3><p className="mt-1 text-xs text-[#6d6260]">Applies all four entered discounts sequentially, regardless of the actual-scenario checkboxes.</p></div><span className="rounded-full bg-[#f7f3ee] px-3 py-1 text-xs">Stress test</span></div><div className="mt-4 grid grid-cols-2 gap-3"><div className="rounded-xl bg-[#f7f3ee] p-4"><p className="text-xs text-[#6d6260]">Customer pays</p><p className="mt-1 text-lg font-semibold">{money(calc?.maxInclusive || 0)}</p></div><div className="rounded-xl bg-[#f7f3ee] p-4"><p className="text-xs text-[#6d6260]">Net profit</p><p className="mt-1 text-lg font-semibold">{money(calc?.maxProfit || 0)}</p><p className="mt-1 text-xs text-[#6d6260]">Margin {(calc?.maxMargin || 0).toFixed(1)}%</p></div></div></div>
         </section>
       </div> : <div className="space-y-6">
         <section className="rounded-2xl border border-[#e8ded7] bg-white p-5 md:p-6">
