@@ -251,7 +251,7 @@ function withMainImage(product: Product): Product {
   return {
     ...product,
     ...(productContentOverrides[product.slug] ?? {}),
-    ...(finalProductNames[product.slug] ? { name: finalProductNames[product.slug] } : {}),
+
     ...(legacyRating ?? { rating: 0, review_count: 0 }),
     images,
   };
@@ -311,13 +311,13 @@ async function getDatabaseProducts(): Promise<Product[] | null> {
 async function overlayDatabasePrices(products: Product[]): Promise<Product[]> {
   if (!isSupabaseConfigured() || !products.length) return products;
   try {
-    const { data, error } = await supabaseAdmin().from("products").select("slug,price_inr,compare_at_price_inr").eq("status", "live");
+    const { data, error } = await supabaseAdmin().from("products").select("slug,name,price_inr,compare_at_price_inr").eq("status", "live");
     if (error || !data?.length) return products;
     const bySlug = new Map(data.map(row => [String(row.slug), row]));
     return products.map(product => {
       const row = bySlug.get(product.slug);
       if (!row) return product;
-      return { ...product, price_inr: Number(row.price_inr), compare_at_price_inr: row.compare_at_price_inr == null ? null : Number(row.compare_at_price_inr) };
+      return { ...product, name: String(row.name || product.name), price_inr: Number(row.price_inr), compare_at_price_inr: row.compare_at_price_inr == null ? null : Number(row.compare_at_price_inr) };
     });
   } catch { return products; }
 }
