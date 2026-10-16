@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ADMIN_OTP_COOKIE, OTP_TTL_MS, generateOtp, isAdminIdentifier, normalizeIdentifier, otpHash } from "@/lib/adminAuth";
+import { ADMIN_OTP_COOKIE, OTP_TTL_MS, checkAdminOtpRateLimit, generateOtp, isAdminIdentifier, normalizeIdentifier, otpHash } from "@/lib/adminAuth";
 
 function emailRecipient() {
   return process.env.ADMIN_EMAIL?.trim().toLowerCase() || "";
@@ -32,6 +32,14 @@ export async function POST(request: Request) {
     const value = String(identifier || "").trim();
     if (!isAdminIdentifier(value)) {
       return NextResponse.json({ error: "This email or mobile number is not registered as an admin." }, { status: 401 });
+    }
+
+    const rate = await checkAdminOtpRateLimit(request, value, "request");
+    if (!rate.allowed) {
+      return NextResponse.json(
+        { error: rate.unavailable ? "Admin login is temporarily unavailable. Please try again shortly." : "Too many OTP requests. Please wait before trying again." },
+        { status: rate.unavailable ? 503 : 429, headers: { "Retry-After": String(rate.retryAfterSeconds) } },
+      );
     }
 
     const otp = generateOtp();
