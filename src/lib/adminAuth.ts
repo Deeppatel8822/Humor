@@ -62,8 +62,9 @@ export async function checkAdminOtpRateLimit(
   const rateKey = crypto.createHash("sha256")
     .update(`${action}:${ip}:${normalizeIdentifier(identifier)}`)
     .digest("hex");
-  const baseUrl = supabaseUrl.endsWith("/") ? supabaseUrl.slice(0, -1) : supabaseUrl;
 
+  // Normalize the URL separately; avoid regex literals inside template expressions.
+  const baseUrl = supabaseUrl.endsWith("/") ? supabaseUrl.slice(0, -1) : supabaseUrl;
   const response = await fetch(`${baseUrl}/rest/v1/rpc/admin_otp_rate_limit_check`, {
     method: "POST",
     headers: {
