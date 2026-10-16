@@ -29,24 +29,20 @@ function isHairBundle(name: string) {
   return value.includes("hair") || value.includes("shampoo") || value.includes("conditioner") || value.includes("mask");
 }
 
-export function bundlePrice(products: Product[], bundleName: string) {
+export function bundlePrice(products: Product[], bundleName: string, discountPercent = 8) {
   const total = bundleTotal(products);
-  const discountRate = isHairBundle(bundleName)
-    ? total >= 1000 ? 0.09 : total >= 800 ? 0.06 : 0.12
-    : total >= 800 ? 0.15 : 0.14;
-  const discounted = total * (1 - discountRate);
-  const step = discounted >= 1000 ? 100 : 50;
-  return Math.max(1, Math.round(discounted / step) * step - 1);
+  const safePercent = Math.min(100, Math.max(0, Number(discountPercent) || 0));
+  return Math.max(1, Math.round(total * (1 - safePercent / 100)));
 }
 
-export function bundleDiscountPercent(products: Product[], bundleName: string) {
-  const total = bundleTotal(products);
-  return total ? Math.round(((total - bundlePrice(products, bundleName)) / total) * 100) : 0;
+export function bundleDiscountPercent(products: Product[], _bundleName: string, discountPercent = 8) {
+  return bundleTotal(products) > 0 ? Math.min(100, Math.max(0, Number(discountPercent) || 0)) : 0;
 }
 
 export function calculateBundleSavings(
   lines: Array<{ slug: string; quantity: number }>,
-  products: Array<Pick<Product, "slug" | "price_inr">>
+  products: Array<Pick<Product, "slug" | "price_inr">>,
+  discountPercent = 8
 ) {
   const productMap = new Map(products.map((product) => [product.slug, product]));
   const initial = bundleDefinitions.map((bundle) => ({
@@ -69,7 +65,7 @@ export function calculateBundleSavings(
 
     for (let count = 1; count <= possible; count += 1) {
       entry.bundle.slugs.forEach((slug) => remaining.set(slug, (remaining.get(slug) ?? 0) - 1));
-      const saved = Math.max(0, bundleTotal(entry.bundleProducts as Product[]) - bundlePrice(entry.bundleProducts as Product[], entry.bundle.name));
+      const saved = Math.max(0, bundleTotal(entry.bundleProducts as Product[]) - bundlePrice(entry.bundleProducts as Product[], entry.bundle.name, discountPercent));
       best = Math.max(best, saved * count + solve(index + 1, remaining));
     }
 
@@ -81,7 +77,7 @@ export function calculateBundleSavings(
   return solve(0, quantities);
 }
 
-export function getRoutineUpsells(product: Product, products: Product[]) {
+export function getRoutineUpsells(product: Product, products: Product[], discountPercent = 8) {
   const map = new Map(products.map((item) => [item.slug, item]));
   return bundleDefinitions.filter((bundle) => bundle.slugs.includes(product.slug)).map((bundle) => {
     const bundleProducts = bundle.slugs.map((slug) => map.get(slug)).filter(Boolean) as Product[];
@@ -89,7 +85,7 @@ export function getRoutineUpsells(product: Product, products: Product[]) {
     const missing = bundleProducts.filter((item) => item.slug !== product.slug);
     if (!missing.length) return null;
     const regularMissing = bundleTotal(missing);
-    const specialMissing = Math.max(1, bundlePrice(bundleProducts, bundle.name) - product.price_inr);
+    const specialMissing = Math.max(1, bundlePrice(bundleProducts, bundle.name, discountPercent) - product.price_inr);
     return { bundle, missing, regularMissing, specialMissing, saving: Math.max(0, regularMissing - specialMissing) };
   }).filter(Boolean) as Array<{
     bundle: BundleDefinition; missing: Product[]; regularMissing: number; specialMissing: number; saving: number;
