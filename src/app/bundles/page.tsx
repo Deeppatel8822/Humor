@@ -2,6 +2,7 @@ import { getAllProducts } from "@/lib/catalog";
 import { Product } from "@/types/product";
 import AddBundleButton from "@/components/AddBundleButton";
 import { bundleTotal, bundlePrice, bundleDiscountPercent } from "@/lib/bundles";
+import { getStorePricingSettings } from "@/lib/storePricing";
 
 export const metadata = {
   title: "Bundles | Humor Luxury",
@@ -11,6 +12,9 @@ export const metadata = {
 
 export default async function BundlesPage() {
   const products = await getAllProducts();
+  const pricingSettings = await getStorePricingSettings();
+  const bundleRule = pricingSettings.discounts.bundle;
+  const bundlePercent = bundleRule.enabled && bundleRule.type === "percent" ? bundleRule.value : 0;
   const bySlug = (slug: string) => products.find((p) => p.slug === slug);
 
   const bundles = [
@@ -103,11 +107,11 @@ export default async function BundlesPage() {
                     &#8377;{bundleTotal(bundle.items)}
                   </span>
                   <span className="text-[10px] font-semibold uppercase tracking-wide rounded-full bg-[var(--deep-wine)] text-white px-2 py-1">
-                    {bundleDiscountPercent(bundle.items, bundle.name)}% OFF
+                    {bundleDiscountPercent(bundle.items, bundle.name, bundlePercent)}% OFF
                   </span>
                 </div>
                 <span className="text-lg font-semibold text-[var(--ink)]">
-                  &#8377;{bundlePrice(bundle.items, bundle.name)}
+                  &#8377;{bundlePrice(bundle.items, bundle.name, bundlePercent)}
                 </span>
               </div>
               <AddBundleButton products={bundle.items} />
