@@ -308,6 +308,20 @@ async function getDatabaseProducts(): Promise<Product[] | null> {
   }
 }
 
+async function overlayDatabasePrices(products: Product[]): Promise<Product[]> {
+  if (!isSupabaseConfigured() || !products.length) return products;
+  try {
+    const { data, error } = await supabaseAdmin().from("products").select("slug,price_inr,compare_at_price_inr").eq("status", "live");
+    if (error || !data?.length) return products;
+    const bySlug = new Map(data.map(row => [String(row.slug), row]));
+    return products.map(product => {
+      const row = bySlug.get(product.slug);
+      if (!row) return product;
+      return { ...product, price_inr: Number(row.price_inr), compare_at_price_inr: row.compare_at_price_inr == null ? null : Number(row.compare_at_price_inr) };
+    });
+  } catch { return products; }
+}
+
 export async function getAllProducts(): Promise<Product[]> {
   if (isShopifyConfigured()) {
     try {
@@ -316,7 +330,7 @@ export async function getAllProducts(): Promise<Product[]> {
       if (localSmoothShake && !shopifyProducts.some((product) => product.slug === localSmoothShake.slug)) {
         shopifyProducts.push(withMainImage(localSmoothShake));
       }
-      return shopifyProducts;
+      return await overlayDatabasePrices(shopifyProducts);
     } catch (err) {
       console.error("Shopify fetch failed, trying Supabase/local catalog:", err);
     }
@@ -327,16 +341,16 @@ export async function getAllProducts(): Promise<Product[]> {
     const newLocalProducts = local.getProducts()
       .filter((p) => p.slug === "smooth-shake-daily-shampoo" && !databaseProducts.some((db) => db.slug === p.slug))
       .map(withMainImage);
-    return [...databaseProducts, ...newLocalProducts];
+    return overlayDatabasePrices([...databaseProducts, ...newLocalProducts]);
   }
-  return local.getProducts().map(withMainImage);
+  return overlayDatabasePrices(local.getProducts().map(withMainImage));
 }
 
 export async function getProduct(slug: string): Promise<Product | undefined> {
   if (isShopifyConfigured()) {
     try {
       const product = await fetchShopifyProductByHandle(slug);
-      if (product) return withMainImage(product);
+      if (product) return (await overlayDatabasePrices([withMainImage(product)]))[0];
     } catch (err) {
       console.error("Shopify fetch failed, trying Supabase/local catalog:", err);
     }
@@ -344,9 +358,9 @@ export async function getProduct(slug: string): Promise<Product | undefined> {
 
   const databaseProducts = await getDatabaseProducts();
   const databaseProduct = databaseProducts?.find((product) => product.slug === slug);
-  if (databaseProduct) return databaseProduct;
+  if (databaseProduct) return (await overlayDatabasePrices([databaseProduct]))[0];
   const localProduct = local.getProductBySlug(slug);
-  return localProduct ? withMainImage(localProduct) : undefined;
+  return localProduct ? (await overlayDatabasePrices([withMainImage(localProduct)]))[0] : undefined;
 }
 
 export async function getFeatured(): Promise<Product[]> {
