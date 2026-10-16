@@ -4,6 +4,7 @@ import { getAllProducts } from "@/lib/catalog";
 import { calculateBundleSavings } from "@/lib/bundles";
 import { calculateCheckoutPricing } from "@/lib/checkoutPricing";
 import { calculatePartnerDiscount, findPartnerByCode } from "@/lib/marketingPartner";
+import { getStorePricingSettings, discountAmount } from "@/lib/storePricing";
 
 interface CartLineInput {
   productId: string;
@@ -54,7 +55,13 @@ export async function POST(req: NextRequest) {
       subtotalInr += product.price_inr * line.quantity;
     }
 
-    const bundleSavingsInr = calculateBundleSavings(lines.map((line) => ({ slug: line.slug || products.find((p) => p.id === line.productId)?.slug || "", quantity: line.quantity })), products);
+    const pricingSettings = await getStorePricingSettings();
+    const bundleRule = pricingSettings.discounts.bundle;
+    const bundleSavingsInr = bundleRule.enabled ? calculateBundleSavings(
+      lines.map((line) => ({ slug: line.slug || products.find((p) => p.id === line.productId)?.slug || "", quantity: line.quantity })),
+      products,
+      bundleRule.type === "percent" ? bundleRule.value : 0
+    ) : 0;
     let partnerDiscountInr = 0;
     let partnerMatch: Awaited<ReturnType<typeof findPartnerByCode>> = null;
     if (vendorCode) {
