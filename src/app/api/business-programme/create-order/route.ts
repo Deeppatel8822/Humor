@@ -78,27 +78,13 @@ export async function POST(req: NextRequest) {
       p_user_id: user.id,
     });
     if (reservationError) {
-      // Keep registration available during staged rollout if the database migration
-      // has not yet been applied. The reservation protection becomes active as soon
-      // as the RPC exists in Supabase; this fallback preserves the previous flow only.
-      const message = String(reservationError.message || "");
-      const missingReservationRpc = reservationError.code === "PGRST202" ||
-        /business_programme_registration_order_reserve.*(not found|schema cache)|could not find the function/i.test(message);
-      if (!missingReservationRpc) throw reservationError;
-
-      console.error("Business Programme order reservation migration is not applied yet; using legacy order creation.");
-      const order = await razorpayClient().orders.create({
-        amount: REGISTRATION_FEE_INR * 100,
-        currency: "INR",
-        receipt: "hb_" + Date.now(),
-        notes: { userId: user.id, programme: "humor_business", businessName },
-      });
-      return NextResponse.json({
-        razorpayOrderId: order.id,
-        amountInr: REGISTRATION_FEE_INR,
-        keyId: process.env.RAZORPAY_KEY_ID,
-        reservationProtectionPending: true,
-      });
+      // Fail closed if the database reservation guard is unavailable. Do not create
+      // a payment order that could bypass the one-active-registration-per-account rule.
+      console.error("Business Programme registration reservation is unavailable:", reservationError);
+      return NextResponse.json(
+        { error: "Registration is temporarily unavailable while we secure your application. Please try again shortly." },
+        { status: 503 }
+      );
     }
     if (!reservation?.success) {
       if (reservation?.conflict) {
