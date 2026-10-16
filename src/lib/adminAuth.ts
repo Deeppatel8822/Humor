@@ -40,3 +40,59 @@ export function sessionToken(_identifier: string) {
 export function generateOtp() {
   return String(crypto.randomInt(100000, 1000000));
 }
+
+
+export type AdminOtpRateLimitAction = "request" | "verify";
+
+export async function checkAdminOtpRateLimit(
+  request: Request,
+  identifier: string,
+  action: AdminOtpRateLimitAction,
+) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || "";
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+  if (!supabaseUrl || !serviceKey) {
+    // Fail closed: OTP endpoints must not silently run without shared rate limiting.
+    return { allowed: false, retryAfterSeconds: 60, unavailable: true };
+  }
+
+  const forwarded = request.headers.get("x-vercel-forwarded-for")
+    || request.headers.get("x-forwarded-for")
+    || request.headers.get("x-real-ip")
+    || "unknown";
+  const ip = forwarded.split(",")[0].trim().slice(0, 100) || "unknown";
+  const rateKey = crypto.createHash("sha256")
+    .update(`${action}:${ip}:${normalizeIdentifier(identifier)}`)
+    .digest("hex");
+
+  const response = await fetch(`${supabaseUrl.replace(/\\/$/, "")}/rest/v1/rpc/admin_otp_rate_limit_check`, {
+    method: "POST",
+    headers: {
+      apikey: serviceKey,
+      Authorization: `Bearer ${serviceKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      p_rate_key: rateKey,
+      p_action: action,
+      p_limit: action === "request" ? 3 : 5,
+      p_window_seconds: action === "request" ? 900 : 600,
+    }),
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    // Fail closed if the database limiter is unavailable or misconfigured.
+    return { allowed: false, retryAfterSeconds: 60, unavailable: true };
+  }
+
+  const result = await response.json() as {
+    allowed?: boolean;
+    retryAfterSeconds?: number;
+  };
+  return {
+    allowed: result.allowed === true,
+    retryAfterSeconds: Math.max(1, Number(result.retryAfterSeconds) || 60),
+    unavailable: false,
+  };
+}
