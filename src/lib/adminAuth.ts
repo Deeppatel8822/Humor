@@ -31,8 +31,7 @@ export function otpHash(identifier: string, otp: string, expiresAt: number) {
   return crypto.createHmac("sha256", adminOtpSecret()).update(`${normalizeIdentifier(identifier)}:${otp}:${expiresAt}`).digest("hex");
 }
 
-// Keep the established admin session token format so all existing admin APIs
-// continue to accept the OTP-authenticated session.
+// Keep the established admin session token format so existing admin APIs remain compatible.
 export function sessionToken(_identifier: string) {
   return crypto.createHmac("sha256", adminOtpSecret()).update(adminEmail()).digest("hex");
 }
@@ -40,7 +39,6 @@ export function sessionToken(_identifier: string) {
 export function generateOtp() {
   return String(crypto.randomInt(100000, 1000000));
 }
-
 
 export type AdminOtpRateLimitAction = "request" | "verify";
 
@@ -64,8 +62,9 @@ export async function checkAdminOtpRateLimit(
   const rateKey = crypto.createHash("sha256")
     .update(`${action}:${ip}:${normalizeIdentifier(identifier)}`)
     .digest("hex");
+  const baseUrl = supabaseUrl.endsWith("/") ? supabaseUrl.slice(0, -1) : supabaseUrl;
 
-  const response = await fetch(`${supabaseUrl.replace(/\\/$/, "")}/rest/v1/rpc/admin_otp_rate_limit_check`, {
+  const response = await fetch(`${baseUrl}/rest/v1/rpc/admin_otp_rate_limit_check`, {
     method: "POST",
     headers: {
       apikey: serviceKey,
@@ -82,14 +81,10 @@ export async function checkAdminOtpRateLimit(
   });
 
   if (!response.ok) {
-    // Fail closed if the database limiter is unavailable or misconfigured.
     return { allowed: false, retryAfterSeconds: 60, unavailable: true };
   }
 
-  const result = await response.json() as {
-    allowed?: boolean;
-    retryAfterSeconds?: number;
-  };
+  const result = await response.json() as { allowed?: boolean; retryAfterSeconds?: number };
   return {
     allowed: result.allowed === true,
     retryAfterSeconds: Math.max(1, Number(result.retryAfterSeconds) || 60),
