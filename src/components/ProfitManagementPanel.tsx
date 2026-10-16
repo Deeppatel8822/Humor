@@ -106,7 +106,7 @@ export default function ProfitManagementPanel() {
       setNotice(json.message || "Success.");
       if (action === "login") { setUnlocked(true); setPassword(""); }
       if (action === "forgot") setShowForgot(false);
-      if (action === "reset") router.replace("/profit-management");
+      if (action === "reset") router.replace("/admin");
       return true;
     } catch (e) { setError(e instanceof Error ? e.message : "Request failed."); return false; }
     finally { setBusy(false); }
