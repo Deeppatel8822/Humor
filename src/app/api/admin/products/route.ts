@@ -37,10 +37,11 @@ export async function PATCH(request: Request) {
     const hasStock = body.stock_quantity !== undefined;
     const hasPrice = body.price_inr !== undefined;
     const hasCompareAt = body.compare_at_price_inr !== undefined;
+    const hasName = body.name !== undefined;
     const stock = Number(body.stock_quantity);
     const price = Number(body.price_inr);
 
-    if (!id || (!hasStock && !hasPrice && !hasCompareAt)) {
+    if (!id || (!hasStock && !hasPrice && !hasCompareAt && !hasName)) {
       return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
     }
     if (hasStock && (!Number.isInteger(stock) || stock < 0)) {
@@ -51,6 +52,7 @@ export async function PATCH(request: Request) {
     }
 
     const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
+    if (hasName) { const name = String(body.name || "").trim(); if (!name || name.length > 120) return NextResponse.json({ error: "Product name must be between 1 and 120 characters." }, { status: 400 }); updates.name = name; }
     if (hasStock) updates.stock_quantity = stock;
     if (hasPrice) updates.price_inr = price;
     if (hasCompareAt) { const compareAt = body.compare_at_price_inr === null ? null : Number(body.compare_at_price_inr); if (compareAt !== null && (!Number.isInteger(compareAt) || compareAt < 0)) return NextResponse.json({ error: "Invalid MRP." }, { status: 400 }); updates.compare_at_price_inr = compareAt; }
@@ -59,7 +61,7 @@ export async function PATCH(request: Request) {
       .from("products")
       .update(updates)
       .eq("id", id)
-      .select("id, name, price_inr, compare_at_price_inr, stock_quantity")
+      .select("id, slug, name, sku, price_inr, compare_at_price_inr, stock_quantity")
       .single();
 
     if (error) {
