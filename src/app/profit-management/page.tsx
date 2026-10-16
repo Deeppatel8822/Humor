@@ -63,6 +63,37 @@ export default function ProfitManagementPage() {
   }, []);
 
   useEffect(() => { if (unlocked) loadData().catch(e => setError(e.message)); }, [unlocked, loadData]);
+
+  useEffect(() => {
+    const clearSession = () => {
+      void fetch("/api/profit/access", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "logout" }),
+        keepalive: true,
+      }).catch(() => {});
+    };
+    const recheckOnReturn = () => {
+      fetch("/api/profit/access", { cache: "no-store" })
+        .then(async response => {
+          const json = await response.json();
+          if (!response.ok || !json.authenticated) {
+            setUnlocked(false);
+            setData({ products: [], costs: [], orders: [] });
+          }
+        })
+        .catch(() => {
+          setUnlocked(false);
+          setData({ products: [], costs: [], orders: [] });
+        });
+    };
+    window.addEventListener("pagehide", clearSession);
+    window.addEventListener("pageshow", recheckOnReturn);
+    return () => {
+      window.removeEventListener("pagehide", clearSession);
+      window.removeEventListener("pageshow", recheckOnReturn);
+    };
+  }, []);
   useEffect(() => { const p = data.products.find(x => x.id === selectedProduct); if (p) setPurchaseCost(costInputs[p.id] ?? "0"); }, [selectedProduct, data.products, costInputs]);
   useEffect(() => { const p = data.products.find(x => x.id === selectedProduct); if (p) setWebsitePrice(String(p.price_inr ?? 0)); }, [selectedProduct, data.products]);
 
@@ -196,7 +227,7 @@ export default function ProfitManagementPage() {
     <div className="mx-auto max-w-7xl">
       <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div><p className="text-xs uppercase tracking-[0.24em] text-[#b07b35]">Humor Luxury · Admin</p><h1 className="mt-2 font-display text-3xl text-[#351724] md:text-4xl">Profit Management</h1><p className="mt-2 text-sm text-[#6d6260]">GST-adjusted sales, purchase costs, shipping and Business Programme rewards.</p></div>
-        <div className="flex flex-wrap gap-2"><button onClick={() => { setTab("calculate"); }} className={`rounded-full border px-4 py-2.5 text-sm ${tab === "calculate" ? "border-[#351724] bg-[#351724] text-white" : "border-[#e8ded7] bg-white text-[#351724]"}`}>Calculate Profit</button><button onClick={() => setTab("current")} className={`rounded-full border px-4 py-2.5 text-sm ${tab === "current" ? "border-[#351724] bg-[#351724] text-white" : "border-[#e8ded7] bg-white text-[#351724]"}`}>Your Current Profit</button><button onClick={() => { setUnlocked(false); setNotice(""); }} className="rounded-full border border-[#e8ded7] bg-white px-4 py-2.5 text-sm text-[#351724]">Lock</button></div>
+        <div className="flex flex-wrap gap-2"><button onClick={() => { setTab("calculate"); }} className={`rounded-full border px-4 py-2.5 text-sm ${tab === "calculate" ? "border-[#351724] bg-[#351724] text-white" : "border-[#e8ded7] bg-white text-[#351724]"}`}>Calculate Profit</button><button onClick={() => setTab("current")} className={`rounded-full border px-4 py-2.5 text-sm ${tab === "current" ? "border-[#351724] bg-[#351724] text-white" : "border-[#e8ded7] bg-white text-[#351724]"}`}>Your Current Profit</button><button onClick={async () => { setBusy(true); try { await fetch("/api/profit/access", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "logout" }) }); } finally { setUnlocked(false); setData({ products: [], costs: [], orders: [] }); setNotice(""); setError(""); setPassword(""); setBusy(false); } }} className="rounded-full border border-[#e8ded7] bg-white px-4 py-2.5 text-sm text-[#351724]">Lock</button></div>
       </div>
       {error && unlocked && <div className="mb-4 rounded-xl border border-red-200 bg-white px-4 py-3 text-sm text-red-700">{error}</div>}
       {notice && unlocked && <div className="mb-4 rounded-xl border border-green-200 bg-white px-4 py-3 text-sm text-green-800">{notice}</div>}
