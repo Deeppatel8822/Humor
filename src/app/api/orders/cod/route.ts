@@ -79,10 +79,13 @@ export async function POST(request: Request) {
       return { priceInr: Number(product?.price_inr ?? 0), quantity: line.quantity };
     });
     if (partnerMatch) partnerDiscountInr = calculatePartnerDiscount(pricedLines);
-    const bundleSavingsInr = calculateBundleSavings(
+    const pricingSettings = await getStorePricingSettings();
+    const bundleRule = pricingSettings.discounts.bundle;
+    const bundleSavingsInr = bundleRule.enabled ? calculateBundleSavings(
       lines.map((line) => ({ slug: line.slug || String(productMap.get(line.productId)?.slug || ""), quantity: line.quantity })),
-      Array.from(productMap.values()).map((product) => ({ slug: String(product.slug), price_inr: Number(product.price_inr) }))
-    );
+      Array.from(productMap.values()).map((product) => ({ slug: String(product.slug), price_inr: Number(product.price_inr) })),
+      bundleRule.type === "percent" ? bundleRule.value : 0
+    ) : 0;
     const firstOrderDiscount = firstOrderDiscountInr ? Math.round(subtotalInr * 0.10) : 0;
     const combinedDiscount = firstOrderDiscount + partnerDiscountInr + bundleSavingsInr;
     // The account that is logged in owns the order. Shipping email/phone are
