@@ -15,3 +15,14 @@ revoke all on public.profit_management_access from anon, authenticated;
 revoke all on public.profit_product_costs from anon, authenticated;
 grant select, insert, update, delete on public.profit_management_access to service_role;
 grant select, insert, update, delete on public.profit_product_costs to service_role;
+
+create table if not exists public.profit_management_resets (
+  id uuid primary key default gen_random_uuid(),
+  token_hash text unique not null,
+  expires_at timestamptz not null,
+  used_at timestamptz,
+  created_at timestamptz not null default now()
+);
+alter table public.profit_management_resets enable row level security;
+revoke all on public.profit_management_resets from anon, authenticated;
+grant select, insert, update, delete on public.profit_management_resets to service_role;
