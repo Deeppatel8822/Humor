@@ -87,7 +87,7 @@ export default function SiteHeader() {
                   key={link.href}
                   href={link.href}
                   className={link.featured
-                    ? "rounded-full bg-[var(--deep-wine)] px-4 py-2 text-[11px] font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-[var(--wine-soft)]"
+                    ? "business-cta-live rounded-full bg-[var(--deep-wine)] px-4 py-2 text-[11px] font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-[var(--wine-soft)]"
                     : "hover:text-[var(--deep-wine)] transition-colors"}
                 >
                   {link.label}
@@ -158,7 +158,7 @@ export default function SiteHeader() {
                         href={link.href}
                         onClick={() => setMenuOpen(false)}
                         className={link.featured
-                          ? "block rounded-xl bg-[var(--deep-wine)] px-4 py-3 text-sm font-semibold text-white"
+                          ? "business-cta-live block rounded-xl bg-[var(--deep-wine)] px-4 py-3 text-sm font-semibold text-white"
                           : "block rounded-xl px-4 py-3 text-sm font-medium text-[var(--ink)] hover:bg-[var(--milk-sage)] hover:text-[var(--deep-wine)]"}
                       >
                         {link.label}
