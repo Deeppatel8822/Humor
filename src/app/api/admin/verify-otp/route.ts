@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { ADMIN_COOKIE, ADMIN_OTP_COOKIE, SESSION_TTL_SECONDS, adminOtpSecret, normalizeIdentifier, sessionToken } from "@/lib/adminAuth";
+import { ADMIN_COOKIE, ADMIN_OTP_COOKIE, SESSION_TTL_SECONDS, adminOtpSecret, checkAdminOtpRateLimit, isAdminIdentifier, normalizeIdentifier, sessionToken } from "@/lib/adminAuth";
 import crypto from "crypto";
 
 export async function POST(request: Request) {
