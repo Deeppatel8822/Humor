@@ -22,7 +22,7 @@ function ProfitPasswordResetForm() {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Could not reset password.");
       setNotice(json.message || "Password reset successfully.");
-      window.setTimeout(() => router.replace("/profit-management"), 1000);
+      window.setTimeout(() => router.replace("/admin"), 1000);
     } catch (e) { setError(e instanceof Error ? e.message : "Could not reset password."); }
     finally { setBusy(false); }
   }
