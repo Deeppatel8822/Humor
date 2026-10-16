@@ -82,10 +82,10 @@ export default function AdminPage() {
   async function savePricingProduct(product: PricingProduct, price: number, compareAt: number | null) {
     setPricingBusy(true); setError("");
     try {
-      const res = await fetch("/api/admin/products", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: product.id, price_inr: price, compare_at_price_inr: compareAt }) });
+      const res = await fetch("/api/admin/products", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: product.id, name: product.name, price_inr: price, compare_at_price_inr: compareAt }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Could not save product price.");
-      setPricingProducts(prev => prev.map(p => p.id === product.id ? { ...p, price_inr: price, compare_at_price_inr: compareAt } : p));
+      setPricingProducts(prev => prev.map(p => p.id === product.id ? { ...p, name: product.name, price_inr: price, compare_at_price_inr: compareAt } : p));
     } catch (e) { setError(e instanceof Error ? e.message : "Could not save product price."); }
     finally { setPricingBusy(false); }
   }
@@ -549,7 +549,7 @@ function CartActivitySection() {
 }
 
 
-function PricingSection({ products, settings, busy, onSaveProduct, onPublish }: { products: PricingProduct[]; settings: PricingSettings | null; busy: boolean; onSaveProduct: (p: PricingProduct, price: number, compareAt: number | null) => void; onPublish: (s: PricingSettings) => void }) {
+function PricingSection({ products, settings, busy, onSaveProduct, onPublish }: { products: PricingProduct[]; settings: PricingSettings | null; busy: boolean; onSaveProduct: (p: PricingProduct, name: string, price: number, compareAt: number | null) => void; onPublish: (s: PricingSettings) => void }) {
   const [draft, setDraft] = useState<PricingSettings | null>(settings);
   useEffect(() => { setDraft(settings); }, [settings]);
   const labels: Record<string,string> = { firstOrder:"First-time customer", bundle:"Bundle", prepaid:"Prepaid", businessProgramme:"Business Programme", festival:"Festival Discount", special:"Special Discount" };
@@ -570,6 +570,6 @@ function PricingSection({ products, settings, busy, onSaveProduct, onPublish }: 
 function PriceEditor({ product, busy, onSave }: { product: PricingProduct; busy: boolean; onSave: (p: PricingProduct, price: number, compareAt: number | null) => void }) {
   const [price,setPrice]=useState(String(product.price_inr));
   const [mrp,setMrp]=useState(String(product.compare_at_price_inr ?? ""));
-  useEffect(()=>{setPrice(String(product.price_inr));setMrp(String(product.compare_at_price_inr ?? ""));},[product.price_inr,product.compare_at_price_inr]);
-  return <div className="grid gap-3 rounded-xl border border-[var(--line)] p-3 md:grid-cols-[1fr_120px_120px_auto] md:items-center"><div><div className="text-sm font-medium">{product.name}</div><div className="text-xs text-[var(--muted)]">{product.sku} · {product.slug}</div></div><label className="text-xs">Website price ₹<input type="number" min="1" value={price} onChange={e=>setPrice(e.target.value)} className="mt-1 w-full rounded-lg border p-2 text-sm" /></label><label className="text-xs">MRP ₹<input type="number" min="0" value={mrp} onChange={e=>setMrp(e.target.value)} className="mt-1 w-full rounded-lg border p-2 text-sm" /></label><button disabled={busy || !Number.isInteger(Number(price)) || Number(price)<=0} onClick={()=>onSave(product,Number(price),mrp.trim()===""?null:Number(mrp))} className="rounded-full border px-4 py-2 text-xs font-semibold disabled:opacity-50">Save price</button></div>;
+  useEffect(()=>{setName(product.name);setPrice(String(product.price_inr));setMrp(String(product.compare_at_price_inr ?? ""));},[product.name,product.price_inr,product.compare_at_price_inr]);
+  return <div className="grid gap-3 rounded-xl border border-[var(--line)] p-3 md:grid-cols-[minmax(220px,1fr)_120px_120px_auto] md:items-center"><div><label className="block text-xs">Product name<input type="text" maxLength={120} value={name} onChange={e=>setName(e.target.value)} className="mt-1 w-full rounded-lg border p-2 text-sm font-medium" /></label><div className="text-xs text-[var(--muted)] mt-1">{product.sku} · {product.slug}</div></div><label className="text-xs">Website price ₹<input type="number" min="1" value={price} onChange={e=>setPrice(e.target.value)} className="mt-1 w-full rounded-lg border p-2 text-sm" /></label><label className="text-xs">MRP ₹<input type="number" min="0" value={mrp} onChange={e=>setMrp(e.target.value)} className="mt-1 w-full rounded-lg border p-2 text-sm" /></label><button disabled={busy || !Number.isInteger(Number(price)) || Number(price)<=0} onClick={()=>onSave({...product,name:name.trim()},name.trim(),Number(price),mrp.trim()===""?null:Number(mrp))} className="rounded-full border px-4 py-2 text-xs font-semibold disabled:opacity-50">Save price</button></div>;
 }
