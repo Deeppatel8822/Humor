@@ -14,7 +14,7 @@ async function authorized() {
 const defaults = {
   discounts: {
     firstOrder: { enabled: true, type: "percent", value: 10 },
-    bundle: { enabled: true, type: "percent", value: 0 },
+    bundle: { enabled: true, type: "percent", value: 8 },
     prepaid: { enabled: true, type: "percent", value: 3 },
     businessProgramme: { enabled: true, type: "percent", value: 10 },
     festival: { enabled: false, type: "percent", value: 0 },
