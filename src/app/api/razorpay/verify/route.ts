@@ -6,6 +6,7 @@ import { getAllProducts } from "@/lib/catalog";
 import { calculateBundleSavings } from "@/lib/bundles";
 import { calculateCheckoutPricing } from "@/lib/checkoutPricing";
 import { calculatePartnerDiscount, creditPartnerReward, findPartnerByCode } from "@/lib/marketingPartner";
+import { getStorePricingSettings, discountAmount } from "@/lib/storePricing";
 
 interface VerifyBody {
   razorpay_order_id: string;
@@ -118,7 +119,13 @@ export async function POST(req: NextRequest) {
       quantity: line.quantity,
     })));
   }
-  const bundleSavingsInr = calculateBundleSavings(lines.map((line) => ({ slug: line.slug || products.find((p) => p.id === line.productId)?.slug || "", quantity: line.quantity })), products);
+  const pricingSettings = await getStorePricingSettings();
+  const bundleRule = pricingSettings.discounts.bundle;
+  const bundleSavingsInr = bundleRule.enabled ? calculateBundleSavings(
+    lines.map((line) => ({ slug: line.slug || products.find((p) => p.id === line.productId)?.slug || "", quantity: line.quantity })),
+    products,
+    bundleRule.type === "percent" ? bundleRule.value : 0
+  ) : 0;
   const pricing = calculateCheckoutPricing({
     subtotalInr,
     firstOrderDiscountInr,
