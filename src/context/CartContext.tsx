@@ -34,6 +34,14 @@ const SESSION_KEY = "humor-cart-session-id";
 export function CartProvider({ children }: { children: ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>([]);
   const [hydrated, setHydrated] = useState(false);
+  const [bundleDiscountPercent, setBundleDiscountPercent] = useState(8);
+
+  useEffect(() => {
+    fetch("/api/admin/pricing", { cache: "no-store" }).then(r => r.ok ? r.json() : null).then(data => {
+      const rule = data?.discounts?.bundle ?? data?.settings?.discounts?.bundle;
+      if (rule) setBundleDiscountPercent(rule.enabled && rule.type === "percent" ? Number(rule.value) || 0 : 0);
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     try {
@@ -166,7 +174,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const itemCount = lines.reduce((sum, l) => sum + l.quantity, 0);
   const subtotalInr = lines.reduce((sum, l) => sum + l.price_inr * l.quantity, 0);
-  const bundleSavingsInr = calculateBundleSavings(lines, lines.map((line) => ({ slug: line.slug, price_inr: line.price_inr })));
+  const bundleSavingsInr = calculateBundleSavings(lines, lines.map((line) => ({ slug: line.slug, price_inr: line.price_inr })), bundleDiscountPercent);
 
   return (
     <CartContext.Provider
