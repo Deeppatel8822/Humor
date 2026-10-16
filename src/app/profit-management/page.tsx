@@ -28,6 +28,7 @@ export default function ProfitManagementPage() {
   const [tab, setTab] = useState<"calculate" | "current">("calculate");
   const [selectedProduct, setSelectedProduct] = useState("");
   const [purchaseCost, setPurchaseCost] = useState("0");
+  const [websitePrice, setWebsitePrice] = useState("");
   const [firstDiscount, setFirstDiscount] = useState(10);
   const [bundleDiscount, setBundleDiscount] = useState(12);
   const [prepaidDiscount, setPrepaidDiscount] = useState(3);
@@ -63,6 +64,7 @@ export default function ProfitManagementPage() {
 
   useEffect(() => { if (unlocked) loadData().catch(e => setError(e.message)); }, [unlocked, loadData]);
   useEffect(() => { const p = data.products.find(x => x.id === selectedProduct); if (p) setPurchaseCost(costInputs[p.id] ?? "0"); }, [selectedProduct, data.products, costInputs]);
+  useEffect(() => { const p = data.products.find(x => x.id === selectedProduct); if (p) setWebsitePrice(String(p.price_inr ?? 0)); }, [selectedProduct, data.products]);
 
   async function submitAccess(action: string, extra: Record<string, unknown>) {
     setBusy(true); setError(""); setNotice("");
@@ -95,7 +97,7 @@ export default function ProfitManagementPage() {
   const selected = data.products.find(p => p.id === selectedProduct);
   const calc = useMemo(() => {
     if (!selected) return null;
-    const price = Math.max(0, selected.price_inr);
+    const price = Math.max(0, Number(websitePrice) || 0);
     const cogs = Math.max(0, Number(purchaseCost) || 0);
     const allRates = [firstDiscount, bundleDiscount, prepaidDiscount, businessDiscount].map(clampPct);
     const activeRates = [applyFirstDiscount, applyBundleDiscount, applyPrepaidDiscount, applyBusinessDiscount];
@@ -110,7 +112,7 @@ export default function ProfitManagementPage() {
     const profit = salesNet - cogs - shippingCost - rewardCost;
     const maxProfit = maxSalesNet - cogs - shippingCost - maxRewardCost;
     return { price, cogs, gst, finalInclusive, salesNet, shippingCost, rewardCost, profit, margin: salesNet ? profit / salesNet * 100 : 0, discountAmount: price - finalInclusive, maxInclusive, maxProfit, maxRewardCost, maxMargin: maxSalesNet ? maxProfit / maxSalesNet * 100 : 0 };
-  }, [selected, purchaseCost, firstDiscount, bundleDiscount, prepaidDiscount, businessDiscount, applyFirstDiscount, applyBundleDiscount, applyPrepaidDiscount, applyBusinessDiscount, shipping, rewardRate]);
+  }, [selected, websitePrice, purchaseCost, firstDiscount, bundleDiscount, prepaidDiscount, businessDiscount, applyFirstDiscount, applyBundleDiscount, applyPrepaidDiscount, applyBusinessDiscount, shipping, rewardRate]);
 
   const orderSummary = useMemo(() => {
     const costs = new Map(data.costs.map(c => [c.product_id, Number(c.purchase_cost_inr)]));
@@ -202,7 +204,7 @@ export default function ProfitManagementPage() {
         <section className="rounded-2xl border border-[#e8ded7] bg-white p-5 md:p-6">
           <h2 className="font-display text-xl text-[#351724]">Scenario calculator</h2><p className="mb-5 mt-1 text-sm text-[#6d6260]">Discounts apply sequentially, matching checkout-style percentage reductions.</p>
           <label className="mb-2 block text-sm font-medium">Product</label><select value={selectedProduct} onChange={e => setSelectedProduct(e.target.value)} className="mb-4 w-full rounded-xl border border-[#e8ded7] px-3 py-3 text-sm">{data.products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
-          {selected && <div className="mb-4 grid grid-cols-2 gap-3"><div className="rounded-xl bg-[#f7f3ee] p-3"><p className="text-xs text-[#6d6260]">Website price</p><p className="mt-1 font-semibold">{money(selected.price_inr)}</p></div><div className="rounded-xl bg-[#f7f3ee] p-3"><p className="text-xs text-[#6d6260]">GST rate</p><p className="mt-1 font-semibold">{gstRate(selected.category, selected.name) * 100}%</p></div></div>}
+          {selected && <div className="mb-4 grid grid-cols-2 gap-3"><label className="rounded-xl bg-[#f7f3ee] p-3 text-sm"><span className="block text-xs text-[#6d6260]">Proposed website price (GST inclusive ₹)</span><input type="number" min="0" step="0.01" value={websitePrice} onChange={e => setWebsitePrice(e.target.value)} className="mt-2 w-full rounded-lg border border-[#e8ded7] bg-white px-3 py-2.5 font-semibold text-[#351724]" /><span className="mt-1 block text-xs text-[#8a7e7a]">Editable for simulation only; does not change live website pricing.</span></label><div className="rounded-xl bg-[#f7f3ee] p-3"><p className="text-xs text-[#6d6260]">GST rate</p><p className="mt-1 font-semibold">{gstRate(selected.category, selected.name) * 100}%</p></div></div>}
           <label className="mb-2 block text-sm font-medium">Humor purchase cost (GST excluded)</label><input type="number" min="0" step="0.01" value={purchaseCost} onChange={e => setPurchaseCost(e.target.value)} className="mb-4 w-full rounded-xl border border-[#e8ded7] px-3 py-3 text-sm" />
           <div className="space-y-3">
             {[
