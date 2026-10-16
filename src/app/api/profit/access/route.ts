@@ -55,6 +55,15 @@ export async function POST(request: NextRequest) {
     const client = db();
     const access = await getAccess();
 
+    if (action === "logout") {
+      const response = NextResponse.json({ success: true, authenticated: false });
+      response.cookies.set(PROFIT_COOKIE, "", {
+        httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "strict",
+        path: "/", maxAge: 0, expires: new Date(0),
+      });
+      return response;
+    }
+
     if (action === "login") {
       const rate = await checkAdminOtpRateLimit(request, "profit-management-password", "verify");
       if (!rate.allowed) return NextResponse.json({ error: rate.unavailable ? "Password access is temporarily unavailable. Try again shortly." : "Too many password attempts. Please wait before trying again." }, { status: rate.unavailable ? 503 : 429, headers: { "Retry-After": String(rate.retryAfterSeconds) } });
