@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import crypto from "crypto";
 import { supabaseAdmin } from "@/lib/supabase";
+import { PROFIT_COOKIE, validProfitCookie } from "@/lib/profitAccess";
 
 export const dynamic = "force-dynamic";
 async function authorized() {
@@ -47,6 +48,11 @@ export async function GET(request: NextRequest) {
 }
 export async function PUT(request: NextRequest) {
   if (!(await authorized())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const db = supabaseAdmin();
+  const { data: access, error: accessError } = await db.from("profit_management_access").select("password_hash").eq("id", "owner").maybeSingle();
+  if (accessError || !access?.password_hash || !validProfitCookie(request.cookies.get(PROFIT_COOKIE)?.value, access.password_hash)) {
+    return NextResponse.json({ error: "Unlock PDPP before publishing discount settings." }, { status: 401 });
+  }
   try {
     const body = await request.json();
     if (!validate(body.settings)) return NextResponse.json({ error: "Invalid discount settings." }, { status: 400 });
