@@ -199,9 +199,9 @@ export default function ProfitManagementPanel() {
     return { delivered: summarize(delivered), other: summarize(other), total: summarize(eligible), rows };
   }, [data, rewardRate]);
 
-  if (checking) return <main className="min-h-screen bg-[#f7f3ee] grid place-items-center text-sm text-[#6d6260]">Checking Profit Management access…</main>;
+  if (checking) return <div className="min-h-screen bg-[#f7f3ee] grid place-items-center text-sm text-[#6d6260]">Checking Profit Management access…</div>;
 
-  if (!unlocked) return <main className="min-h-screen bg-[#f7f3ee] flex items-center justify-center p-5">
+  if (!unlocked) return <div className="min-h-screen bg-[#f7f3ee] flex items-center justify-center p-5">
     <div className="w-full max-w-md rounded-3xl border border-[#e8ded7] bg-white p-8 shadow-sm">
       <p className="text-xs uppercase tracking-[0.24em] text-[#b07b35]">Humor Luxury</p>
       <h1 className="mt-3 font-display text-3xl text-[#351724]">Profit Management</h1>
@@ -221,9 +221,9 @@ export default function ProfitManagementPanel() {
       </form>}
       <p className="mt-6 text-xs leading-5 text-[#8a7e7a]">Initial password: <span className="font-semibold">Humor</span>. Change it after first access.</p>
     </div>
-  </main>;
+  </div>;
 
-  return <main className="min-h-screen bg-[#f7f3ee] px-4 py-8 md:px-8 md:py-12">
+  return <div className="min-h-screen bg-[#f7f3ee] px-4 py-8 md:px-8 md:py-12">
     <div className="mx-auto max-w-7xl">
       <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div><p className="text-xs uppercase tracking-[0.24em] text-[#b07b35]">Humor Luxury · Admin</p><h1 className="mt-2 font-display text-3xl text-[#351724] md:text-4xl">Profit Management</h1><p className="mt-2 text-sm text-[#6d6260]">GST-adjusted sales, purchase costs, shipping and Business Programme rewards.</p></div>
@@ -267,7 +267,7 @@ export default function ProfitManagementPanel() {
       </div>}
       <p className="mt-8 text-xs leading-5 text-[#8a7e7a]">Profit estimates exclude payment gateway fees, packaging and other extra costs as requested. Product costs must be entered before actual profit figures are considered complete.</p>
     </div>
-  </main>;
+  </div>;
 }
 
 function ChangePassword({ onChange, busy }: { onChange: (currentPassword: string, newPassword: string) => void; busy: boolean }) {
