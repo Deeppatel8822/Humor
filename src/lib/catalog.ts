@@ -396,7 +396,7 @@ export async function getByCategory(category: Product["category"]): Promise<Prod
           products.push(withMainImage(showerCream));
         }
 
-        return products;
+        return await overlayDatabasePrices(products);
       }
     } catch (err) {
       console.error("Shopify collection fetch failed, falling back:", err);
