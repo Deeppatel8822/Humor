@@ -128,7 +128,7 @@ export default function PartnerDashboardPage() {
             <h2 className="text-xl font-semibold text-[var(--ink)]">Request a withdrawal</h2>
             <p className="mt-2 text-sm text-[var(--muted)]">Minimum ₹1,000. Requested funds are reserved from your available balance while the request is reviewed.</p>
             <div className="mt-4 flex flex-wrap gap-3">
-              <label className="flex min-w-[180px] flex-col gap-2 text-xs text-[var(--muted)]">Amount (₹)<input type="number" min="1000" max={data.walletBalance} step="1" value={withdrawalAmount} onChange={(e) => setWithdrawalAmount(e.target.value)} className="rounded-xl border border-[var(--line)] bg-black/20 px-4 py-3 text-base text-[var(--ink)] outline-none focus:border-[#D49A6A]" /></label>
+              <label className="flex min-w-[180px] flex-col gap-2 text-xs text-[var(--muted)]">Amount (₹)<input type="number" min="1000" max={data.walletBalance} step="1" value={withdrawalAmount} onChange={(e) => setWithdrawalAmount(e.target.value)} className="rounded-xl border border-[var(--line)] bg-white px-4 py-3 text-base text-[var(--ink)] outline-none focus:border-[#D49A6A]" /></label>
               <button type="button" onClick={requestWithdrawal} disabled={withdrawing || data.status !== "approved" || data.walletBalance < 1000} className="self-end rounded-full bg-[var(--warm-gold)] px-6 py-3 text-sm font-bold text-[var(--ink)] disabled:cursor-not-allowed disabled:opacity-40">{withdrawing ? "Submitting…" : "Submit withdrawal request"}</button>
             </div>
             {withdrawalMessage && <p className="mt-3 text-sm text-[var(--ink)]" role="status">{withdrawalMessage}</p>}
