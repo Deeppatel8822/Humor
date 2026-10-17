@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
         if (current.user?.id === partnerMatch.user.id) return NextResponse.json({ error: "You cannot use your own partner code." }, { status: 400 });
       }
       partnerDiscountInr = calculatePartnerDiscount(lines.map((line) => ({
-        priceInr: products.find((p) => p.id === line.productId)?.price_inr ?? 0,
+        priceInr: products.find((p) => p.id === line.productId || p.slug === line.slug)?.price_inr ?? 0,
         quantity: line.quantity,
       })));
     }
