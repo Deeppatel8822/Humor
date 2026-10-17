@@ -88,16 +88,16 @@ export default function PartnerDashboardPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[var(--ink)] px-5 py-10 text-[var(--milk-sage)] md:px-8">
+    <main className="min-h-screen bg-[var(--paper)] px-5 py-10 text-[var(--ink)] md:px-8">
       <div className="mx-auto max-w-6xl">
         <Link href="/your-business" className="text-sm text-[var(--warm-gold)] hover:underline">← Start Your Business</Link>
         <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
-          <div><p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--warm-gold)]">Humor Luxury</p><h1 className="mt-2 font-display text-4xl text-white md:text-5xl">Partner Dashboard</h1><p className="mt-3 max-w-xl text-sm leading-6 text-white/60">Your referral code, rewards and recent activity in one place.</p></div>
-          {data && <span className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-white/80">{statusLabel(data.status)}</span>}
+          <div><p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--warm-gold)]">Humor Luxury</p><h1 className="mt-2 font-display text-4xl text-[var(--ink)] md:text-5xl">Partner Dashboard</h1><p className="mt-3 max-w-xl text-sm leading-6 text-[var(--muted)]">Your referral code, rewards and recent activity in one place.</p></div>
+          {data && <span className="rounded-full border border-[var(--line)] px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[var(--ink)]">{statusLabel(data.status)}</span>}
         </div>
 
-        {loading && <div className="mt-8 rounded-2xl border border-white/10 p-6 text-white/70">Loading your dashboard…</div>}
-        {error && !loading && <div className="mt-8 rounded-2xl border border-red-300/30 bg-red-950/20 p-5 text-sm text-white/80">{error}<div className="mt-3"><Link href="/login" className="font-semibold text-[var(--warm-gold)] underline">Log in / create account</Link></div></div>}
+        {loading && <div className="mt-8 rounded-2xl border border-[var(--line)] p-6 text-[var(--muted)]">Loading your dashboard…</div>}
+        {error && !loading && <div className="mt-8 rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-900">{error}<div className="mt-3"><Link href="/login" className="font-semibold text-[var(--warm-gold)] underline">Log in / create account</Link></div></div>}
 
         {data && !loading && <>
           <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -106,37 +106,37 @@ export default function PartnerDashboardPage() {
               ["Lifetime coins", data.lifetimeCoins.toLocaleString("en-IN")],
               ["Eligible sales", inr(data.totalSales)],
               ["Referred customers", data.referredCustomers.toLocaleString("en-IN")],
-            ].map(([label, value]) => <div key={label} className="rounded-2xl border border-white/10 bg-white/[0.04] p-5"><p className="text-xs uppercase tracking-wider text-white/50">{label}</p><p className="mt-3 text-2xl font-semibold text-white">{value}</p></div>)}
+            ].map(([label, value]) => <div key={label} className="rounded-2xl border border-[var(--line)] bg-white shadow-sm p-5"><p className="text-xs uppercase tracking-wider text-[var(--muted)]">{label}</p><p className="mt-3 text-2xl font-semibold text-[var(--ink)]">{value}</p></div>)}
           </section>
 
           <section className="mt-5 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
-            <div className="rounded-2xl border border-[#D49A6A]/30 bg-gradient-to-br from-[#4a1d39] to-[#251923] p-6 md:p-8">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--warm-gold)]">Your partner User ID</p><p className="mt-2 break-all font-mono text-xs text-white/55">{data.userId}</p><p className="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-[var(--warm-gold)]">Your referral code</p>
-              <div className="mt-3 flex flex-wrap items-center gap-3"><p className="break-all text-3xl font-bold tracking-wider text-white">{data.code || "Awaiting approval"}</p>{data.code && <button onClick={copyCode} className="rounded-full bg-[var(--warm-gold)] px-4 py-2 text-sm font-bold text-[var(--ink)]">{copied ? "Copied!" : "Copy code"}</button>}</div>
-              <p className="mt-3 text-sm leading-6 text-white/65">{data.status === "approved" ? "Share this code with customers. Eligible customers receive 10% off product value at checkout." : "Your code will be available after your application is approved."}</p>
-              <div className="mt-6 border-t border-white/10 pt-5"><p className="text-xs uppercase tracking-wider text-white/50">Current reward tier</p><p className="mt-2 text-2xl font-semibold text-white">{data.rewardTier.toUpperCase()} · {data.rewardRate}%</p><p className="mt-2 text-sm text-white/65">{data.qualificationCoins.toLocaleString("en-IN")} coins in the current qualification window. 3,000 unlocks 27%; 5,000 unlocks 30% within 30 days. Tier upgrades are permanent.</p></div>
+            <div className="rounded-2xl border border-[#D49A6A]/50 bg-gradient-to-br from-[#fff8fc] to-[#f4eaf2] shadow-sm p-6 md:p-8">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--warm-gold)]">Your partner User ID</p><p className="mt-2 break-all font-mono text-xs text-[var(--muted)]">{data.userId}</p><p className="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-[var(--warm-gold)]">Your referral code</p>
+              <div className="mt-3 flex flex-wrap items-center gap-3"><p className="break-all text-3xl font-bold tracking-wider text-[var(--ink)]">{data.code || "Awaiting approval"}</p>{data.code && <button onClick={copyCode} className="rounded-full bg-[var(--warm-gold)] px-4 py-2 text-sm font-bold text-[var(--ink)]">{copied ? "Copied!" : "Copy code"}</button>}</div>
+              <p className="mt-3 text-sm leading-6 text-[var(--muted)]">{data.status === "approved" ? "Share this code with customers. Eligible customers receive 10% off product value at checkout." : "Your code will be available after your application is approved."}</p>
+              <div className="mt-6 border-t border-[var(--line)] pt-5"><p className="text-xs uppercase tracking-wider text-[var(--muted)]">Current reward tier</p><p className="mt-2 text-2xl font-semibold text-[var(--ink)]">{data.rewardTier.toUpperCase()} · {data.rewardRate}%</p><p className="mt-2 text-sm text-[var(--muted)]">{data.qualificationCoins.toLocaleString("en-IN")} coins in the current qualification window. 3,000 unlocks 27%; 5,000 unlocks 30% within 30 days. Tier upgrades are permanent.</p></div>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 md:p-8">
-              <h2 className="text-xl font-semibold text-white">How rewards work</h2>
-              <ul className="mt-4 space-y-3 text-sm leading-6 text-white/70"><li>• Basic tier starts at 25% of eligible product value.</li><li>• 3,000 eligible coins in 30 days unlocks 27%.</li><li>• 5,000 eligible coins in 30 days unlocks 30%.</li><li>• Higher rates apply to future eligible orders only.</li><li>• Minimum withdrawal request: ₹1,000 available balance.</li></ul>
-              <p className="mt-5 text-xs leading-5 text-white/45">Rewards can be adjusted for refunds, returns, chargebacks or ineligible orders. Earnings are not guaranteed.</p>
+            <div className="rounded-2xl border border-[var(--line)] bg-white shadow-sm p-6 md:p-8">
+              <h2 className="text-xl font-semibold text-[var(--ink)]">How rewards work</h2>
+              <ul className="mt-4 space-y-3 text-sm leading-6 text-[var(--muted)]"><li>• Basic tier starts at 25% of eligible product value.</li><li>• 3,000 eligible coins in 30 days unlocks 27%.</li><li>• 5,000 eligible coins in 30 days unlocks 30%.</li><li>• Higher rates apply to future eligible orders only.</li><li>• Minimum withdrawal request: ₹1,000 available balance.</li></ul>
+              <p className="mt-5 text-xs leading-5 text-[var(--muted)]">Rewards can be adjusted for refunds, returns, chargebacks or ineligible orders. Earnings are not guaranteed.</p>
               <Link href="/start-your-business-terms.html" className="mt-5 inline-flex text-sm font-semibold text-[var(--warm-gold)] underline">Read programme terms</Link>
             </div>
           </section>
 
-          <section className="mt-5 rounded-2xl border border-[#D49A6A]/25 bg-white/[0.04] p-6 md:p-8">
-            <h2 className="text-xl font-semibold text-white">Request a withdrawal</h2>
-            <p className="mt-2 text-sm text-white/60">Minimum ₹1,000. Requested funds are reserved from your available balance while the request is reviewed.</p>
+          <section className="mt-5 rounded-2xl border border-[var(--line)] bg-white shadow-sm p-6 md:p-8">
+            <h2 className="text-xl font-semibold text-[var(--ink)]">Request a withdrawal</h2>
+            <p className="mt-2 text-sm text-[var(--muted)]">Minimum ₹1,000. Requested funds are reserved from your available balance while the request is reviewed.</p>
             <div className="mt-4 flex flex-wrap gap-3">
-              <label className="flex min-w-[180px] flex-col gap-2 text-xs text-white/50">Amount (₹)<input type="number" min="1000" max={data.walletBalance} step="1" value={withdrawalAmount} onChange={(e) => setWithdrawalAmount(e.target.value)} className="rounded-xl border border-white/15 bg-black/20 px-4 py-3 text-base text-white outline-none focus:border-[#D49A6A]" /></label>
+              <label className="flex min-w-[180px] flex-col gap-2 text-xs text-[var(--muted)]">Amount (₹)<input type="number" min="1000" max={data.walletBalance} step="1" value={withdrawalAmount} onChange={(e) => setWithdrawalAmount(e.target.value)} className="rounded-xl border border-[var(--line)] bg-black/20 px-4 py-3 text-base text-[var(--ink)] outline-none focus:border-[#D49A6A]" /></label>
               <button type="button" onClick={requestWithdrawal} disabled={withdrawing || data.status !== "approved" || data.walletBalance < 1000} className="self-end rounded-full bg-[var(--warm-gold)] px-6 py-3 text-sm font-bold text-[var(--ink)] disabled:cursor-not-allowed disabled:opacity-40">{withdrawing ? "Submitting…" : "Submit withdrawal request"}</button>
             </div>
-            {withdrawalMessage && <p className="mt-3 text-sm text-white/75" role="status">{withdrawalMessage}</p>}
+            {withdrawalMessage && <p className="mt-3 text-sm text-[var(--ink)]" role="status">{withdrawalMessage}</p>}
           </section>
 
-<section className="mt-5 rounded-2xl border border-white/10 bg-white/[0.04] p-6 md:p-8">
-            <h2 className="text-xl font-semibold text-white">Recent activity</h2>
-            {data.history.length === 0 ? <p className="mt-4 text-sm text-white/55">No reward activity recorded yet. Your eligible rewards will appear here after qualifying orders.</p> : <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[540px] text-left text-sm"><thead><tr className="border-b border-white/10 text-xs uppercase tracking-wider text-white/45"><th className="py-3 pr-4">Date</th><th className="py-3 pr-4">Type</th><th className="py-3 pr-4">Amount</th><th className="py-3">Status / reference</th></tr></thead><tbody>{data.history.map((item, index) => <tr key={String(item.requestedAt) + item.status + index} className="border-b border-white/5 text-white/75"><td className="py-3 pr-4">{item.requestedAt ? new Date(item.requestedAt).toLocaleDateString("en-IN") : "—"}</td><td className="py-3 pr-4 capitalize">{item.kind}</td><td className="py-3 pr-4">{inr(item.amount)}</td><td className="py-3 break-all">{item.status.replace(/^reward:/, "Reward · ")}</td></tr>)}</tbody></table></div>}
+<section className="mt-5 rounded-2xl border border-[var(--line)] bg-white shadow-sm p-6 md:p-8">
+            <h2 className="text-xl font-semibold text-[var(--ink)]">Recent activity</h2>
+            {data.history.length === 0 ? <p className="mt-4 text-sm text-[var(--muted)]">No reward activity recorded yet. Your eligible rewards will appear here after qualifying orders.</p> : <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[540px] text-left text-sm"><thead><tr className="border-b border-[var(--line)] text-xs uppercase tracking-wider text-[var(--muted)]"><th className="py-3 pr-4">Date</th><th className="py-3 pr-4">Type</th><th className="py-3 pr-4">Amount</th><th className="py-3">Status / reference</th></tr></thead><tbody>{data.history.map((item, index) => <tr key={String(item.requestedAt) + item.status + index} className="border-b border-[var(--line)] text-[var(--ink)]"><td className="py-3 pr-4">{item.requestedAt ? new Date(item.requestedAt).toLocaleDateString("en-IN") : "—"}</td><td className="py-3 pr-4 capitalize">{item.kind}</td><td className="py-3 pr-4">{inr(item.amount)}</td><td className="py-3 break-all">{item.status.replace(/^reward:/, "Reward · ")}</td></tr>)}</tbody></table></div>}
           </section>
         </>}
       </div>
