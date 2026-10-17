@@ -86,6 +86,9 @@ export default function HeroSlider() {
           alt=""
           aria-hidden="true"
           className="block h-auto w-full opacity-0"
+          loading="eager"
+          fetchPriority="high"
+          decoding="async"
           draggable={false}
         />
         {slides.map((slide, index) => (
@@ -106,6 +109,9 @@ export default function HeroSlider() {
               className={"humor-banner-image block h-full w-full select-none object-cover " + (
                 active === index ? "humor-banner-image-active" : ""
               )}
+              loading={index === 0 ? "eager" : "lazy"}
+              fetchPriority={index === 0 ? "high" : "auto"}
+              decoding="async"
               draggable={false}
             />
           </Link>
