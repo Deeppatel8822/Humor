@@ -20,7 +20,8 @@ type Dashboard = {
 };
 
 const inr = (n: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
-const statusLabel = (status: string) => ({ approved: "Approved", pending: "Pending review", pending_verification: "Pending verification", rejected: "Rejected" }[status] || status.replace(/[_:]/g, " "));
+const statusLabels: Record<string, string> = { approved: "Approved", pending: "Pending review", pending_verification: "Pending verification", rejected: "Rejected" };
+const statusLabel = (status: string) => statusLabels[status] || status.replace(/[_:]/g, " ");
 
 export default function PartnerDashboardPage() {
   const [data, setData] = useState<Dashboard | null>(null);
