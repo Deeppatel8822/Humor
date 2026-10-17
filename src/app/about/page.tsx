@@ -80,7 +80,7 @@ export default function AboutPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="aspect-square rounded-2xl bg-white border border-[var(--line)] overflow-hidden">
-                <img src="/images/about/protein-shake-customer.jpg.png" alt="Customer selfie holding Humor Protein Shake Shampoo" className="w-full h-full object-cover" />
+                <img src="/images/about/protein-shake-customer.jpg.png" alt="Customer selfie holding Humor Protein Shake Shampoo" className="w-full h-full object-cover" loading="lazy" decoding="async" />
               </div>
               <div className="aspect-square rounded-2xl bg-white border border-[var(--line)] overflow-hidden">
                 <img src="/images/about/velvet-touch-customer.webp" alt="Customer holding Humor Velvet Touch Face Serum" className="w-full h-full object-cover" />
