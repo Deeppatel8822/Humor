@@ -105,8 +105,25 @@ export async function POST(request: Request) {
     }
 
     const existingPartner = data.user.app_metadata?.marketing_partner;
-    // Approving a Business Programme application must not reset an already
-    // approved partner's wallet, tier, code or historical counters.
+    // Generate a short, easy-to-share 6-character code and check it against
+    // every existing partner code before assigning it.
+    async function generateUniquePartnerCode() {
+      const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      const allUsers: Array<{ app_metadata?: Record<string, any> }> = [];
+      for (let page = 1; ; page += 1) {
+        const { data: pageData, error: pageError } = await admin.auth.admin.listUsers({ page, perPage: 1000 });
+        if (pageError) throw pageError;
+        allUsers.push(...pageData.users);
+        if (pageData.users.length < 1000) break;
+      }
+      const used = new Set(allUsers.map((user) => String(user.app_metadata?.marketing_partner?.code || "").toUpperCase()).filter(Boolean));
+      for (let attempt = 0; attempt < 100; attempt += 1) {
+        let code = "";
+        for (let index = 0; index < 6; index += 1) code += alphabet[crypto.randomInt(0, alphabet.length)];
+        if (!used.has(code)) return code;
+      }
+      throw new Error("Could not generate a unique partner code. Please try again.");
+    }
     const partner = isBusinessProgramme && existingPartner?.status === "approved"
       ? {
           ...existingPartner,
@@ -118,7 +135,7 @@ export async function POST(request: Request) {
       : {
           status: "approved",
           partnerId: "HLP" + crypto.randomBytes(6).toString("hex").toUpperCase(),
-          code: "HL" + crypto.randomBytes(5).toString("hex").toUpperCase(),
+          code: await generateUniquePartnerCode(),
           usageCount: 0,
           walletBalance: 0,
           totalRewards: 0,
