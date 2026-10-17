@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import HumorValues from "@/components/HumorValues";
 
 export const metadata = {
@@ -28,7 +27,7 @@ export default function AboutPage() {
         <div className="grid md:grid-cols-2 gap-10 md:gap-16 items-center">
           <div className="order-1 md:order-2">
             <div className="aspect-[4/5] rounded-3xl bg-[var(--milk-sage)] border border-[var(--line)] overflow-hidden">
-              <Image src="/images/about/humor-luxury-story.webp.png" alt="My Humor lifestyle beauty portrait for Humor Luxury" fill priority sizes="(max-width: 768px) 100vw, 50vw" quality={72} className="object-cover object-top" />
+              <img src="/images/about/humor-luxury-story.webp.png" alt="My Humor lifestyle beauty portrait for Humor Luxury" className="w-full h-full object-cover object-top" />
             </div>
           </div>
           <div className="order-2 md:order-1">
@@ -81,7 +80,7 @@ export default function AboutPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="aspect-square rounded-2xl bg-white border border-[var(--line)] overflow-hidden">
-                <Image src="/images/about/protein-shake-customer.jpg.png" alt="Customer selfie holding Humor Protein Shake Shampoo" fill sizes="(max-width: 768px) 45vw, 25vw" quality={65} className="object-cover" loading="lazy" />
+                <img src="/images/about/protein-shake-customer.jpg.png" alt="Customer selfie holding Humor Protein Shake Shampoo" className="w-full h-full object-cover" />
               </div>
               <div className="aspect-square rounded-2xl bg-white border border-[var(--line)] overflow-hidden">
                 <img src="/images/about/velvet-touch-customer.webp" alt="Customer holding Humor Velvet Touch Face Serum" className="w-full h-full object-cover" />
