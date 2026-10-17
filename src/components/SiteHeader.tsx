@@ -49,7 +49,7 @@ export default function SiteHeader() {
         setCustomerName(firstName ? firstName.charAt(0).toUpperCase() + firstName.slice(1) : "");
       };
 
-      supabase.auth.getUser().then(({ data }) => applyUser(data.user)).catch(() => applyUser(null));
+      supabase.auth.getSession().then(({ data }) => applyUser(data.session?.user ?? null)).catch(() => applyUser(null));
       const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => applyUser(session?.user || null));
       unsubscribe = () => listener.subscription.unsubscribe();
     }).catch(() => {
