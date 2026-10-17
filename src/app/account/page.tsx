@@ -52,59 +52,74 @@ export default function AccountPage() {
 
   async function load() {
     setLoading(true);
+    setError("");
     try {
       const { getSupabase } = await import("@/lib/supabase");
       const supabase = getSupabase();
       const { data } = await supabase.auth.getSession();
-      if (!data.session) {
+      const session = data.session;
+
+      if (!session) {
         setLoggedIn(false);
         setLoading(false);
         return;
       }
+
+      // Render the account shell immediately from the already available session.
+      // Orders and partner status load in parallel below instead of blocking the whole page.
       setLoggedIn(true);
-      setOrdersLoading(true);
-      try {
-        const ordersResponse = await fetch("/api/customer/orders", {
-          headers: { Authorization: "Bearer " + data.session.access_token },
-          cache: "no-store",
-        });
-        const ordersResult = await ordersResponse.json();
-        if (!ordersResponse.ok) throw new Error(ordersResult.error || "Could not load your order history.");
-        setRecentOrders(Array.isArray(ordersResult.orders) ? ordersResult.orders : []);
-        setOrdersError("");
-      } catch (ordersErr) {
-        setOrdersError(ordersErr instanceof Error ? ordersErr.message : "Could not load your order history.");
-      } finally {
-        setOrdersLoading(false);
-      }
-      const { data: userData } = await supabase.auth.getUser();
-      const user = userData.user;
-      if (user) {
-        setProfile({
-          email: user.email || "",
-          fullName: String(user.user_metadata?.full_name || user.user_metadata?.name || ""),
-          mobile: String(user.user_metadata?.phone || user.phone || ""),
-          address: String(user.user_metadata?.address || ""),
-        });
-      }
-      const response = await fetch("/api/marketing-partner/application", {
-        headers: { Authorization: "Bearer " + data.session.access_token },
-        cache: "no-store",
+      const user = session.user;
+      setProfile({
+        email: user.email || "",
+        fullName: String(user.user_metadata?.full_name || user.user_metadata?.name || ""),
+        mobile: String(user.user_metadata?.phone || user.phone || ""),
+        address: String(user.user_metadata?.address || ""),
       });
-      const result = await response.json();
-      if (response.ok) {
-        setPartner(result.partner);
-        setApplication(result.application);
-      } else {
-        setError(result.error || "Could not load account.");
-      }
+      setLoading(false);
+
+      setOrdersLoading(true);
+      const ordersTask = (async () => {
+        try {
+          const response = await fetch("/api/customer/orders", {
+            headers: { Authorization: "Bearer " + session.access_token },
+            cache: "no-store",
+          });
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.error || "Could not load your order history.");
+          setRecentOrders(Array.isArray(result.orders) ? result.orders : []);
+          setOrdersError("");
+        } catch (ordersErr) {
+          setOrdersError(ordersErr instanceof Error ? ordersErr.message : "Could not load your order history.");
+        } finally {
+          setOrdersLoading(false);
+        }
+      })();
+
+      const partnerTask = (async () => {
+        try {
+          const response = await fetch("/api/marketing-partner/application", {
+            headers: { Authorization: "Bearer " + session.access_token },
+            cache: "no-store",
+          });
+          const result = await response.json();
+          if (response.ok) {
+            setPartner(result.partner);
+            setApplication(result.application);
+            setError("");
+          } else {
+            setError(result.error || "Could not load partner status.");
+          }
+        } catch {
+          setError("Could not load partner status.");
+        }
+      })();
+
+      await Promise.all([ordersTask, partnerTask]);
     } catch {
       setError("Could not load your account.");
-    } finally {
       setLoading(false);
     }
   }
-
   useEffect(() => { load(); }, []);
 
   if (loading) return <main className="max-w-5xl mx-auto px-5 md:px-8 py-20"><p className="text-sm text-[var(--muted)]">Loading your account…</p></main>;
