@@ -20,6 +20,7 @@ type Dashboard = {
 };
 
 const inr = (n: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
+const statusLabel = (status: string) => ({ approved: "Approved", pending: "Pending review", pending_verification: "Pending verification", rejected: "Rejected" }[status] || status.replace(/[_:]/g, " "));
 
 export default function PartnerDashboardPage() {
   const [data, setData] = useState<Dashboard | null>(null);
@@ -57,11 +58,19 @@ export default function PartnerDashboardPage() {
       const { data: sessionData } = await getSupabase().auth.getSession();
       const token = sessionData.session?.access_token;
       if (!token) throw new Error("Please log in again.");
-      const res = await fetch("/api/business-programme/withdraw", { method: "POST", headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" }, body: JSON.stringify({ amount: Number(withdrawalAmount) }) });
+      const amount = Number(withdrawalAmount);
+      if (!Number.isInteger(amount) || amount < 1000) throw new Error("Enter a whole-rupee amount of at least ₹1,000.");
+      if (!data || amount > data.walletBalance) throw new Error("The amount cannot exceed your available balance.");
+      const res = await fetch("/api/business-programme/withdraw", { method: "POST", headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" }, body: JSON.stringify({ amount }) });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Could not submit request.");
       setWithdrawalMessage(json.message || "Request submitted.");
-      setData((current) => current ? { ...current, walletBalance: json.walletBalance, history: [{ amount: -Math.abs(Number(withdrawalAmount)), status: "withdrawal:pending", requestedAt: new Date().toISOString(), kind: "withdrawal" }, ...current.history].slice(0, 100) } : current);
+      setData((current) => current ? { ...current, walletBalance: Number(json.walletBalance ?? current.walletBalance), history: [{ amount: -Math.abs(amount), status: "withdrawal:pending", requestedAt: new Date().toISOString(), kind: "withdrawal" }, ...current.history].slice(0, 100) } : current);
+      // Refresh from the canonical server ledger so the balance and request status are not left optimistic.
+      try {
+        const refreshed = await fetch("/api/business-programme/dashboard", { headers: { Authorization: "Bearer " + token }, cache: "no-store" });
+        if (refreshed.ok) setData(await refreshed.json());
+      } catch { /* Keep the successful response reflected if refresh is temporarily unavailable. */ }
     } catch (e) { setWithdrawalMessage(e instanceof Error ? e.message : "Could not submit request."); }
     finally { setWithdrawing(false); }
   }
@@ -83,7 +92,7 @@ export default function PartnerDashboardPage() {
         <Link href="/your-business" className="text-sm text-[var(--warm-gold)] hover:underline">← Start Your Business</Link>
         <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
           <div><p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--warm-gold)]">Humor Luxury</p><h1 className="mt-2 font-display text-4xl text-white md:text-5xl">Partner Dashboard</h1><p className="mt-3 max-w-xl text-sm leading-6 text-white/60">Your referral code, rewards and recent activity in one place.</p></div>
-          {data && <span className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-white/80">{data.status}</span>}
+          {data && <span className="rounded-full border border-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-white/80">{statusLabel(data.status)}</span>}
         </div>
 
         {loading && <div className="mt-8 rounded-2xl border border-white/10 p-6 text-white/70">Loading your dashboard…</div>}
@@ -118,7 +127,7 @@ export default function PartnerDashboardPage() {
             <h2 className="text-xl font-semibold text-white">Request a withdrawal</h2>
             <p className="mt-2 text-sm text-white/60">Minimum ₹1,000. Requested funds are reserved from your available balance while the request is reviewed.</p>
             <div className="mt-4 flex flex-wrap gap-3">
-              <label className="flex min-w-[180px] flex-col gap-2 text-xs text-white/50">Amount (₹)<input type="number" min="1000" step="1" value={withdrawalAmount} onChange={(e) => setWithdrawalAmount(e.target.value)} className="rounded-xl border border-white/15 bg-black/20 px-4 py-3 text-base text-white outline-none focus:border-[#D49A6A]" /></label>
+              <label className="flex min-w-[180px] flex-col gap-2 text-xs text-white/50">Amount (₹)<input type="number" min="1000" max={data.walletBalance} step="1" value={withdrawalAmount} onChange={(e) => setWithdrawalAmount(e.target.value)} className="rounded-xl border border-white/15 bg-black/20 px-4 py-3 text-base text-white outline-none focus:border-[#D49A6A]" /></label>
               <button type="button" onClick={requestWithdrawal} disabled={withdrawing || data.status !== "approved" || data.walletBalance < 1000} className="self-end rounded-full bg-[var(--warm-gold)] px-6 py-3 text-sm font-bold text-[var(--ink)] disabled:cursor-not-allowed disabled:opacity-40">{withdrawing ? "Submitting…" : "Submit withdrawal request"}</button>
             </div>
             {withdrawalMessage && <p className="mt-3 text-sm text-white/75" role="status">{withdrawalMessage}</p>}
