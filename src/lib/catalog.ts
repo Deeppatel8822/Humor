@@ -1,4 +1,5 @@
 import { Product } from "@/types/product";
+import { unstable_cache } from "next/cache";
 import { isShopifyConfigured } from "./shopify/client";
 import {
   fetchShopifyProducts,
@@ -322,7 +323,7 @@ async function overlayDatabasePrices(products: Product[]): Promise<Product[]> {
   } catch { return products; }
 }
 
-export async function getAllProducts(): Promise<Product[]> {
+async function getAllProductsUncached(): Promise<Product[]> {
   if (isShopifyConfigured()) {
     try {
       const shopifyProducts = (await fetchShopifyProducts()).map(withMainImage);
@@ -344,6 +345,16 @@ export async function getAllProducts(): Promise<Product[]> {
     return overlayDatabasePrices([...databaseProducts, ...newLocalProducts]);
   }
   return overlayDatabasePrices(local.getProducts().map(withMainImage));
+}
+
+const getCachedAllProducts = unstable_cache(
+  getAllProductsUncached,
+  ["humor-catalog-v1"],
+  { revalidate: 60, tags: ["catalog-products"] }
+);
+
+export async function getAllProducts(): Promise<Product[]> {
+  return getCachedAllProducts();
 }
 
 export async function getProduct(slug: string): Promise<Product | undefined> {
