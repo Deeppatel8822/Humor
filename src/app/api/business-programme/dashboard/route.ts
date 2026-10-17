@@ -14,7 +14,29 @@ export async function GET(req: NextRequest) {
     if (error || !data.user) return NextResponse.json({ error: "Your session has expired. Please log in again." }, { status: 401 });
 
     const partner = getPartner(data.user);
-    if (!partner) return NextResponse.json({ error: "No business programme application was found for this account." }, { status: 404 });
+    if (!partner) {
+      // A paid registration is stored in user_metadata before admin approval
+      // creates the active partner profile in app_metadata. Show that real
+      // application status instead of a misleading 404 or a fabricated balance.
+      const programme = data.user.user_metadata?.business_programme as Record<string, unknown> | undefined;
+      if (!programme || typeof programme.status !== "string") {
+        return NextResponse.json({ error: "No business programme application was found for this account." }, { status: 404 });
+      }
+      return NextResponse.json({
+        status: programme.status,
+        userId: data.user.id,
+        code: null,
+        rewardTier: "basic",
+        rewardRate: 25,
+        walletBalance: 0,
+        lifetimeCoins: 0,
+        qualificationCoins: 0,
+        qualificationPeriodStartedAt: null,
+        totalSales: 0,
+        referredCustomers: 0,
+        history: [],
+      });
+    }
 
     const entries = Array.isArray(partner.withdrawalRequests) ? partner.withdrawalRequests : [];
     let walletBalance = Math.max(0, Number(partner.walletBalance || 0));
