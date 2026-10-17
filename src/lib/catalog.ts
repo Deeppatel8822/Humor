@@ -357,7 +357,7 @@ export async function getAllProducts(): Promise<Product[]> {
   return getCachedAllProducts();
 }
 
-export async function getProduct(slug: string): Promise<Product | undefined> {
+async function getProductUncached(slug: string): Promise<Product | undefined> {
   if (isShopifyConfigured()) {
     try {
       const product = await fetchShopifyProductByHandle(slug);
@@ -372,6 +372,16 @@ export async function getProduct(slug: string): Promise<Product | undefined> {
   if (databaseProduct) return (await overlayDatabasePrices([databaseProduct]))[0];
   const localProduct = local.getProductBySlug(slug);
   return localProduct ? (await overlayDatabasePrices([withMainImage(localProduct)]))[0] : undefined;
+}
+
+const getCachedProduct = unstable_cache(
+  async (slug: string) => getProductUncached(slug),
+  ["humor-product-detail-v1"],
+  { revalidate: 60, tags: ["catalog-products"] }
+);
+
+export async function getProduct(slug: string): Promise<Product | undefined> {
+  return getCachedProduct(slug);
 }
 
 export async function getFeatured(): Promise<Product[]> {
