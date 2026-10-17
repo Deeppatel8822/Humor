@@ -145,9 +145,16 @@ export default function AccountPage() {
           <button type="button" onClick={() => setActiveAccountSection("profile")} aria-pressed={activeAccountSection === "profile"} className={`text-left rounded-2xl border p-5 transition-colors ${activeAccountSection === "profile" ? "border-[var(--deep-wine)] bg-white shadow-sm" : "border-[var(--line)] bg-white/70 hover:border-[var(--deep-wine)]"}`}>
             <p className="text-xs text-[var(--muted)]">Profile</p><p className="mt-2 font-medium text-[var(--ink)]">View or edit your details →</p>
           </button>
-          <Link href="/marketing-partner" className="text-left rounded-2xl border border-[var(--line)] bg-white/70 p-5 transition-colors hover:border-[var(--deep-wine)]">
-            <p className="text-xs text-[var(--muted)]">Partner</p><p className="mt-2 font-medium text-[var(--ink)]">Become a Marketing Partner →</p>
-          </Link>
+          {partner?.status === "approved" && partner.code ? (
+            <Link href="/your-business/dashboard" className="text-left rounded-2xl border border-[var(--warm-gold)] bg-white p-5 shadow-sm transition-colors hover:border-[var(--deep-wine)]">
+              <p className="text-xs text-[var(--muted)]">Approved Partner</p><p className="mt-2 font-medium text-[var(--ink)]">Open Partner Dashboard →</p>
+              <p className="mt-1 text-xs text-[var(--muted)]">View your referral code, rewards and withdrawals.</p>
+            </Link>
+          ) : (
+            <Link href="/marketing-partner" className="text-left rounded-2xl border border-[var(--line)] bg-white/70 p-5 transition-colors hover:border-[var(--deep-wine)]">
+              <p className="text-xs text-[var(--muted)]">Partner</p><p className="mt-2 font-medium text-[var(--ink)]">Become a Marketing Partner →</p>
+            </Link>
+          )}
         </div>
 
         {activeAccountSection === "orders" && (
