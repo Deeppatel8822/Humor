@@ -62,7 +62,7 @@ export default function CheckoutPage() {
       });
       const data = await response.json();
       if (!response.ok || !data.valid) { setVendorDiscountInr(0); setVendorCodeMessage(data.error || "Invalid vendor code."); return 0; }
-      else { const discount = Number(data.discountInr) || 0; setVendorDiscountInr(discount); setVendorCodeMessage("✓ Partner code applied"); return discount; }
+      else { const discount = Number(data.discountInr) || 0; if (discount <= 0) { setVendorDiscountInr(0); setVendorCodeMessage("No discount could be calculated for these cart items. Please refresh checkout and try again."); return 0; } setVendorDiscountInr(discount); setVendorCodeMessage("✓ Partner code applied"); return discount; }
     } catch { setVendorDiscountInr(0); setVendorCodeMessage("Could not validate the partner code."); return 0; }
     finally { setVendorCodeLoading(false); }
   }
@@ -318,6 +318,7 @@ export default function CheckoutPage() {
               <div className="flex justify-between text-sm text-[var(--muted)]"><span>Subtotal</span><span>&#8377;{subtotalInr}</span></div>
               {firstOrderDiscountInr > 0 && <div className="flex justify-between text-sm text-[var(--muted)]"><span>First order 10% OFF</span><span className="text-green-700">−₹{firstOrderDiscountInr}</span></div>}
               {prepaidDiscountInr > 0 && <div className="flex justify-between text-sm text-[var(--muted)]"><span>Prepaid savings ({Math.round(prepaidDiscountRate * 100)}%)</span><span className="text-green-700">−₹{prepaidDiscountInr}</span></div>}
+              {vendorDiscountInr > 0 && <div className="flex justify-between text-sm text-[var(--muted)]"><span>Partner discount (10%)</span><span className="text-green-700">−₹{vendorDiscountInr}</span></div>}
               {bundleSavingsInr > 0 && <div className="flex justify-between text-sm text-[var(--muted)]"><span>Bundle savings</span><span className="text-green-700">−₹{bundleSavingsInr}</span></div>}
               <div className="flex justify-between text-sm text-[var(--muted)]">
                 <span>Shipping</span>
