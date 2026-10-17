@@ -12,12 +12,16 @@ export async function POST(request: Request) {
     const found = await findPartnerByCode(code);
     if (!found) return NextResponse.json({ valid: false, error: "Invalid or expired vendor code." }, { status: 404 });
 
-    const pricedLines = lines.map((line: { productId?: string; quantity?: number }) => {
-      const product = products.find((item) => item.id === line.productId);
+    const pricedLines = lines.map((line: { productId?: string; slug?: string; quantity?: number }) => {
+      const product = products.find((item) => item.id === line.productId || item.slug === line.slug);
       return product ? { priceInr: product.price_inr, quantity: Math.max(1, Number(line.quantity) || 1) } : null;
     }).filter(Boolean) as { priceInr: number; quantity: number }[];
 
+    if (pricedLines.length === 0) {
+      return NextResponse.json({ valid: false, error: "Could not match cart products to the catalogue. Please refresh checkout and try again." }, { status: 400 });
+    }
     const discount = calculatePartnerDiscount(pricedLines);
+    if (discount <= 0) return NextResponse.json({ valid: false, error: "No eligible product discount could be calculated. Please refresh checkout and try again." }, { status: 400 });
     return NextResponse.json({
       valid: true,
       code: found.partner.code,
