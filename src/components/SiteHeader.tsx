@@ -18,6 +18,7 @@ const mobileLinks = [
 export default function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [customerName, setCustomerName] = useState<string | null>(null);
+  const [isApprovedPartner, setIsApprovedPartner] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
 
@@ -29,12 +30,15 @@ export default function SiteHeader() {
       if (!mounted) return;
       const supabase = getSupabase();
 
-      const applyUser = (user: { user_metadata?: Record<string, unknown>; email?: string | null } | null) => {
+      const applyUser = (user: { user_metadata?: Record<string, unknown>; app_metadata?: Record<string, unknown>; email?: string | null } | null) => {
         if (!mounted) return;
         if (!user) {
           setCustomerName(null);
+          setIsApprovedPartner(false);
           return;
         }
+        const partner = user.app_metadata?.marketing_partner as { status?: string; code?: string } | undefined;
+        setIsApprovedPartner(partner?.status === "approved" && Boolean(partner?.code));
         const fullName = String(user.user_metadata?.full_name || user.user_metadata?.name || "").trim();
         if (fullName) {
           setCustomerName(fullName.split(/\s+/)[0]);
@@ -85,12 +89,12 @@ export default function SiteHeader() {
               {mobileLinks.map((link) => (
                 <Link
                   key={link.href}
-                  href={link.href}
+                  href={link.featured && isApprovedPartner ? "/your-business/dashboard" : link.href}
                   className={link.featured
                     ? "business-cta-live rounded-full bg-[var(--deep-wine)] px-4 py-2 text-[11px] font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-[var(--wine-soft)]"
                     : "hover:text-[var(--deep-wine)] transition-colors"}
                 >
-                  {link.label}
+                  {link.featured && isApprovedPartner ? "Partner Dashboard" : link.label}
                 </Link>
               ))}
             </nav>
@@ -155,13 +159,13 @@ export default function SiteHeader() {
                     {mobileLinks.map((link) => (
                       <Link
                         key={link.href}
-                        href={link.href}
+                        href={link.featured && isApprovedPartner ? "/your-business/dashboard" : link.href}
                         onClick={() => setMenuOpen(false)}
                         className={link.featured
                           ? "business-cta-live block rounded-xl bg-[var(--deep-wine)] px-4 py-3 text-sm font-semibold text-white"
                           : "block rounded-xl px-4 py-3 text-sm font-medium text-[var(--ink)] hover:bg-[var(--milk-sage)] hover:text-[var(--deep-wine)]"}
                       >
-                        {link.label}
+                        {link.featured && isApprovedPartner ? "Partner Dashboard" : link.label}
                       </Link>
                     ))}
                   </div>
