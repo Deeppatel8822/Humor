@@ -28,6 +28,7 @@ interface CartContextValue {
   bundleSavingsInr: number;
   startCheckout: () => Promise<{ mode: "shopify" | "local"; url?: string }>;
   launchOfferActive: boolean;
+  launchOfferReady: boolean;
   getDisplayPrice: (product: Product) => number;
 }
 
@@ -40,6 +41,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
   const [bundleDiscountPercent, setBundleDiscountPercent] = useState(8);
   const [launchOfferActive, setLaunchOfferActive] = useState(false);
+  const [launchOfferReady, setLaunchOfferReady] = useState(false);
 
   function getDisplayPrice(product: Product) {
     return launchOfferActive ? (getLaunchOfferPrice(product) ?? product.price_inr) : product.price_inr;
@@ -73,7 +75,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           };
         }));
       } catch {
-        if (active) setLaunchOfferActive(false);
+        if (active) { setLaunchOfferActive(false); setLaunchOfferReady(true); }
       }
     };
     void refreshEligibility();
@@ -235,7 +237,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   return (
     <CartContext.Provider
-      value={{ lines, addItem, removeItem, updateQuantity, clearCart, trackCartActivity, itemCount, subtotalInr, bundleSavingsInr, startCheckout, launchOfferActive, getDisplayPrice }}
+      value={{ lines, addItem, removeItem, updateQuantity, clearCart, trackCartActivity, itemCount, subtotalInr, bundleSavingsInr, startCheckout, launchOfferActive, launchOfferReady, getDisplayPrice }}
     >
       {children}
     </CartContext.Provider>
