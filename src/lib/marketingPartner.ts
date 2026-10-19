@@ -18,7 +18,7 @@ export interface MarketingPartner {
   totalRewards?: number;
   /** Permanent reward tier: basic (25%), silver (27%), or gold (30%). */
   rewardTier?: "basic" | "silver" | "gold";
-  /** Coins earned in the current 30-day qualification window; resets after 30 days. */
+  /** Eligible sales amount (INR) in the current 30-day qualification window; resets after 30 days. */
   qualificationCoins?: number;
   qualificationPeriodStartedAt?: string;
   totalSales?: number;
@@ -157,22 +157,22 @@ export async function creditPartnerReward(
   const elapsedSincePeriodStart = now.getTime() - periodStartMs;
   const periodIsValid = Number.isFinite(periodStartMs) && elapsedSincePeriodStart >= 0 && elapsedSincePeriodStart < 30 * 24 * 60 * 60 * 1000;
   const qualificationPeriodStartedAt = periodIsValid ? periodStart.toISOString() : nowIso;
-  const coinsBeforeOrderInWindow = periodIsValid ? Math.max(0, Number(partner.qualificationCoins ?? 0)) : 0;
+  const salesBeforeOrderInWindow = periodIsValid ? Math.max(0, Number(partner.qualificationCoins ?? 0)) : 0;
   const currentTier = partner.rewardTier ?? "basic";
   const rewardRate = currentTier === "gold" ? 0.30 : currentTier === "silver" ? 0.27 : PARTNER_REWARD_RATE;
   const reward = Math.max(0, Math.round(billedAmountInr * rewardRate));
   const lifetimeCoinsBeforeOrder = Math.max(0, Number(partner.totalRewards ?? 0));
-  const qualificationCoinsAfterOrder = coinsBeforeOrderInWindow + reward;
+  const qualificationSalesAfterOrder = salesBeforeOrderInWindow + Math.max(0, billedAmountInr);
 
   // Tier qualification uses only coins earned in this 30-day window.
   // The current order is paid at the existing tier; any upgrade applies to later orders.
   let nextTier: NonNullable<MarketingPartner["rewardTier"]> = currentTier;
-  if ((currentTier === "basic" || currentTier === "silver") && qualificationCoinsAfterOrder >= 3000) nextTier = "silver";
-  if (qualificationCoinsAfterOrder >= 5000) nextTier = "gold";
+  if ((currentTier === "basic" || currentTier === "silver") && qualificationSalesAfterOrder >= 3000) nextTier = "silver";
+  if (qualificationSalesAfterOrder >= 5000) nextTier = "gold";
   let next: MarketingPartner = {
     ...partner,
     rewardTier: nextTier,
-    qualificationCoins: qualificationCoinsAfterOrder,
+    qualificationCoins: qualificationSalesAfterOrder,
     qualificationPeriodStartedAt,
     walletBalance: Math.max(0, Number(partner.walletBalance ?? 0)) + reward,
     totalRewards: lifetimeCoinsBeforeOrder + reward,
