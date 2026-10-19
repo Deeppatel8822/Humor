@@ -21,14 +21,15 @@ const imageFallbacks: Record<string, string> = {
 };
 
 export default function CartPopup({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { lines, updateQuantity, removeItem, subtotalInr, bundleSavingsInr, startCheckout } = useCart();
+  const { lines, updateQuantity, removeItem, subtotalInr, bundleSavingsInr, startCheckout, launchOfferActive, launchOfferReady } = useCart();
   const router = useRouter();
   const [checkingOut, setCheckingOut] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
-  const threshold = 299;
-  const netSubtotal = Math.max(0, subtotalInr - bundleSavingsInr);
+  const threshold = launchOfferActive ? 100 : 299;
+  const effectiveBundleSavings = launchOfferActive ? 0 : bundleSavingsInr;
+  const netSubtotal = Math.max(0, subtotalInr - effectiveBundleSavings);
   const shipping = netSubtotal >= threshold ? 0 : 50;
   const amountToFreeShipping = Math.max(0, threshold - subtotalInr);
 
@@ -122,10 +123,10 @@ export default function CartPopup({ open, onClose }: { open: boolean; onClose: (
             </div>
             <footer className="border-t border-[#E9DFEF] bg-white/95 px-5 pb-[max(16px,env(safe-area-inset-bottom))] pt-4 sm:px-7 sm:pt-5">
               <div className="mb-3 flex items-center justify-between text-sm"><span className="text-[#776981]">Subtotal</span><span className="font-medium text-[#35243F]">₹{subtotalInr.toLocaleString("en-IN")}</span></div>
-              {bundleSavingsInr > 0 && <div className="mb-3 flex items-center justify-between text-sm"><span className="text-[#776981]">Bundle savings</span><span className="font-medium text-green-700">−₹{bundleSavingsInr.toLocaleString("en-IN")}</span></div>}
+              {!launchOfferActive && bundleSavingsInr > 0 && <div className="mb-3 flex items-center justify-between text-sm"><span className="text-[#776981]">Bundle savings</span><span className="font-medium text-green-700">−₹{bundleSavingsInr.toLocaleString("en-IN")}</span></div>}
               <div className="mb-3 flex items-center justify-between text-sm"><span className="text-[#776981]">Shipping</span><span className={shipping === 0 ? "font-medium text-green-700" : "text-[#35243F]"}>{shipping === 0 ? "Free" : "₹50"}</span></div>
               <div className="mb-4 flex items-center justify-between border-t border-dashed border-[#E4D8EC] pt-3"><span className="font-semibold text-[#35243F]">Estimated total</span><span className="font-display text-2xl text-[#50336F]">₹{(netSubtotal + shipping).toLocaleString("en-IN")}</span></div>
-              <button type="button" onClick={checkout} disabled={checkingOut} style={{ background: "linear-gradient(100deg, #7047A0 0%, #50336F 100%)", color: "#FFFFFF", borderColor: "#7047A0" }} className="flex w-full items-center justify-center gap-2 rounded-full px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#7047A0]/25 transition hover:brightness-110 disabled:cursor-wait disabled:opacity-70">{checkingOut ? "Preparing checkout…" : "Proceed to checkout"}<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+              <button type="button" onClick={checkout} disabled={checkingOut || !launchOfferReady} style={{ background: "linear-gradient(100deg, #7047A0 0%, #50336F 100%)", color: "#FFFFFF", borderColor: "#7047A0" }} className="flex w-full items-center justify-center gap-2 rounded-full px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#7047A0]/25 transition hover:brightness-110 disabled:cursor-wait disabled:opacity-70">{!launchOfferReady ? "Checking prices…" : checkingOut ? "Preparing checkout…" : "Proceed to checkout"}<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
               <button type="button" onClick={onClose} className="mt-2 w-full rounded-full px-4 py-2.5 text-xs font-medium text-[#6E5C79] hover:bg-[#F8F3FA]">Continue shopping</button>
               <p className="mt-1 text-center text-[10px] tracking-wide text-[#8B7D92]">A little luxury, just for you</p>
             </footer>
