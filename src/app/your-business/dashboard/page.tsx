@@ -100,7 +100,7 @@ export default function PartnerDashboardPage() {
       <div className="mx-auto max-w-6xl">
         <Link href="/your-business" className="text-sm text-[var(--warm-gold)] hover:underline">← Start Your Business</Link>
         <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
-          <div><p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--warm-gold)]">Humor Luxury</p><h1 className="mt-2 font-display text-4xl text-[var(--ink)] md:text-5xl">Partner Dashboard</h1><p className="mt-3 max-w-xl text-sm leading-6 text-[var(--muted)]">Your referral code, rewards and recent activity in one place.</p></div>
+          <div><p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--warm-gold)]">Humor Luxury</p><h1 className="mt-2 font-display text-4xl text-[var(--ink)] md:text-5xl">Partner Dashboard</h1><p className="mt-3 max-w-xl text-sm leading-6 text-[var(--muted)]">Your referral code, reward coins and recent activity in one place.</p></div>
           {data && <span className="rounded-full border border-[var(--line)] px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[var(--ink)]">{statusLabel(data.status)}</span>}
         </div>
 
@@ -110,7 +110,7 @@ export default function PartnerDashboardPage() {
         {data && !loading && <>
           <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              ["Available balance", inr(data.walletBalance)],
+              ["Available coin balance", inr(data.walletBalance)],
               ["Lifetime coins", data.lifetimeCoins.toLocaleString("en-IN")],
               ["Eligible sales", inr(data.totalSales)],
               ["Referred customers", data.referredCustomers.toLocaleString("en-IN")],
@@ -122,11 +122,11 @@ export default function PartnerDashboardPage() {
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--warm-gold)]">Your partner User ID</p><p className="mt-2 break-all font-mono text-xs text-[var(--muted)]">{data.userId}</p><p className="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-[var(--warm-gold)]">Your referral code</p>
               <div className="mt-3 flex flex-wrap items-center gap-3"><p className="break-all text-3xl font-bold tracking-wider text-[var(--ink)]">{data.code || "Awaiting approval"}</p>{data.code && <button onClick={copyCode} className="rounded-full bg-[var(--warm-gold)] px-4 py-2 text-sm font-bold text-[var(--ink)]">{copied ? "Copied!" : "Copy code"}</button>}</div>
               <p className="mt-3 text-sm leading-6 text-[var(--muted)]">{data.status === "approved" ? "Share this code with customers. Eligible customers receive 10% off product value at checkout." : "Your code will be available after your application is approved."}</p>
-              <div className="mt-6 border-t border-[var(--line)] pt-5"><p className="text-xs uppercase tracking-wider text-[var(--muted)]">Current reward tier</p><p className="mt-2 text-2xl font-semibold text-[var(--ink)]">{data.rewardTier.toUpperCase()} · {data.rewardRate}%</p><p className="mt-2 text-sm text-[var(--muted)]">{data.qualificationCoins.toLocaleString("en-IN")} coins in the current qualification window. 3,000 unlocks 27%; 5,000 unlocks 30% within 30 days. Tier upgrades are permanent.</p></div>
+              <div className="mt-6 border-t border-[var(--line)] pt-5"><p className="text-xs uppercase tracking-wider text-[var(--muted)]">Current reward tier</p><p className="mt-2 text-2xl font-semibold text-[var(--ink)]">{data.rewardTier.toUpperCase()} · {data.rewardRate}%</p><p className="mt-2 text-sm text-[var(--muted)]">{data.qualificationCoins.toLocaleString("en-IN")} coins in the current qualification window. Eligible sales ₹0–₹2,999: 25%; ₹3,000–₹4,999: 27%; ₹5,000+: 30% within 30 days. Higher rates apply to future eligible orders.</p></div>
             </div>
             <div className="rounded-2xl border border-[var(--line)] bg-white shadow-sm p-6 md:p-8">
-              <h2 className="text-xl font-semibold text-[var(--ink)]">How rewards work</h2>
-              <ul className="mt-4 space-y-3 text-sm leading-6 text-[var(--muted)]"><li>• Basic tier starts at 25% of eligible product value.</li><li>• 3,000 eligible coins in 30 days unlocks 27%.</li><li>• 5,000 eligible coins in 30 days unlocks 30%.</li><li>• Higher rates apply to future eligible orders only.</li><li>• Minimum withdrawal request: ₹1,000 available balance.</li></ul>
+              <h2 className="text-xl font-semibold text-[var(--ink)]">How reward coins work</h2>
+              <ul className="mt-4 space-y-3 text-sm leading-6 text-[var(--muted)]"><li>• Customers get 10% off eligible product value when they use your approved code.</li><li>• You earn reward coins only. There is no 10% reward cash or cash commission.</li><li>• ₹0–₹2,999 eligible sales: 25% coins.</li><li>• ₹3,000–₹4,999 eligible sales: 27% coins.</li><li>• ₹5,000 and above eligible sales: 30% coins.</li><li>• Higher rates apply to future eligible orders only.</li><li>• Minimum withdrawal request: ₹1,000 available balance.</li></ul>
               <p className="mt-5 text-xs leading-5 text-[var(--muted)]">Rewards can be adjusted for refunds, returns, chargebacks or ineligible orders. Earnings are not guaranteed.</p>
               <Link href="/start-your-business-terms.html" className="mt-5 inline-flex text-sm font-semibold text-[var(--warm-gold)] underline">Read programme terms</Link>
             </div>
