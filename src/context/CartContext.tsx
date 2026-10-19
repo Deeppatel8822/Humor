@@ -10,6 +10,7 @@ export interface CartLine {
   slug: string;
   name: string;
   price_inr: number;
+  original_price_inr?: number;
   quantity: number;
   shopifyVariantId: string | null;
   image: string | null;
@@ -61,10 +62,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
         if (!active) return;
         const eligible = Boolean(result?.enabled && result?.eligible);
         const prices = result?.prices ?? {};
+        const basePrices = result?.basePrices ?? {};
         setLaunchOfferActive(eligible);
-        if (eligible) {
-          setLines((previous) => previous.map((line) => ({ ...line, price_inr: Number(prices[line.slug]) || line.price_inr })));
-        }
+        setLines((previous) => previous.map((line) => {
+          const originalPrice = Number(basePrices[line.slug]) || Number(line.original_price_inr) || line.price_inr;
+          return {
+            ...line,
+            original_price_inr: originalPrice,
+            price_inr: eligible ? (Number(prices[line.slug]) || originalPrice) : originalPrice,
+          };
+        }));
       } catch {
         if (active) setLaunchOfferActive(false);
       }
@@ -101,6 +108,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
             slug: line.slug ?? "",
             name: line.name ?? "",
             price_inr: Number(line.price_inr ?? 0),
+            original_price_inr: Number(line.original_price_inr ?? line.price_inr ?? 0),
             quantity: Number(line.quantity ?? 1),
             shopifyVariantId: line.shopifyVariantId ?? null,
             image: line.image ?? null,
@@ -158,7 +166,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const existing = prev.find((l) => l.productId === product.id);
       if (existing) {
         return prev.map((l) =>
-          l.productId === product.id ? { ...l, price_inr: effectivePrice, quantity: l.quantity + quantity } : l
+          l.productId === product.id ? { ...l, original_price_inr: l.original_price_inr ?? product.price_inr, price_inr: effectivePrice, quantity: l.quantity + quantity } : l
         );
       }
       return [
@@ -168,6 +176,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           slug: product.slug,
           name: product.name,
           price_inr: effectivePrice,
+          original_price_inr: product.price_inr,
           quantity,
           shopifyVariantId: product.shopify_variant_id,
           image: product.images?.[0] ?? null,
