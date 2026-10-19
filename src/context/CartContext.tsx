@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { Product } from "@/types/product";
 import { calculateBundleSavings } from "@/lib/bundles";
+import { getLaunchOfferPrice } from "@/lib/launchOffer";
 
 export interface CartLine {
   productId: string;
@@ -25,6 +26,8 @@ interface CartContextValue {
   subtotalInr: number;
   bundleSavingsInr: number;
   startCheckout: () => Promise<{ mode: "shopify" | "local"; url?: string }>;
+  launchOfferActive: boolean;
+  getDisplayPrice: (product: Product) => number;
 }
 
 const CartContext = createContext<CartContextValue | undefined>(undefined);
@@ -35,6 +38,50 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [bundleDiscountPercent, setBundleDiscountPercent] = useState(8);
+  const [launchOfferActive, setLaunchOfferActive] = useState(false);
+
+  function getDisplayPrice(product: Product) {
+    return launchOfferActive ? (getLaunchOfferPrice(product) ?? product.price_inr) : product.price_inr;
+  }
+
+  useEffect(() => {
+    let active = true;
+    let unsubscribe: (() => void) | undefined;
+    const refreshEligibility = async () => {
+      try {
+        const { getSupabase } = await import("@/lib/supabase");
+        const supabase = getSupabase();
+        const { data } = await supabase.auth.getSession();
+        const token = data.session?.access_token;
+        const response = await fetch("/api/launch-offer", {
+          cache: "no-store",
+          headers: token ? { Authorization: "Bearer " + token } : {},
+        });
+        const result = response.ok ? await response.json() : null;
+        if (!active) return;
+        const eligible = Boolean(result?.enabled && result?.eligible);
+        const prices = result?.prices ?? {};
+        setLaunchOfferActive(eligible);
+        if (eligible) {
+          setLines((previous) => previous.map((line) => ({ ...line, price_inr: Number(prices[line.slug]) || line.price_inr })));
+        }
+      } catch {
+        if (active) setLaunchOfferActive(false);
+      }
+    };
+    void refreshEligibility();
+    import("@/lib/supabase").then(({ getSupabase }) => {
+      if (!active) return;
+      const { data } = getSupabase().auth.onAuthStateChange(() => { void refreshEligibility(); });
+      unsubscribe = () => data.subscription.unsubscribe();
+    }).catch(() => {});
+    window.addEventListener("humor-customer-auth", refreshEligibility);
+    return () => {
+      active = false;
+      unsubscribe?.();
+      window.removeEventListener("humor-customer-auth", refreshEligibility);
+    };
+  }, []);
 
   useEffect(() => {
     fetch("/api/admin/pricing", { cache: "no-store" }).then(r => r.ok ? r.json() : null).then(data => {
@@ -111,7 +158,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const existing = prev.find((l) => l.productId === product.id);
       if (existing) {
         return prev.map((l) =>
-          l.productId === product.id ? { ...l, quantity: l.quantity + quantity } : l
+          l.productId === product.id ? { ...l, price_inr: effectivePrice, quantity: l.quantity + quantity } : l
         );
       }
       return [
@@ -120,7 +167,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           productId: product.id,
           slug: product.slug,
           name: product.name,
-          price_inr: product.price_inr,
+          price_inr: effectivePrice,
           quantity,
           shopifyVariantId: product.shopify_variant_id,
           image: product.images?.[0] ?? null,
@@ -178,7 +225,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   return (
     <CartContext.Provider
-      value={{ lines, addItem, removeItem, updateQuantity, clearCart, trackCartActivity, itemCount, subtotalInr, bundleSavingsInr, startCheckout }}
+      value={{ lines, addItem, removeItem, updateQuantity, clearCart, trackCartActivity, itemCount, subtotalInr, bundleSavingsInr, startCheckout, launchOfferActive, getDisplayPrice }}
     >
       {children}
     </CartContext.Provider>
