@@ -17,7 +17,7 @@ declare global {
 }
 
 export default function CheckoutPage() {
-  const { lines, subtotalInr, bundleSavingsInr, clearCart, trackCartActivity } = useCart();
+  const { lines, subtotalInr, bundleSavingsInr, clearCart, trackCartActivity, launchOfferActive } = useCart();
   const router = useRouter();
 
   const [paymentMethod, setPaymentMethod] = useState<"online" | "cod">("online");
@@ -36,22 +36,25 @@ export default function CheckoutPage() {
     fullName: "", email: "", phone: "", line1: "", line2: "", city: "", state: "", pincode: "",
   });
 
-  const freeShippingThresholdInr = 299;
+  const freeShippingThresholdInr = launchOfferActive ? 249 : 299;
   // Match the server's shipping threshold base after bundle savings, so the
   // checkout preview and Razorpay verification use the same shipping amount.
-  const shippingBaseInr = Math.max(0, subtotalInr - bundleSavingsInr);
+  const effectiveBundleSavingsInr = launchOfferActive ? 0 : bundleSavingsInr;
+  const shippingBaseInr = Math.max(0, subtotalInr - effectiveBundleSavingsInr);
   const shippingInr = shippingBaseInr >= freeShippingThresholdInr ? 0 : 50;
   const amountToFreeShippingInr = Math.max(0, freeShippingThresholdInr - shippingBaseInr);
   const qualifiesForFreeShipping = shippingBaseInr >= freeShippingThresholdInr;
-  const firstOrderDiscountInr = isLoggedIn && isFirstOrder ? Math.round(subtotalInr * 0.10) : 0;
-  const prepaidDiscountRate = subtotalInr >= 1000 ? 0.04 : 0.03;
+  const firstOrderDiscountInr = !launchOfferActive && isLoggedIn && isFirstOrder ? Math.round(subtotalInr * 0.10) : 0;
+  const prepaidDiscountRate = launchOfferActive ? 0 : subtotalInr >= 1000 ? 0.04 : 0.03;
   const prepaidDiscountInr = paymentMethod === "online" ? Math.round(subtotalInr * prepaidDiscountRate) : 0;
   const prepaidSavingsPreviewInr = Math.round(subtotalInr * prepaidDiscountRate);
   const codChargeInr = paymentMethod === "cod" ? 25 : 0;
-  const totalDiscountInr = firstOrderDiscountInr + prepaidDiscountInr + vendorDiscountInr + bundleSavingsInr;
+  const effectiveVendorDiscountInr = launchOfferActive ? 0 : vendorDiscountInr;
+  const totalDiscountInr = firstOrderDiscountInr + prepaidDiscountInr + effectiveVendorDiscountInr + effectiveBundleSavingsInr;
   const totalInr = Math.max(0, subtotalInr - totalDiscountInr + shippingInr + codChargeInr);
 
   async function applyVendorCode(): Promise<number> {
+    if (launchOfferActive) { setVendorDiscountInr(0); setVendorCodeMessage("Partner codes are unavailable during the launch offer."); return 0; }
     const code = vendorCode.trim();
     if (!code) { setVendorDiscountInr(0); setVendorCodeMessage(""); return 0; }
     setVendorCodeLoading(true); setVendorCodeMessage("");
@@ -118,6 +121,7 @@ export default function CheckoutPage() {
   }
 
   async function handleCodOrder() {
+    if (launchOfferActive) throw new Error("Launching offer orders are prepaid only. Please choose online payment.");
     trackCartActivity("checkout_started", lines, form);
     const response = await fetch("/api/orders/cod", {
       method: "POST",
@@ -143,7 +147,7 @@ export default function CheckoutPage() {
     const createRes = await fetch("/api/razorpay/create-order", {
       method: "POST",
       headers: { "Content-Type": "application/json", ...(await authHeaders()) },
-      body: JSON.stringify({ lines: lines.map((l) => ({ productId: l.productId, slug: l.slug, quantity: l.quantity })), paymentMethod: "online", firstOrderDiscountInr, prepaidDiscountInr, vendorCode }),
+      body: JSON.stringify({ lines: lines.map((l) => ({ productId: l.productId, slug: l.slug, quantity: l.quantity })), paymentMethod: "online", firstOrderDiscountInr, prepaidDiscountInr, vendorCode: launchOfferActive ? "" : vendorCode }),
     });
     const createData = await createRes.json();
     if (!createRes.ok) throw new Error(createData.error ?? "Could not start payment.");
@@ -167,7 +171,7 @@ export default function CheckoutPage() {
               body: JSON.stringify({
                 ...r,
                 lines: lines.map((l) => ({ productId: l.productId, slug: l.slug, quantity: l.quantity })),
-                shipping: form, subtotalInr, shippingInr, firstOrderDiscountInr, prepaidDiscountInr, vendorCode,
+                shipping: form, subtotalInr, shippingInr, firstOrderDiscountInr, prepaidDiscountInr, vendorCode: launchOfferActive ? "" : vendorCode,
               }),
             });
             const verifyData = await verifyRes.json();
@@ -194,7 +198,8 @@ export default function CheckoutPage() {
       setError("Please login or create your account before placing an order.");
       return;
     }
-    if (vendorCode.trim() && vendorDiscountInr === 0) {
+    if (launchOfferActive && paymentMethod === "cod") return setError("Launch offer is available on prepaid orders only. Please choose online payment.");
+    if (!launchOfferActive && vendorCode.trim() && vendorDiscountInr === 0) {
       const appliedDiscount = await applyVendorCode();
       if (appliedDiscount === 0) return setError("Please apply a valid vendor code before placing your order.");
     }
@@ -232,7 +237,8 @@ export default function CheckoutPage() {
         </div>
       )}
       <div className="max-w-5xl mx-auto px-5 md:px-8 py-14">
-        <h1 className="font-display text-3xl md:text-4xl text-[var(--deep-wine)] mb-8">Checkout</h1>
+        <h1 className="font-display text-3xl md:text-4xl text-[var(--deep-wine)] mb-3">Checkout</h1>
+        {launchOfferActive && <p className="mb-8 rounded-xl border border-[var(--warm-gold)]/50 bg-[var(--milk-sage)] px-4 py-3 text-sm text-[var(--deep-wine)]">Launch Offer active: prepaid only, no additional discounts. Free shipping at ₹249+, otherwise ₹50 shipping.</p>}
 
         <form onSubmit={handleSubmit} className="grid md:grid-cols-3 gap-10">
           <div className="md:col-span-2 space-y-8">
@@ -257,16 +263,16 @@ export default function CheckoutPage() {
                   <input type="radio" name="payment" checked={paymentMethod === "online"} onChange={() => setPaymentMethod("online")} />
                   <div>
                     <div className="text-sm font-medium text-[var(--ink)]">Pay online — UPI, Cards, Netbanking</div>
-                    <div className="text-xs text-[var(--muted)]">Secured by Razorpay · Save ₹{prepaidSavingsPreviewInr} ({Math.round(prepaidDiscountRate * 100)}% prepaid)</div>
+                    <div className="text-xs text-[var(--muted)]">{launchOfferActive ? "Required for launch offer · UPI, Cards, Netbanking" : `Secured by Razorpay · Save ₹${prepaidSavingsPreviewInr} (${Math.round(prepaidDiscountRate * 100)}% prepaid)`}</div>
                   </div>
                 </label>
-                <label className="flex items-center gap-3 border border-[var(--line)] rounded-xl px-4 py-3.5 cursor-pointer has-[:checked]:border-[var(--deep-wine)] has-[:checked]:bg-[var(--milk-sage)]">
+                {!launchOfferActive && <label className="flex items-center gap-3 border border-[var(--line)] rounded-xl px-4 py-3.5 cursor-pointer has-[:checked]:border-[var(--deep-wine)] has-[:checked]:bg-[var(--milk-sage)]">
                   <input type="radio" name="payment" checked={paymentMethod === "cod"} onChange={() => setPaymentMethod("cod")} />
                   <div>
                     <div className="text-sm font-medium text-[var(--ink)]">Cash on delivery</div>
                     <div className="text-xs text-[var(--muted)]">Pay when your order arrives · +₹25 COD charge</div>
                   </div>
-                </label>
+                </label>}
               </div>
             </div>
 
@@ -282,7 +288,7 @@ export default function CheckoutPage() {
                 </div>
               ))}
             </div>
-            {(() => {
+            {!launchOfferActive && (() => {
               const firstOfferProduct = lines
                 .map((line) => catalogProducts.find((p) => p.slug === line.slug))
                 .find((p) => p && p.slug);
@@ -290,7 +296,7 @@ export default function CheckoutPage() {
                 ? <RoutineUpsell product={firstOfferProduct} products={catalogProducts} />
                 : null;
             })()}
-            <div className="mb-5 rounded-2xl border border-[var(--line)] bg-white/70 p-4">
+            {!launchOfferActive && <div className="mb-5 rounded-2xl border border-[var(--line)] bg-white/70 p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--deep-wine)]">Have a partner code?</span>
                 <span className="text-[10px] text-[var(--muted)]">Optional</span>
@@ -313,7 +319,7 @@ export default function CheckoutPage() {
                 </button>
               </div>
               {vendorCodeMessage && <p className={`mt-2 text-[11px] ${vendorDiscountInr > 0 ? "text-green-700" : "text-[var(--muted)]"}`} role="status">{vendorCodeMessage}{vendorDiscountInr > 0 ? ` · Save ₹${vendorDiscountInr}` : ""}</p>}
-            </div>
+            </div>}
             <div className="border-t border-[var(--line)] pt-4 space-y-2">
               <div className="flex justify-between text-sm text-[var(--muted)]"><span>Subtotal</span><span>&#8377;{subtotalInr}</span></div>
               {firstOrderDiscountInr > 0 && <div className="flex justify-between text-sm text-[var(--muted)]"><span>First order 10% OFF</span><span className="text-green-700">−₹{firstOrderDiscountInr}</span></div>}
