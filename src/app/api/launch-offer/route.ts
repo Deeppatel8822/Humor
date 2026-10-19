@@ -24,5 +24,6 @@ export async function GET(request: NextRequest) {
     enabled: true,
     eligible,
     prices: eligible ? getLaunchOfferProductPrices() : {},
+    basePrices,
   }, { headers: { "Cache-Control": "no-store" } });
 }
