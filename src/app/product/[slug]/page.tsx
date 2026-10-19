@@ -136,7 +136,6 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   if (!product) return notFound();
   const allProducts = await getAllProducts();
   const related = allProducts.filter((p) => p.id !== product.id && p.category === product.category).slice(0, 4);
-  const onSale = product.compare_at_price_inr && product.compare_at_price_inr > product.price_inr;
   const gallery = slug === "sunscreen-spf-50" ? sunscreenImages : product.images.map((src) => ({ src, alt: product.name }));
   const serumSlugs = ["fullmoon-face-serum", "blemish-block-face-serum", "velvet-touch-face-serum"];
   if (serumSlugs.includes(slug)) gallery.splice(2, 0, { src: "https://d2ol7oe51mr4n9.cloudfront.net/user_3JURoT4iavdacXhU0ts1qPbohKm/c51e03c2-b88e-43f4-8099-2064a57cc398.jpg", alt: "Four steps for applying skincare serum" });
