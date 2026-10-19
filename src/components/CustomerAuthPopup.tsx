@@ -216,7 +216,7 @@ export default function CustomerAuthPopup() {
                 </div>
               ))}
             </div>
-            <div className="mt-4 rounded-xl bg-[var(--milk-sage)] p-3 text-xs leading-5 text-[var(--deep-wine)]">Prepaid only · Free shipping on ₹249+ · ₹50 shipping below ₹249 · No COD or additional discounts.</div>
+            <div className="mt-4 rounded-xl bg-[var(--milk-sage)] p-3 text-xs leading-5 text-[var(--deep-wine)]">Prepaid only · Free shipping on ₹100+ · ₹50 shipping below ₹100 · No COD or additional discounts.</div>
             <button onClick={() => setShowUnlockedOffer(false)} className="mt-5 w-full rounded-full bg-[var(--deep-wine)] px-5 py-3 text-sm font-medium text-white">Explore launch prices</button>
           </div>
         </div>
@@ -241,7 +241,7 @@ export default function CustomerAuthPopup() {
               {launchOfferDisplayItems.map((item) => <div key={item.name} className="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-white/90">{item.name}</div>)}
             </div>
             <p className="mt-3 text-[10px] text-[#F3D99B]">Login to view and unlock member prices.</p>
-            <p className="mt-3 border-t border-white/20 pt-3 text-[10px] leading-4 text-white/85">Prepaid orders only · Free shipping on orders ₹249+ · ₹50 shipping below ₹249 · No COD or additional discounts</p>
+            <p className="mt-3 border-t border-white/20 pt-3 text-[10px] leading-4 text-white/85">Prepaid orders only · Free shipping on orders ₹100+ · ₹50 shipping below ₹100 · No COD or additional discounts</p>
           </div>
         )}
 
