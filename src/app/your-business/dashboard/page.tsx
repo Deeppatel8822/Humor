@@ -33,6 +33,11 @@ export default function PartnerDashboardPage() {
   const [withdrawing, setWithdrawing] = useState(false);
 
   useEffect(() => {
+    const handleCustomerAuth = () => {
+      // Reload after the login popup establishes a session.
+      window.location.reload();
+    };
+    window.addEventListener("humor-customer-auth", handleCustomerAuth);
     let active = true;
     (async () => {
       try {
@@ -49,7 +54,10 @@ export default function PartnerDashboardPage() {
         if (active) setLoading(false);
       }
     })();
-    return () => { active = false; };
+    return () => {
+      active = false;
+      window.removeEventListener("humor-customer-auth", handleCustomerAuth);
+    };
   }, []);
 
   async function requestWithdrawal() {
@@ -97,7 +105,7 @@ export default function PartnerDashboardPage() {
         </div>
 
         {loading && <div className="mt-8 rounded-2xl border border-[var(--line)] p-6 text-[var(--muted)]">Loading your dashboard…</div>}
-        {error && !loading && <div className="mt-8 rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-900">{error}<div className="mt-3"><Link href="/login" className="font-semibold text-[var(--warm-gold)] underline">Log in / create account</Link></div></div>}
+        {error && !loading && <div className="mt-8 rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-900">{error}<div className="mt-3"><button type="button" onClick={() => window.dispatchEvent(new CustomEvent("humor-open-customer-auth"))} className="font-semibold text-[var(--warm-gold)] underline">Log in / create account</button></div></div>}
 
         {data && !loading && <>
           <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
