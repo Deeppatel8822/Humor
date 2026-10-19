@@ -210,7 +210,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const statusRes = await fetch("/api/shopify-status");
       const { configured } = await statusRes.json();
 
-      if (configured && bundleSavingsInr === 0 && lines.every((l) => l.shopifyVariantId)) {
+      if (configured && !launchOfferActive && bundleSavingsInr === 0 && lines.every((l) => l.shopifyVariantId)) {
         const res = await fetch("/api/cart/create", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
