@@ -20,7 +20,7 @@ const cartImageFallbacks: Record<string, string> = {
 };
 
 export default function CartPage() {
-  const { lines, updateQuantity, removeItem, subtotalInr, bundleSavingsInr, startCheckout, launchOfferActive } = useCart();
+  const { lines, updateQuantity, removeItem, subtotalInr, bundleSavingsInr, startCheckout, launchOfferActive, launchOfferReady } = useCart();
   const router = useRouter();
   const [checkingOut, setCheckingOut] = useState(false);
   const freeShippingThresholdInr = launchOfferActive ? 249 : 299;
@@ -104,7 +104,7 @@ export default function CartPage() {
               <span className={shippingInr === 0 ? "text-green-700" : "text-[var(--ink)]"}>{shippingInr === 0 ? "Free" : "₹50"}</span>
             </div>
             <div className="border-t border-[var(--line)] pt-4 flex justify-between text-base font-semibold text-[var(--ink)] mb-6"><span>Total</span><span>&#8377;{netSubtotalInr + shippingInr}</span></div>
-            <button type="button" onClick={handleCheckout} disabled={checkingOut} className="w-full text-center bg-[var(--deep-wine)] text-white px-6 py-3.5 rounded-full text-sm font-medium hover:bg-[var(--ink)] transition-colors disabled:opacity-60">{checkingOut ? "Opening checkout..." : "Continue to checkout"}</button>
+            <button type="button" onClick={handleCheckout} disabled={checkingOut || !launchOfferReady} className="w-full text-center bg-[var(--deep-wine)] text-white px-6 py-3.5 rounded-full text-sm font-medium hover:bg-[var(--ink)] transition-colors disabled:opacity-60">{!launchOfferReady ? "Checking prices..." : checkingOut ? "Opening checkout..." : "Continue to checkout"}</button>
                       </div>
         </div>
       </div>
