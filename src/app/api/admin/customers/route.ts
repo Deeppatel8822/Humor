@@ -51,13 +51,13 @@ export async function GET() {
     const key = email ? `email:${email}` : phone ? `phone:${phone}` : `id:${customer.id}`;
     customersByIdentity.set(key, {
       ...customer,
-      id: authUser?.id || customer.id,
+      id: (authUser as unknown as { id?: string } | undefined)?.id || customer.id,
       full_name: String(customer.full_name || "").trim() || authName || null,
       email: customer.email || authUser?.email || null,
-      phone: customer.phone || authUser?.phone || null,
-      created_at: customer.created_at || authUser?.created_at,
+      phone: customer.phone || (authUser as unknown as { phone?: string | null } | undefined)?.phone || null,
+      created_at: customer.created_at || (authUser as unknown as { created_at?: string } | undefined)?.created_at,
       isAccount: Boolean(authUser) || accountUserIds.has(customer.id),
-      marketingPartner: partnerByUserId.get(authUser?.id || customer.id) ?? null,
+      marketingPartner: partnerByUserId.get((authUser as unknown as { id?: string } | undefined)?.id || customer.id) ?? null,
     });
   }
   // Include authenticated accounts even if their profile row was never created in public.customers.
@@ -71,26 +71,26 @@ export async function GET() {
       const authName = String(userMeta?.full_name || userMeta?.name || userMeta?.businessName || userMeta?.business_name || "").trim();
       customersByIdentity.set(key, {
         ...existing,
-        id: user.id,
+        id: (user as unknown as { id?: string }).id || existing.id,
         full_name: existing.full_name || authName || null,
         email: existing.email || user.email || null,
         phone: existing.phone || user.phone || null,
-        created_at: existing.created_at || user.created_at,
+        created_at: existing.created_at || (user as unknown as { created_at?: string }).created_at || new Date().toISOString(),
         isAccount: true,
-        marketingPartner: partnerByUserId.get(user.id) ?? existing.marketingPartner ?? null,
+        marketingPartner: partnerByUserId.get((user as unknown as { id?: string }).id || existing.id) ?? existing.marketingPartner ?? null,
       });
       continue;
     }
     const userMeta = (user as unknown as { user_metadata?: Record<string, unknown> }).user_metadata;
     const fullName = String(userMeta?.full_name || userMeta?.name || userMeta?.display_name || userMeta?.businessName || userMeta?.business_name || "").trim();
     customersByIdentity.set(key, {
-      id: user.id,
+      id: (user as unknown as { id?: string }).id || "",
       full_name: fullName || null,
       email: user.email || null,
       phone: user.phone || String((user as unknown as { user_metadata?: Record<string, unknown> }).user_metadata?.phone || "").trim() || null,
-      created_at: user.created_at,
+      created_at: (user as unknown as { created_at?: string }).created_at || new Date().toISOString(),
       isAccount: true,
-      marketingPartner: partnerByUserId.get(user.id) ?? null,
+      marketingPartner: partnerByUserId.get((user as unknown as { id?: string }).id || "") ?? null,
     });
   }
   const customers = Array.from(customersByIdentity.values()).sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
