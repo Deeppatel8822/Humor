@@ -35,18 +35,59 @@ export async function GET() {
     }
   }
 
-  const accountUserIds = new Set((usersData?.users ?? []).map((user) => user.id));
-  const accountEmails = new Set((usersData?.users ?? []).map((user) => String(user.email || "").trim().toLowerCase()).filter(Boolean));
-  const accountPhones = new Set((usersData?.users ?? []).map((user) => String(user.phone || "").replace(/\\D/g, "")).filter(Boolean));
-  const customers = (data ?? []).map((customer) => {
+  const authUsers = usersData?.users ?? [];
+  const accountUserIds = new Set(authUsers.map((user) => user.id));
+  const accountByEmail = new Map(authUsers.map((user) => [String(user.email || "").trim().toLowerCase(), user]).filter(([email]) => Boolean(email)));
+  const accountByPhone = new Map(authUsers.map((user) => [String(user.phone || "").replace(/\\D/g, ""), user]).filter(([phone]) => Boolean(phone)));
+  const customersByIdentity = new Map<string, any>();
+  for (const customer of data ?? []) {
     const email = String(customer.email || "").trim().toLowerCase();
     const phone = String(customer.phone || "").replace(/\\D/g, "");
-    return {
+    const authUser = (email && accountByEmail.get(email)) || (phone && accountByPhone.get(phone));
+    const authName = String(authUser?.user_metadata?.full_name || authUser?.user_metadata?.name || authUser?.user_metadata?.businessName || authUser?.user_metadata?.business_name || "").trim();
+    const key = email ? `email:${email}` : phone ? `phone:${phone}` : `id:${customer.id}`;
+    customersByIdentity.set(key, {
       ...customer,
-      // Some customer profile rows may have a different DB id from the Supabase Auth user id.
-      isAccount: accountUserIds.has(customer.id) || Boolean(email && accountEmails.has(email)) || Boolean(phone && accountPhones.has(phone)),
-      marketingPartner: partnerByUserId.get(customer.id) ?? null,
-    };
-  });
+      id: authUser?.id || customer.id,
+      full_name: String(customer.full_name || "").trim() || authName || null,
+      email: customer.email || authUser?.email || null,
+      phone: customer.phone || authUser?.phone || null,
+      created_at: customer.created_at || authUser?.created_at,
+      isAccount: Boolean(authUser) || accountUserIds.has(customer.id),
+      marketingPartner: partnerByUserId.get(authUser?.id || customer.id) ?? null,
+    });
+  }
+  // Include authenticated accounts even if their profile row was never created in public.customers.
+  for (const user of authUsers) {
+    const email = String(user.email || "").trim().toLowerCase();
+    const phone = String(user.phone || "").replace(/\\D/g, "");
+    const key = email ? `email:${email}` : phone ? `phone:${phone}` : `id:${user.id}`;
+    const existing = customersByIdentity.get(key);
+    if (existing) {
+      const authName = String(user.user_metadata?.full_name || user.user_metadata?.name || user.user_metadata?.businessName || user.user_metadata?.business_name || "").trim();
+      customersByIdentity.set(key, {
+        ...existing,
+        id: user.id,
+        full_name: existing.full_name || authName || null,
+        email: existing.email || user.email || null,
+        phone: existing.phone || user.phone || null,
+        created_at: existing.created_at || user.created_at,
+        isAccount: true,
+        marketingPartner: partnerByUserId.get(user.id) ?? existing.marketingPartner ?? null,
+      });
+      continue;
+    }
+    const fullName = String(user.user_metadata?.full_name || user.user_metadata?.name || user.user_metadata?.display_name || user.user_metadata?.businessName || user.user_metadata?.business_name || "").trim();
+    customersByIdentity.set(key, {
+      id: user.id,
+      full_name: fullName || null,
+      email: user.email || null,
+      phone: user.phone || String(user.user_metadata?.phone || "").trim() || null,
+      created_at: user.created_at,
+      isAccount: true,
+      marketingPartner: partnerByUserId.get(user.id) ?? null,
+    });
+  }
+  const customers = Array.from(customersByIdentity.values()).sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
   return NextResponse.json({ customers });
 }
