@@ -53,7 +53,7 @@ export async function GET() {
       ...customer,
       id: (authUser as unknown as { id?: string } | undefined)?.id || customer.id,
       full_name: String(customer.full_name || "").trim() || authName || null,
-      email: customer.email || authUser?.email || null,
+      email: customer.email || (authUser as unknown as { email?: string | null } | undefined)?.email || null,
       phone: customer.phone || (authUser as unknown as { phone?: string | null } | undefined)?.phone || null,
       created_at: customer.created_at || (authUser as unknown as { created_at?: string } | undefined)?.created_at,
       isAccount: Boolean(authUser) || accountUserIds.has(customer.id),
