@@ -74,8 +74,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
             price_inr: eligible ? (Number(prices[line.slug]) || originalPrice) : originalPrice,
           };
         }));
+        setLaunchOfferReady(true);
       } catch {
-        if (active) setLaunchOfferActive(false);
+        if (active) {
+          setLaunchOfferActive(false);
+          setLaunchOfferReady(true);
+        }
       }
     };
     void refreshEligibility();
