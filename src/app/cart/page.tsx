@@ -20,11 +20,12 @@ const cartImageFallbacks: Record<string, string> = {
 };
 
 export default function CartPage() {
-  const { lines, updateQuantity, removeItem, subtotalInr, bundleSavingsInr, startCheckout } = useCart();
+  const { lines, updateQuantity, removeItem, subtotalInr, bundleSavingsInr, startCheckout, launchOfferActive } = useCart();
   const router = useRouter();
   const [checkingOut, setCheckingOut] = useState(false);
-  const freeShippingThresholdInr = 299;
-  const netSubtotalInr = Math.max(0, subtotalInr - bundleSavingsInr);
+  const freeShippingThresholdInr = launchOfferActive ? 249 : 299;
+  const effectiveBundleSavingsInr = launchOfferActive ? 0 : bundleSavingsInr;
+  const netSubtotalInr = Math.max(0, subtotalInr - effectiveBundleSavingsInr);
   const shippingInr = netSubtotalInr >= freeShippingThresholdInr ? 0 : 50;
   const amountToFreeShippingInr = Math.max(0, freeShippingThresholdInr - subtotalInr);
 
@@ -56,7 +57,7 @@ export default function CartPage() {
             <p className="text-xs uppercase tracking-[0.18em] text-[var(--warm-gold)] mb-2">Your selection</p>
             <h1 className="font-display text-3xl md:text-4xl text-[var(--deep-wine)]">Your cart</h1>
           </div>
-          <p className="text-sm text-[var(--muted)]">Free shipping on orders ₹299+</p>
+          <p className="text-sm text-[var(--muted)]">{launchOfferActive ? "Launch offer: prepaid only · Free shipping on ₹249+" : "Free shipping on orders ₹299+"}</p>
         </div>
 
         <div className={"bg-white border border-[var(--line)] rounded-xl px-5 py-3 text-sm mb-8 " + (subtotalInr >= freeShippingThresholdInr ? "text-green-700" : "text-[var(--deep-wine)]")}>
@@ -97,7 +98,7 @@ export default function CartPage() {
           <div className="bg-white border border-[var(--line)] rounded-xl p-6 h-fit">
             <h2 className="font-display text-xl text-[var(--deep-wine)] mb-5">Order summary</h2>
             <div className="flex justify-between text-sm text-[var(--muted)] mb-2"><span>Subtotal</span><span>&#8377;{subtotalInr}</span></div>
-            {bundleSavingsInr > 0 && <div className="flex justify-between text-sm text-[var(--muted)] mb-2"><span>Bundle savings</span><span className="text-green-700">−₹{bundleSavingsInr}</span></div>}
+            {!launchOfferActive && bundleSavingsInr > 0 && <div className="flex justify-between text-sm text-[var(--muted)] mb-2"><span>Bundle savings</span><span className="text-green-700">−₹{bundleSavingsInr}</span></div>}
             <div className="flex justify-between text-sm text-[var(--muted)] mb-4">
               <span>Shipping</span>
               <span className={shippingInr === 0 ? "text-green-700" : "text-[var(--ink)]"}>{shippingInr === 0 ? "Free" : "₹50"}</span>
