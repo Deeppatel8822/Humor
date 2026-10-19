@@ -46,7 +46,8 @@ export async function GET() {
     const email = String(customer.email || "").trim().toLowerCase();
     const phone = String(customer.phone || "").replace(/\\D/g, "");
     const authUser = (email && accountByEmail.get(email)) || (phone && accountByPhone.get(phone));
-    const authName = String(authUser?.user_metadata?.full_name || authUser?.user_metadata?.name || authUser?.user_metadata?.businessName || authUser?.user_metadata?.business_name || "").trim();
+    const authMeta = (authUser as unknown as { user_metadata?: Record<string, unknown> } | undefined)?.user_metadata;
+    const authName = String(authMeta?.full_name || authMeta?.name || authMeta?.businessName || authMeta?.business_name || "").trim();
     const key = email ? `email:${email}` : phone ? `phone:${phone}` : `id:${customer.id}`;
     customersByIdentity.set(key, {
       ...customer,
@@ -66,7 +67,8 @@ export async function GET() {
     const key = email ? `email:${email}` : phone ? `phone:${phone}` : `id:${user.id}`;
     const existing = customersByIdentity.get(key);
     if (existing) {
-      const authName = String(user.user_metadata?.full_name || user.user_metadata?.name || user.user_metadata?.businessName || user.user_metadata?.business_name || "").trim();
+      const userMeta = (user as unknown as { user_metadata?: Record<string, unknown> }).user_metadata;
+      const authName = String(userMeta?.full_name || userMeta?.name || userMeta?.businessName || userMeta?.business_name || "").trim();
       customersByIdentity.set(key, {
         ...existing,
         id: user.id,
@@ -79,12 +81,13 @@ export async function GET() {
       });
       continue;
     }
-    const fullName = String(user.user_metadata?.full_name || user.user_metadata?.name || user.user_metadata?.display_name || user.user_metadata?.businessName || user.user_metadata?.business_name || "").trim();
+    const userMeta = (user as unknown as { user_metadata?: Record<string, unknown> }).user_metadata;
+    const fullName = String(userMeta?.full_name || userMeta?.name || userMeta?.display_name || userMeta?.businessName || userMeta?.business_name || "").trim();
     customersByIdentity.set(key, {
       id: user.id,
       full_name: fullName || null,
       email: user.email || null,
-      phone: user.phone || String(user.user_metadata?.phone || "").trim() || null,
+      phone: user.phone || String((user as unknown as { user_metadata?: Record<string, unknown> }).user_metadata?.phone || "").trim() || null,
       created_at: user.created_at,
       isAccount: true,
       marketingPartner: partnerByUserId.get(user.id) ?? null,
