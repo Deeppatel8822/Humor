@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { LAUNCH_OFFER_ENABLED } from "@/lib/launchOffer";
 
 type Mode = "signup" | "login";
 
@@ -197,10 +198,29 @@ export default function CustomerAuthPopup() {
       <div className="relative w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-[28px] border border-[var(--line)] bg-white p-6 shadow-2xl">
         <button onClick={close} aria-label="Close" className="absolute right-4 top-4 h-8 w-8 rounded-full border border-[var(--line)] text-sm text-[var(--muted)]">×</button>
         <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--warm-gold)]">Humor Luxury</p>
-        <h2 className="mt-2 font-display text-2xl text-[var(--deep-wine)]">{mode === "signup" ? "Get 10% OFF your first order" : "Welcome back"}</h2>
+        <h2 className="mt-2 font-display text-2xl text-[var(--deep-wine)]">{LAUNCH_OFFER_ENABLED ? "Humor Luxury Launch Offer" : mode === "signup" ? "Get 10% OFF your first order" : "Welcome back"}</h2>
         <p className="mt-2 text-sm leading-5 text-[var(--muted)]">
-          {mode === "signup" ? "Create your account with your mobile number, email and password." : "Choose how you’d like to login to your Humor account."}
+          {LAUNCH_OFFER_ENABLED ? "Sign in or create an account to unlock exclusive launch prices. Offer applies to logged-in customers only." : mode === "signup" ? "Create your account with your mobile number, email and password." : "Choose how you’d like to login to your Humor account."}
         </p>
+
+        {LAUNCH_OFFER_ENABLED && (
+          <div className="mt-5 overflow-hidden rounded-2xl border border-[var(--warm-gold)]/50 bg-gradient-to-br from-[#4A1F2B] via-[#6B2D3C] to-[#2D1820] p-4 text-white shadow-lg">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#F3D99B]">Limited-time launch prices</span>
+              <span className="rounded-full bg-[#F3D99B] px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide text-[#4A1F2B]">Login to unlock</span>
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+              <div className="flex justify-between gap-2"><span>100 ml Face Wash</span><strong>₹59</strong></div>
+              <div className="flex justify-between gap-2"><span>Serum</span><strong>₹69</strong></div>
+              <div className="flex justify-between gap-2"><span>Sunscreen</span><strong>₹149</strong></div>
+              <div className="flex justify-between gap-2"><span>Shampoo</span><strong>₹199</strong></div>
+              <div className="flex justify-between gap-2"><span>Hair Mask</span><strong>₹249</strong></div>
+              <div className="flex justify-between gap-2"><span>Shower Cream</span><strong>₹29</strong></div>
+              <div className="flex justify-between gap-2"><span>Conditioner</span><strong>₹149</strong></div>
+            </div>
+            <p className="mt-3 border-t border-white/20 pt-3 text-[10px] leading-4 text-white/85">Prepaid orders only · Free shipping on orders ₹249+ · ₹50 shipping below ₹249 · No COD or additional discounts</p>
+          </div>
+        )}
 
         <div className="mt-5 grid grid-cols-2 rounded-full bg-[var(--milk-sage)] p-1">
           <button onClick={() => reset("signup")} className={"rounded-full py-2 text-xs font-medium " + (mode === "signup" ? "bg-white text-[var(--deep-wine)] shadow-sm" : "text-[var(--muted)]")}>Sign up</button>
@@ -271,7 +291,7 @@ export default function CustomerAuthPopup() {
               <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Create password" type="password" autoComplete="new-password" className="w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm outline-none sm:col-span-2" />
             </div>
             {error && <p className="mt-3 text-xs text-red-600">{error}</p>}
-            <button onClick={signup} disabled={loading} className="mt-4 w-full rounded-full bg-[var(--deep-wine)] px-5 py-3.5 text-sm font-medium text-white disabled:opacity-50">{loading ? "Creating account…" : "Create account & get 10% OFF"}</button>
+            <button onClick={signup} disabled={loading} className="mt-4 w-full rounded-full bg-[var(--deep-wine)] px-5 py-3.5 text-sm font-medium text-white disabled:opacity-50">{loading ? "Creating account…" : "{LAUNCH_OFFER_ENABLED ? "Create account & unlock launch prices" : "Create account & get 10% OFF"}"}</button>
           </>
         )}
 
