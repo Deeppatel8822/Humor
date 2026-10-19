@@ -62,7 +62,25 @@ export async function GET() {
     db.from("customer_whatsapp_consent").select("phone_e164,consent_status").eq("consent_status", "opted_in"),
   ]);
   if (eventsResult.error || offerResult.error) return NextResponse.json({ error: "Cart tracking tables are not ready. Apply db/migrations/2026-10-12-cart-activity-abandoned-cart.sql in Supabase SQL Editor." }, { status: 503 });
-  return NextResponse.json({ events: eventsResult.data ?? [], offer: offerResult.data ?? null, optedInPhones: (consentResult.data ?? []).map((row) => row.phone_e164) });
+  // Resolve known customer names for older events that only recorded an email.
+  const rawEvents = eventsResult.data ?? [];
+  const emails = [...new Set(rawEvents.map((event) => String(event.email || "").trim().toLowerCase()).filter(Boolean))];
+  const customerNameByEmail = new Map<string, string>();
+  if (emails.length) {
+    const { data: customers } = await db.from("customers").select("email,full_name").in("email", emails);
+    for (const customer of customers ?? []) {
+      const email = String(customer.email || "").trim().toLowerCase();
+      const name = String(customer.full_name || "").trim();
+      if (email && name) customerNameByEmail.set(email, name);
+    }
+  }
+  const events = rawEvents.map((event) => ({
+    ...event,
+    customer_name: String(event.customer_name || "").trim()
+      || customerNameByEmail.get(String(event.email || "").trim().toLowerCase())
+      || null,
+  }));
+  return NextResponse.json({ events, offer: offerResult.data ?? null, optedInPhones: (consentResult.data ?? []).map((row) => row.phone_e164) });
 }
 
 export async function PATCH(request: Request) {
