@@ -11,7 +11,8 @@ interface ShippingDetails {
   city: string; state: string; pincode: string;
 }
 
-export async function POST(request: Request) {\n  if (LAUNCH_OFFER_ENABLED) return NextResponse.json({ error: "Cash on delivery is unavailable during the launch offer. Please pay online." }, { status: 400 });
+export async function POST(request: Request) {
+  if (LAUNCH_OFFER_ENABLED) return NextResponse.json({ error: "Cash on delivery is unavailable during the launch offer. Please pay online." }, { status: 400 });
   try {
     const body = await request.json() as { lines?: CodLine[]; shipping?: ShippingDetails; vendorCode?: string };
     const lines = body.lines ?? [];
