@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { LAUNCH_OFFER_ENABLED } from "@/lib/launchOffer";
+import { LAUNCH_OFFER_ENABLED, launchOfferDisplayItems } from "@/lib/launchOffer";
 
 type Mode = "signup" | "login";
 
 export default function CustomerAuthPopup() {
   const pathname = usePathname();
   const [open, setOpen] = useState(true);
+  const [showUnlockedOffer, setShowUnlockedOffer] = useState(false);
   const [mode, setMode] = useState<Mode>("signup");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -43,8 +44,11 @@ export default function CustomerAuthPopup() {
           if (mounted) setOpen(true);
         });
 
-        const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-          if (mounted && session) setOpen(false);
+        const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+          if (mounted && session) {
+            setOpen(false);
+            if (LAUNCH_OFFER_ENABLED && (event === "SIGNED_IN" || event === "SIGNED_UP")) setShowUnlockedOffer(true);
+          }
         });
         unsubscribe = () => listener.subscription.unsubscribe();
       })
@@ -115,6 +119,7 @@ export default function CustomerAuthPopup() {
       if (sessionError) throw sessionError;
 
       window.dispatchEvent(new CustomEvent("humor-customer-auth"));
+      setShowUnlockedOffer(true);
       setOpen(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not login.");
@@ -183,6 +188,7 @@ export default function CustomerAuthPopup() {
       if (sessionError) throw sessionError;
 
       window.dispatchEvent(new CustomEvent("humor-customer-auth"));
+      setShowUnlockedOffer(true);
       setOpen(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not create account.");
@@ -191,9 +197,31 @@ export default function CustomerAuthPopup() {
     }
   }
 
-  if (!open) return null;
+  if (!open && !showUnlockedOffer) return null;
 
   return (
+    <>
+      {showUnlockedOffer && !open && LAUNCH_OFFER_ENABLED && (
+        <div className="fixed inset-0 z-[85] flex items-center justify-center bg-black/35 px-4 py-6 backdrop-blur-sm">
+          <div className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-[28px] border border-[#D8B56D]/60 bg-white p-6 shadow-2xl">
+            <button onClick={() => setShowUnlockedOffer(false)} aria-label="Close launch offer" className="absolute right-4 top-4 h-8 w-8 rounded-full border border-[var(--line)] text-sm text-[var(--muted)]">×</button>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#B58A3A]">Humor Luxury · Member prices unlocked</p>
+            <h2 className="mt-2 pr-8 font-display text-2xl text-[var(--deep-wine)]">Your Launch Offer is unlocked</h2>
+            <p className="mt-2 text-sm leading-5 text-[var(--muted)]">These prices are available to your logged-in account on prepaid orders only.</p>
+            <div className="mt-5 grid gap-2 sm:grid-cols-2">
+              {launchOfferDisplayItems.map((item) => (
+                <div key={item.name} className="flex items-start justify-between gap-3 rounded-xl border border-[var(--line)] bg-[#FCFAF6] px-3 py-3">
+                  <span className="text-sm leading-5 text-[var(--ink)]">{item.name}</span>
+                  <strong className="shrink-0 text-sm text-[var(--deep-wine)]">₹{item.price}</strong>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 rounded-xl bg-[var(--milk-sage)] p-3 text-xs leading-5 text-[var(--deep-wine)]">Prepaid only · Free shipping on ₹249+ · ₹50 shipping below ₹249 · No COD or additional discounts.</div>
+            <button onClick={() => setShowUnlockedOffer(false)} className="mt-5 w-full rounded-full bg-[var(--deep-wine)] px-5 py-3 text-sm font-medium text-white">Explore launch prices</button>
+          </div>
+        </div>
+      )}
+      {open && (
     <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/20 px-4 py-6 backdrop-blur-[2px]">
       <div className="relative w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-[28px] border border-[var(--line)] bg-white p-6 shadow-2xl">
         <button onClick={close} aria-label="Close" className="absolute right-4 top-4 h-8 w-8 rounded-full border border-[var(--line)] text-sm text-[var(--muted)]">×</button>
@@ -209,15 +237,10 @@ export default function CustomerAuthPopup() {
               <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#F3D99B]">Limited-time launch prices</span>
               <span className="rounded-full bg-[#F3D99B] px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide text-[#4A1F2B]">Login to unlock</span>
             </div>
-            <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
-              <div className="flex justify-between gap-2"><span>100 ml Face Wash</span><strong>₹59</strong></div>
-              <div className="flex justify-between gap-2"><span>Serum</span><strong>₹69</strong></div>
-              <div className="flex justify-between gap-2"><span>Sunscreen</span><strong>₹149</strong></div>
-              <div className="flex justify-between gap-2"><span>Shampoo</span><strong>₹199</strong></div>
-              <div className="flex justify-between gap-2"><span>Hair Mask</span><strong>₹249</strong></div>
-              <div className="flex justify-between gap-2"><span>Shower Cream</span><strong>₹29</strong></div>
-              <div className="flex justify-between gap-2"><span>Conditioner</span><strong>₹149</strong></div>
+            <div className="mt-3 grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
+              {launchOfferDisplayItems.map((item) => <div key={item.name} className="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-white/90">{item.name}</div>)}
             </div>
+            <p className="mt-3 text-[10px] text-[#F3D99B]">Login to view and unlock member prices.</p>
             <p className="mt-3 border-t border-white/20 pt-3 text-[10px] leading-4 text-white/85">Prepaid orders only · Free shipping on orders ₹249+ · ₹50 shipping below ₹249 · No COD or additional discounts</p>
           </div>
         )}
@@ -298,5 +321,7 @@ export default function CustomerAuthPopup() {
         <p className="mt-4 text-center text-[10px] leading-4 text-[var(--muted)]">Your account details are saved securely. Add your delivery address at checkout.</p>
       </div>
     </div>
+      )}
+    </>
   );
 }
