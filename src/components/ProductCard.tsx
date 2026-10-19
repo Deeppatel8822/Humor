@@ -18,7 +18,7 @@ function Stars({ rating }: { rating: number }) {
 }
 
 export default function ProductCard({ product }: { product: Product }) {
-  const { addItem } = useCart();
+  const { addItem, launchOfferActive, getDisplayPrice } = useCart();
   const router = useRouter();
   const onSale = product.compare_at_price_inr && product.compare_at_price_inr > product.price_inr;
   const discountPct = onSale ? Math.round(100 - (product.price_inr / product.compare_at_price_inr!) * 100) : 0;
@@ -74,7 +74,7 @@ export default function ProductCard({ product }: { product: Product }) {
         {product.tagline && <div className="text-xs text-[var(--muted)] mt-0.5 line-clamp-1">{product.tagline}</div>}
 
         <div className="flex items-center gap-2 mt-1.5">
-          <span className="text-sm font-semibold text-[var(--ink)]">&#8377;{product.price_inr}</span>
+          <span className="text-sm font-semibold text-[var(--ink)]">&#8377;{displayPrice}</span>
           {onSale && <span className="text-xs text-[var(--muted)] line-through">&#8377;{product.compare_at_price_inr}</span>}
         </div>
         {product.stock_quantity <= 5 && product.stock_quantity > 0 && <div className="text-xs text-[var(--dusty-rose)] mt-1">Only {product.stock_quantity} left</div>}
