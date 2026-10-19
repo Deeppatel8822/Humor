@@ -36,7 +36,7 @@ export default function CheckoutPage() {
     fullName: "", email: "", phone: "", line1: "", line2: "", city: "", state: "", pincode: "",
   });
 
-  const freeShippingThresholdInr = launchOfferActive ? 249 : 299;
+  const freeShippingThresholdInr = launchOfferActive ? 100 : 299;
   // Match the server's shipping threshold base after bundle savings, so the
   // checkout preview and Razorpay verification use the same shipping amount.
   const effectiveBundleSavingsInr = launchOfferActive ? 0 : bundleSavingsInr;
@@ -239,7 +239,7 @@ export default function CheckoutPage() {
       )}
       <div className="max-w-5xl mx-auto px-5 md:px-8 py-14">
         <h1 className="font-display text-3xl md:text-4xl text-[var(--deep-wine)] mb-3">Checkout</h1>
-        {launchOfferActive && <p className="mb-8 rounded-xl border border-[var(--warm-gold)]/50 bg-[var(--milk-sage)] px-4 py-3 text-sm text-[var(--deep-wine)]">Launch Offer active: prepaid only, no additional discounts. Free shipping at ₹249+, otherwise ₹50 shipping.</p>}
+        {launchOfferActive && <p className="mb-8 rounded-xl border border-[var(--warm-gold)]/50 bg-[var(--milk-sage)] px-4 py-3 text-sm text-[var(--deep-wine)]">Launch Offer active: prepaid only, no additional discounts. Free shipping at ₹100+, otherwise ₹50 shipping.</p>}
 
         <form onSubmit={handleSubmit} className="grid md:grid-cols-3 gap-10">
           <div className="md:col-span-2 space-y-8">
