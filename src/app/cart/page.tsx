@@ -23,7 +23,7 @@ export default function CartPage() {
   const { lines, updateQuantity, removeItem, subtotalInr, bundleSavingsInr, startCheckout, launchOfferActive, launchOfferReady } = useCart();
   const router = useRouter();
   const [checkingOut, setCheckingOut] = useState(false);
-  const freeShippingThresholdInr = launchOfferActive ? 249 : 299;
+  const freeShippingThresholdInr = launchOfferActive ? 100 : 299;
   const effectiveBundleSavingsInr = launchOfferActive ? 0 : bundleSavingsInr;
   const netSubtotalInr = Math.max(0, subtotalInr - effectiveBundleSavingsInr);
   const shippingInr = netSubtotalInr >= freeShippingThresholdInr ? 0 : 50;
@@ -57,7 +57,7 @@ export default function CartPage() {
             <p className="text-xs uppercase tracking-[0.18em] text-[var(--warm-gold)] mb-2">Your selection</p>
             <h1 className="font-display text-3xl md:text-4xl text-[var(--deep-wine)]">Your cart</h1>
           </div>
-          <p className="text-sm text-[var(--muted)]">{launchOfferActive ? "Launch offer: prepaid only · Free shipping on ₹249+" : "Free shipping on orders ₹299+"}</p>
+          <p className="text-sm text-[var(--muted)]">{launchOfferActive ? "Launch offer: prepaid only · Free shipping on ₹100+" : "Free shipping on orders ₹299+"}</p>
         </div>
 
         <div className={"bg-white border border-[var(--line)] rounded-xl px-5 py-3 text-sm mb-8 " + (subtotalInr >= freeShippingThresholdInr ? "text-green-700" : "text-[var(--deep-wine)]")}>
