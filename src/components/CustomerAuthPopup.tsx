@@ -291,7 +291,7 @@ export default function CustomerAuthPopup() {
               <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Create password" type="password" autoComplete="new-password" className="w-full rounded-xl border border-[var(--line)] px-4 py-3 text-sm outline-none sm:col-span-2" />
             </div>
             {error && <p className="mt-3 text-xs text-red-600">{error}</p>}
-            <button onClick={signup} disabled={loading} className="mt-4 w-full rounded-full bg-[var(--deep-wine)] px-5 py-3.5 text-sm font-medium text-white disabled:opacity-50">{loading ? "Creating account…" : "{LAUNCH_OFFER_ENABLED ? "Create account & unlock launch prices" : "Create account & get 10% OFF"}"}</button>
+            <button onClick={signup} disabled={loading} className="mt-4 w-full rounded-full bg-[var(--deep-wine)] px-5 py-3.5 text-sm font-medium text-white disabled:opacity-50">{loading ? "Creating account…" : LAUNCH_OFFER_ENABLED ? "Create account & unlock launch prices" : "Create account & get 10% OFF"}</button>
           </>
         )}
 
