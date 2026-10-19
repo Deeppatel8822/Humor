@@ -39,11 +39,11 @@ export async function POST(req: NextRequest) {
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature, lines, shipping, subtotalInr, shippingInr, vendorCode } = body;
   const authHeader = req.headers.get("authorization") || "";
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
-  const launchOfferActive = LAUNCH_OFFER_ENABLED;
-  if (launchOfferActive) {
-    if (!token) return NextResponse.json({ error: "Please login to complete a launch offer order." }, { status: 401 });
+  let launchOfferActive = false;
+  if (LAUNCH_OFFER_ENABLED && token) {
     const { data: authData, error: authError } = await supabaseAdmin().auth.getUser(token);
-    if (authError || !authData.user) return NextResponse.json({ error: "Please login again to complete this order." }, { status: 401 });
+    if (authError || !authData.user) return NextResponse.json({ error: "Your login session expired. Please log in again." }, { status: 401 });
+    launchOfferActive = true;
     if (vendorCode) return NextResponse.json({ error: "Other discounts are unavailable during the launch offer." }, { status: 400 });
   }
   if (
