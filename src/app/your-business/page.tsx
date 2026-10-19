@@ -12,8 +12,8 @@ const steps = [
 const faqs = [
   ["Who can join?", "Influencers/content creators, beauty parlour or salon owners, and beauty shop/retail owners can apply. Approval is subject to document verification."],
   ["How much does registration cost?", "The registration fee is ₹9. Payment alone does not guarantee approval. The proposed fee is non-refundable except where applicable law or payment-provider rules require otherwise."],
-  ["How do coins work?", "The base rate is 25% of the actual eligible product amount paid after applicable product discounts, excluding shipping. 1 coin represents ₹1 reward value."],
-  ["How do I unlock a higher rate?", "Basic reward rate is 25%. Tier qualification is based on eligible coins earned within one 30-day qualification period: 3,000 coins unlocks 27%, and 5,000 coins unlocks 30%. 1,000 coins is a reference milestone and does not increase the rate. If you do not reach the next target within the 30-day period, you stay at your current tier. Once upgraded, your tier never drops. The 30-day counter is used only to qualify for upgrades; lifetime earned coins and available balance are tracked separately. The upgraded rate applies only to future eligible orders."],
+  ["How do coins work?", "Partners earn reward coins only, with no 10% reward cash or cash commission. The coin rate is 25% for ₹0–₹2,999 eligible sales, 27% for ₹3,000–₹4,999, and 30% for ₹5,000 and above in the 30-day qualification period. Eligible product amount is after the customer coupon discount and excludes shipping. 1 coin = ₹1 reward value."],
+  ["How do I unlock a higher rate?", "Reward tiers are based on eligible sales amount in a 30-day qualification period: ₹0–₹2,999 earns 25% in coins, ₹3,000–₹4,999 earns 27%, and ₹5,000 and above earns 30%. Customers alone receive the 10% coupon discount. Partners receive reward coins only, not 10% reward cash. 1 coin = ₹1 reward value. The higher rate applies to future eligible orders only."],
   ["Does my coupon expire?", "There is no fixed expiry date while your partner account remains approved and your code is active. Humor Luxury may suspend a code for fraud, misuse, policy or legal reasons."],
   ["When can I withdraw?", "You can request withdrawal when your available balance is at least ₹1,000. After verification and approval, processing normally takes 5–7 business days. Bank settlement may take additional time."],
   ["What happens if an order is refunded?", "Rewards linked to cancelled, refunded, returned, charged-back or otherwise ineligible orders may be reversed. Your transaction history should show the adjustment."],
@@ -40,7 +40,7 @@ export default function YourBusinessPage() {
 
       <section className="mx-auto max-w-7xl px-5 py-14 md:px-8 md:py-20">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {[["₹9", "Registration fee"],["10%", "Customer coupon discount"],["25% → 30%", "Reward rate by tier"],["₹1,000", "Minimum withdrawal"]].map(([value,label]) => (
+          {[["₹9", "Registration fee"],["10%", "Customer coupon discount"],["25% / 27% / 30%", "Partner reward coins only"],["₹1,000", "Minimum withdrawal"]].map(([value,label]) => (
             <div key={label} className="rounded-3xl border border-white/10 bg-white/[0.045] p-6">
               <p className="font-display text-3xl text-[var(--warm-gold)]">{value}</p>
               <p className="mt-2 text-sm text-white/65">{label}</p>
@@ -71,18 +71,17 @@ export default function YourBusinessPage() {
           <div className="max-w-3xl">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#8a6a9f]">Transparent rewards</p>
             <h2 className="mt-3 font-display text-3xl md:text-4xl">Your coins, explained clearly.</h2>
-            <p className="mt-3 text-sm leading-6 text-black/60">Coins are calculated on eligible product value actually paid after applicable product discounts. Shipping is excluded. Tier qualification uses coins earned within one 30-day period only. Once upgraded, a tier never drops. Lifetime coins and available balance are tracked separately. Refunds and cancellations can reverse related rewards.</p>
+            <p className="mt-3 text-sm leading-6 text-black/60">Partners receive reward coins only, not a separate 10% cash reward. Coins are calculated on eligible product value actually paid after the customer’s 10% coupon discount; shipping is excluded. Tier qualification is based on eligible sales amount within 30 days. Refunds and cancellations can reverse related coins.</p>
           </div>
           <div className="mt-8 overflow-hidden rounded-2xl border border-[#e7dce7] bg-white">
             <div className="grid grid-cols-3 bg-[#3e1730] px-5 py-4 text-xs font-bold uppercase tracking-wide text-white"><span>Coins earned in 30 days</span><span>Rate</span><span>Tier rule</span></div>
             {[
-              ["Basic: below 1,000","25%","Current tier stays active"],
-              ["1,000 coins","25%","Basic tier"],
-              ["3,000 coins","27%","Permanent upgrade"],
-              ["5,000 coins","30%","Permanent upgrade; highest tier"],
+              ["₹0–₹2,999 eligible sales","25%","Reward coins only"],
+              ["₹3,000–₹4,999 eligible sales","27%","Reward coins only"],
+              ["₹5,000+ eligible sales","30%","Reward coins only"],
             ].map(([coins,rate,when]) => <div key={coins} className="grid grid-cols-3 gap-2 border-t border-[#eee5ee] px-5 py-4 text-sm"><span>{coins}</span><strong className="text-[#6f4a9a]">{rate}</strong><span className="text-black/60">{when}</span></div>)}
           </div>
-          <p className="mt-3 text-xs leading-5 text-black/50">1 coin = ₹1 reward value. In a 30-day qualification period, 1,000 coins corresponds to the Basic 25% tier, 3,000 unlocks 27%, and 5,000 unlocks 30%. If the next target is missed, the partner stays at their current tier. Once upgraded, the tier never drops. The 30-day counter qualifies upgrades only; lifetime earned coins and available balance are separate. Higher rates apply to future eligible orders only. Withdrawal starts at ₹1,000 available balance.</p>
+          <p className="mt-3 text-xs leading-5 text-black/50">1 coin = ₹1 reward value. Within a 30-day qualification period, ₹0–₹2,999 eligible sales earns 25%, ₹3,000–₹4,999 earns 27%, and ₹5,000 or more earns 30% in reward coins. Partners do not receive 10% reward cash. Higher rates apply to future eligible orders only. Withdrawal starts at ₹1,000 available balance.</p>
         </div>
       </section>
 
