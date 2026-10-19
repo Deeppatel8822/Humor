@@ -304,6 +304,24 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    if (launchOfferActive) {
+      const { data: accountData, error: accountError } = token
+        ? await admin.auth.getUser(token)
+        : { data: { user: null }, error: new Error("Missing account token") };
+      const accountEmail = accountData.user?.email;
+      if (accountError || !accountEmail) {
+        return NextResponse.json({ error: "Please sign in to the account used for this launch offer order." }, { status: 401 });
+      }
+      const { data: priorCustomer } = await admin.from("customers").select("id").eq("email", accountEmail).maybeSingle();
+      if (priorCustomer) {
+        const { count, error: priorOrderError } = await admin.from("orders").select("id", { count: "exact", head: true }).eq("customer_id", priorCustomer.id);
+        if (priorOrderError) throw priorOrderError;
+        if ((count ?? 0) > 0) {
+          return NextResponse.json({ error: "The launch offer allows one order per account. An order already exists for this account, so please contact support before trying another payment." }, { status: 409 });
+        }
+      }
+    }
+
     const { data: customer, error: customerErr } = await admin
       .from("customers")
       .upsert(
