@@ -20,7 +20,8 @@ function Stars({ rating }: { rating: number }) {
 export default function ProductCard({ product }: { product: Product }) {
   const { addItem, launchOfferActive, getDisplayPrice } = useCart();
   const router = useRouter();
-  const onSale = product.compare_at_price_inr && product.compare_at_price_inr > product.price_inr;
+  const displayPrice = getDisplayPrice(product);
+  const onSale = !launchOfferActive && product.compare_at_price_inr && product.compare_at_price_inr > product.price_inr;
   const discountPct = onSale ? Math.round(100 - (product.price_inr / product.compare_at_price_inr!) * 100) : 0;
   const outOfStock = product.stock_quantity <= 0;
   const mainImage = product.images?.[0];
