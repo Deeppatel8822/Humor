@@ -127,7 +127,7 @@ export default function PartnerDashboardPage() {
             <div className="rounded-2xl border border-[var(--line)] bg-white shadow-sm p-6 md:p-8">
               <h2 className="text-xl font-semibold text-[var(--ink)]">How reward coins work</h2>
               <ul className="mt-4 space-y-3 text-sm leading-6 text-[var(--muted)]"><li>• Customers get 10% off eligible product value when they use your approved code.</li><li>• You earn reward coins only. There is no 10% reward cash or cash commission.</li><li>• ₹0–₹2,999 eligible sales: 25% coins.</li><li>• ₹3,000–₹4,999 eligible sales: 27% coins.</li><li>• ₹5,000 and above eligible sales: 30% coins.</li><li>• Higher rates apply to future eligible orders only.</li><li>• Minimum withdrawal request: ₹1,000 available balance.</li></ul>
-              <p className="mt-5 text-xs leading-5 text-[var(--muted)]">Rewards can be adjusted for refunds, returns, chargebacks or ineligible orders. Earnings are not guaranteed.</p>
+              <p className="mt-5 text-xs leading-5 text-[var(--muted)]">Customers receive 10% off eligible products using your code. Partners receive reward coins only, not 10% reward cash. Refunds, returns, chargebacks or ineligible orders may reverse coins.</p>
               <Link href="/start-your-business-terms.html" className="mt-5 inline-flex text-sm font-semibold text-[var(--warm-gold)] underline">Read programme terms</Link>
             </div>
           </section>
