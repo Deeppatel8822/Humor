@@ -17,7 +17,7 @@ declare global {
 }
 
 export default function CheckoutPage() {
-  const { lines, subtotalInr, bundleSavingsInr, clearCart, trackCartActivity, launchOfferActive } = useCart();
+  const { lines, subtotalInr, bundleSavingsInr, clearCart, trackCartActivity, launchOfferActive, launchOfferReady } = useCart();
   const router = useRouter();
 
   const [paymentMethod, setPaymentMethod] = useState<"online" | "cod">("online");
@@ -191,6 +191,7 @@ export default function CheckoutPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!launchOfferReady) { setError("Please wait while we confirm your launch offer pricing."); return; }
     const { getSupabase } = await import("@/lib/supabase");
     const { data: sessionData } = await getSupabase().auth.getSession();
     if (!sessionData.session) {
@@ -345,8 +346,8 @@ export default function CheckoutPage() {
               {totalDiscountInr > 0 && <div className="mt-2 rounded-lg bg-white/70 px-3 py-2 text-xs font-medium text-green-700">You save &#8377;{totalDiscountInr} on this order</div>}
               <div className="flex justify-between text-base font-semibold text-[var(--ink)] pt-2"><span>Total</span><span>&#8377;{totalInr}</span></div>
             </div>
-            <button type="submit" disabled={submitting} className="w-full mt-6 bg-[var(--deep-wine)] text-white px-6 py-3.5 rounded-full text-sm font-medium hover:bg-[var(--ink)] transition-colors disabled:opacity-50">
-              {submitting ? "Processing..." : paymentMethod === "cod" ? "Place order" : `Pay \u20b9${totalInr}`}
+            <button type="submit" disabled={submitting || !launchOfferReady} className="w-full mt-6 bg-[var(--deep-wine)] text-white px-6 py-3.5 rounded-full text-sm font-medium hover:bg-[var(--ink)] transition-colors disabled:opacity-50">
+              {!launchOfferReady ? "Checking prices..." : submitting ? "Processing..." : paymentMethod === "cod" ? "Place order" : `Pay \u20b9${totalInr}`}
             </button>
           </div>
         </form>
