@@ -75,7 +75,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           };
         }));
       } catch {
-        if (active) { setLaunchOfferActive(false); setLaunchOfferReady(true); }
+        if (active) setLaunchOfferActive(false);
       }
     };
     void refreshEligibility();
