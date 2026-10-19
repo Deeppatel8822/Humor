@@ -7,6 +7,7 @@ import { calculateBundleSavings } from "@/lib/bundles";
 import { calculateCheckoutPricing } from "@/lib/checkoutPricing";
 import { calculatePartnerDiscount, creditPartnerReward, findPartnerByCode } from "@/lib/marketingPartner";
 import { getStorePricingSettings } from "@/lib/storePricing";
+import { LAUNCH_OFFER_ENABLED, getLaunchOfferPrice } from "@/lib/launchOffer";
 
 interface VerifyBody {
   razorpay_order_id: string;
@@ -36,6 +37,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
   }
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature, lines, shipping, subtotalInr, shippingInr, vendorCode } = body;
+  const authHeader = req.headers.get("authorization") || "";
+  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
+  const launchOfferActive = LAUNCH_OFFER_ENABLED;
+  if (launchOfferActive) {
+    if (!token) return NextResponse.json({ error: "Please login to complete a launch offer order." }, { status: 401 });
+    const { data: authData, error: authError } = await supabaseAdmin().auth.getUser(token);
+    if (authError || !authData.user) return NextResponse.json({ error: "Please login again to complete this order." }, { status: 401 });
+    if (vendorCode) return NextResponse.json({ error: "Other discounts are unavailable during the launch offer." }, { status: 400 });
+  }
   if (
     !Array.isArray(lines) || lines.length === 0 ||
     !shipping || typeof shipping.fullName !== "string" ||
@@ -49,7 +59,10 @@ export async function POST(req: NextRequest) {
   ) {
     return NextResponse.json({ error: "Invalid checkout details." }, { status: 400 });
   }
-  const products = await getAllProducts();
+  const catalogProducts = await getAllProducts();
+  const products = launchOfferActive
+    ? catalogProducts.map((product) => ({ ...product, price_inr: getLaunchOfferPrice(product) ?? product.price_inr, compare_at_price_inr: null }))
+    : catalogProducts;
   let trustedSubtotalInr = 0;
   for (const line of lines) {
     const product = products.find((p) => (p.id === line.productId || p.slug === line.slug) && p.status === "live");
@@ -87,8 +100,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Payment verification failed." }, { status: 400 });
   }
 
-  const authHeader = req.headers.get("authorization") || "";
-  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
   let firstOrderDiscountInr = 0;
   if (token) {
     const { data: authData } = await supabaseAdmin().auth.getUser(token);
@@ -107,32 +118,40 @@ export async function POST(req: NextRequest) {
   }
   let partnerDiscountInr = 0;
   let partnerMatch: Awaited<ReturnType<typeof findPartnerByCode>> = null;
-  if (vendorCode) {
-    partnerMatch = await findPartnerByCode(vendorCode);
-    if (!partnerMatch) return NextResponse.json({ error: "Invalid or expired vendor code." }, { status: 400 });
-    if (token) {
-      const current = await supabaseAdmin().auth.getUser(token);
-      if (current.data.user?.id === partnerMatch.user.id) return NextResponse.json({ error: "You cannot use your own partner code." }, { status: 400 });
+  let bundleSavingsInr = 0;
+  let calculatedShippingInr: number;
+  let totalDiscountInr: number;
+  let totalInr: number;
+
+  if (launchOfferActive) {
+    calculatedShippingInr = subtotalInr >= 249 ? 0 : 50;
+    totalDiscountInr = 0;
+    totalInr = subtotalInr + calculatedShippingInr;
+  } else {
+    if (vendorCode) {
+      partnerMatch = await findPartnerByCode(vendorCode);
+      if (!partnerMatch) return NextResponse.json({ error: "Invalid or expired vendor code." }, { status: 400 });
+      if (token) {
+        const current = await supabaseAdmin().auth.getUser(token);
+        if (current.data.user?.id === partnerMatch.user.id) return NextResponse.json({ error: "You cannot use your own partner code." }, { status: 400 });
+      }
+      partnerDiscountInr = calculatePartnerDiscount(lines.map((line) => ({
+        priceInr: products.find((p) => p.id === line.productId || p.slug === line.slug)?.price_inr ?? 0,
+        quantity: line.quantity,
+      })));
     }
-    partnerDiscountInr = calculatePartnerDiscount(lines.map((line) => ({
-      priceInr: products.find((p) => p.id === line.productId || p.slug === line.slug)?.price_inr ?? 0,
-      quantity: line.quantity,
-    })));
+    const pricingSettings = await getStorePricingSettings();
+    const bundleRule = pricingSettings.discounts.bundle;
+    bundleSavingsInr = bundleRule.enabled ? calculateBundleSavings(
+      lines.map((line) => ({ slug: line.slug || products.find((p) => p.id === line.productId)?.slug || "", quantity: line.quantity })),
+      products,
+      bundleRule.type === "percent" ? bundleRule.value : 0
+    ) : 0;
+    const pricing = calculateCheckoutPricing({ subtotalInr, firstOrderDiscountInr, partnerDiscountInr, bundleSavingsInr });
+    calculatedShippingInr = pricing.shippingInr;
+    totalDiscountInr = pricing.totalDiscountInr;
+    totalInr = pricing.totalInr;
   }
-  const pricingSettings = await getStorePricingSettings();
-  const bundleRule = pricingSettings.discounts.bundle;
-  const bundleSavingsInr = bundleRule.enabled ? calculateBundleSavings(
-    lines.map((line) => ({ slug: line.slug || products.find((p) => p.id === line.productId)?.slug || "", quantity: line.quantity })),
-    products,
-    bundleRule.type === "percent" ? bundleRule.value : 0
-  ) : 0;
-  const pricing = calculateCheckoutPricing({
-    subtotalInr,
-    firstOrderDiscountInr,
-    partnerDiscountInr,
-    bundleSavingsInr,
-  });
-  const { shippingInr: calculatedShippingInr, totalDiscountInr, totalInr } = pricing;
   if (shippingInr !== calculatedShippingInr) {
     return NextResponse.json({ error: "Shipping charge does not match checkout pricing." }, { status: 400 });
   }
@@ -180,10 +199,12 @@ export async function POST(req: NextRequest) {
     const submittedCart = normalizeCart(lines);
     const createdCart = normalizeCart(createdLines);
     const savedVendorCode = String(razorpayOrder.notes?.vendorCode ?? "").trim().toUpperCase();
+    const savedLaunchOffer = String(razorpayOrder.notes?.launchOffer ?? "false") === "true";
     if (
       !submittedCart || !createdCart ||
       JSON.stringify(submittedCart) !== JSON.stringify(createdCart) ||
-      savedVendorCode !== String(vendorCode ?? "").trim().toUpperCase()
+      savedVendorCode !== String(vendorCode ?? "").trim().toUpperCase() ||
+      savedLaunchOffer !== launchOfferActive
     ) {
       return NextResponse.json({ error: "Cart or partner code differs from the original Razorpay checkout." }, { status: 400 });
     }
