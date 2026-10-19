@@ -21,10 +21,9 @@ export async function POST(req: NextRequest) {
     const authHeader = req.headers.get("authorization") || "";
     const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
     let launchOfferActive = false;
-    if (LAUNCH_OFFER_ENABLED) {
-      if (!token) return NextResponse.json({ error: "Please login to use the launch offer." }, { status: 401 });
+    if (LAUNCH_OFFER_ENABLED && token) {
       const { data: authData, error: authError } = await (await import("@/lib/supabase")).supabaseAdmin().auth.getUser(token);
-      if (authError || !authData.user) return NextResponse.json({ error: "Please login again to use the launch offer." }, { status: 401 });
+      if (authError || !authData.user) return NextResponse.json({ error: "Your login session expired. Please log in again." }, { status: 401 });
       launchOfferActive = true;
       if (vendorCode) return NextResponse.json({ error: "Partner codes and other discounts are unavailable during the launch offer." }, { status: 400 });
     }
