@@ -42,6 +42,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [bundleDiscountPercent, setBundleDiscountPercent] = useState(8);
   const [launchOfferActive, setLaunchOfferActive] = useState(false);
   const [launchOfferReady, setLaunchOfferReady] = useState(false);
+  const [signedInContact, setSignedInContact] = useState<{ fullName?: string; email?: string; phone?: string }>({});
 
   function getDisplayPrice(product: Product) {
     return launchOfferActive ? (getLaunchOfferPrice(product) ?? product.price_inr) : product.price_inr;
@@ -56,6 +57,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
         const supabase = getSupabase();
         const { data } = await supabase.auth.getSession();
         const token = data.session?.access_token;
+        const user = data.session?.user;
+        setSignedInContact(user ? {
+          fullName: String(user.user_metadata?.full_name || user.user_metadata?.name || user.user_metadata?.display_name || "").trim() || undefined,
+          email: user.email || undefined,
+          phone: user.phone || String(user.user_metadata?.phone || "").trim() || undefined,
+        } : {});
         const response = await fetch("/api/launch-offer", {
           cache: "no-store",
           headers: token ? { Authorization: "Bearer " + token } : {},
@@ -152,9 +159,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
           lines: eventLines,
           cart_value_inr: eventLines.reduce((sum, line) => sum + line.price_inr * line.quantity, 0),
           page_path: window.location.pathname,
-          customer_name: contact?.fullName || "",
-          email: contact?.email || "",
-          phone: contact?.phone || "",
+          customer_name: contact?.fullName || signedInContact.fullName || "",
+          email: contact?.email || signedInContact.email || "",
+          phone: contact?.phone || signedInContact.phone || "",
         }),
       }).catch(() => {});
     } catch {
