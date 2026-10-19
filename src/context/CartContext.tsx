@@ -172,7 +172,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   function addItem(product: Product, quantity = 1) {
     const current = lines.find((line) => line.productId === product.id);
     const effectivePrice = getDisplayPrice(product);
-    trackCartActivity("add_to_cart", [{ productId: product.id, slug: product.slug, name: product.name, price_inr: effectivePrice, original_price_inr: product.price_inr, quantity: current ? current.quantity + quantity : quantity, shopifyVariantId: product.shopify_variant_id, image: product.images?.[0] ?? null }]);
+    const nextLines = current
+      ? lines.map((line) => line.productId === product.id ? { ...line, price_inr: effectivePrice, quantity: line.quantity + quantity } : line)
+      : [...lines, { productId: product.id, slug: product.slug, name: product.name, price_inr: effectivePrice, original_price_inr: product.price_inr, quantity, shopifyVariantId: product.shopify_variant_id, image: product.images?.[0] ?? null }];
+    trackCartActivity("add_to_cart", nextLines);
     if (typeof window !== "undefined") {
       window.setTimeout(() => window.dispatchEvent(new CustomEvent("humor-open-cart-popup")), 0);
     }
@@ -201,19 +204,25 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   function removeItem(productId: string) {
     const removed = lines.find((line) => line.productId === productId);
-    if (removed) trackCartActivity("remove_from_cart", [removed]);
-    setLines((prev) => prev.filter((l) => l.productId !== productId));
+    if (removed) {
+      const nextLines = lines.filter((line) => line.productId !== productId);
+      trackCartActivity("remove_from_cart", nextLines);
+      setLines(nextLines);
+    }
   }
 
   function updateQuantity(productId: string, quantity: number) {
     if (quantity <= 0) return removeItem(productId);
     const updated = lines.find((line) => line.productId === productId);
-    if (updated) trackCartActivity("quantity_updated", [{ ...updated, quantity }]);
-    setLines((prev) => prev.map((l) => (l.productId === productId ? { ...l, quantity } : l)));
+    if (updated) {
+      const nextLines = lines.map((line) => line.productId === productId ? { ...line, quantity } : line);
+      trackCartActivity("quantity_updated", nextLines);
+      setLines(nextLines);
+    }
   }
 
   function clearCart() {
-    if (lines.length) trackCartActivity("purchase_completed", lines); 
+    if (lines.length) trackCartActivity("cart_cleared", []);
     setLines([]);
   }
 
