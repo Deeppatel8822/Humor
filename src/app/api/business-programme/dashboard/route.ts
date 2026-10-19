@@ -137,7 +137,7 @@ export async function GET(req: NextRequest) {
       const ledgerWindowCoins = (rewardRows || []).reduce((sum, row) => {
         const createdAt = new Date(row.created_at).getTime();
         return sum + (qualificationWindowValid && Number.isFinite(createdAt) && createdAt >= periodStart!.getTime()
-          ? Math.max(0, Number(row.amount_inr) || 0)
+          ? Math.max(0, Number(row.metadata?.billedAmountInr) || 0)
           : 0);
       }, 0);
       partner.totalRewards = Math.max(0, Number(partner.totalRewards) || 0, ledgerLifetimeRewards);
@@ -148,7 +148,7 @@ export async function GET(req: NextRequest) {
       // Auth metadata updates can race when separate orders complete together.
       if (rewardState) {
         partner.rewardTier = rewardState.reward_tier as "basic" | "silver" | "gold";
-        // Qualification coins expire after 30 days; the tier itself remains permanent.
+        // Qualification sales amount expires after 30 days; the tier itself remains permanent.
         // The next reward credit will persist the next qualification period atomically.
         partner.qualificationCoins = qualificationWindowValid
           ? Math.max(0, Number(rewardState.qualification_coins) || 0)
