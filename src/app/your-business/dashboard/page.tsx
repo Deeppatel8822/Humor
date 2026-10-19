@@ -34,22 +34,63 @@ export default function PartnerDashboardPage() {
 
   useEffect(() => {
     let active = true;
-    (async () => {
+    let loadingRequest = false;
+    const supabase = getSupabase();
+
+    async function loadDashboard(token: string) {
+      if (!active || loadingRequest) return;
+      loadingRequest = true;
+      setLoading(true);
+      setError("");
       try {
-        const { data: sessionData } = await getSupabase().auth.getSession();
-        const token = sessionData.session?.access_token;
-        if (!token) throw new Error("Please log in to view your partner dashboard.");
-        const res = await fetch("/api/business-programme/dashboard", { headers: { Authorization: "Bearer " + token }, cache: "no-store" });
+        const res = await fetch("/api/business-programme/dashboard", {
+          headers: { Authorization: "Bearer " + token },
+          cache: "no-store",
+        });
         const json = await res.json();
         if (!res.ok) throw new Error(json.error || "Could not load dashboard.");
         if (active) setData(json);
       } catch (e) {
         if (active) setError(e instanceof Error ? e.message : "Could not load dashboard.");
       } finally {
+        loadingRequest = false;
         if (active) setLoading(false);
       }
-    })();
-    return () => { active = false; };
+    }
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.access_token) {
+        // Keep the dashboard route in place and load it immediately after login.
+        void loadDashboard(session.access_token);
+      } else if (event === "SIGNED_OUT") {
+        setData(null);
+        setError("Please log in to view your partner dashboard.");
+      }
+    });
+
+    void supabase.auth.getSession().then(({ data: sessionData }) => {
+      if (!active) return;
+      const token = sessionData.session?.access_token;
+      if (token) {
+        void loadDashboard(token);
+      } else {
+        setError("Please log in to view your partner dashboard.");
+        setLoading(false);
+        // Open the existing site-wide login popup. If it is dismissed, this page
+        // remains here and the user can reopen the popup instead of hitting a 404.
+        window.dispatchEvent(new CustomEvent("humor-open-customer-auth"));
+      }
+    }).catch(() => {
+      if (!active) return;
+      setError("Please log in to view your partner dashboard.");
+      setLoading(false);
+      window.dispatchEvent(new CustomEvent("humor-open-customer-auth"));
+    });
+
+    return () => {
+      active = false;
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
   async function requestWithdrawal() {
@@ -97,7 +138,7 @@ export default function PartnerDashboardPage() {
         </div>
 
         {loading && <div className="mt-8 rounded-2xl border border-[var(--line)] p-6 text-[var(--muted)]">Loading your dashboard…</div>}
-        {error && !loading && <div className="mt-8 rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-900">{error}<div className="mt-3"><Link href="/login" className="font-semibold text-[var(--warm-gold)] underline">Log in / create account</Link></div></div>}
+        {error && !loading && <div className="mt-8 rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-900">{error}<div className="mt-3"><button type="button" onClick={() => window.dispatchEvent(new CustomEvent("humor-open-customer-auth"))} className="font-semibold text-[var(--warm-gold)] underline">Log in / create account</button></div></div>}
 
         {data && !loading && <>
           <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
