@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import CartBadge from "@/components/CartBadge";
+import { LAUNCH_OFFER_ENABLED } from "@/lib/launchOffer";
 
 const mobileLinks = [
   { href: "/shop", label: "Shop" },
