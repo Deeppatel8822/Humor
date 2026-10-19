@@ -74,6 +74,19 @@ export async function POST(req: NextRequest) {
       shippingInr = subtotalInr >= 249 ? 0 : 50;
       totalInr = subtotalInr + shippingInr;
     } else {
+      if (vendorCode) {
+        const partnerMatch = await findPartnerByCode(vendorCode);
+        if (!partnerMatch) return NextResponse.json({ error: "Invalid or expired vendor code." }, { status: 400 });
+        if (token) {
+          const admin = (await import("@/lib/supabase")).supabaseAdmin();
+          const { data: current } = await admin.auth.getUser(token);
+          if (current.user?.id === partnerMatch.user.id) return NextResponse.json({ error: "You cannot use your own partner code." }, { status: 400 });
+        }
+        partnerDiscountInr = calculatePartnerDiscount(lines.map((line) => ({
+          priceInr: products.find((p) => p.id === line.productId || p.slug === line.slug)?.price_inr ?? 0,
+          quantity: line.quantity,
+        })));
+      }
       const pricingSettings = await getStorePricingSettings();
       const bundleRule = pricingSettings.discounts.bundle;
       bundleSavingsInr = bundleRule.enabled ? calculateBundleSavings(
