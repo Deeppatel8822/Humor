@@ -1,6 +1,7 @@
 import { getAllProducts } from "@/lib/catalog";
 import { Product } from "@/types/product";
 import AddBundleButton from "@/components/AddBundleButton";
+import LaunchOfferGate from "@/components/LaunchOfferGate";
 import { bundleTotal, bundlePrice, bundleDiscountPercent } from "@/lib/bundles";
 import { getStorePricingSettings } from "@/lib/storePricing";
 
@@ -72,6 +73,7 @@ export default async function BundlesPage() {
         Special bundle pricing with psychological price points designed to feel like a better-value deal.
       </p>
 
+      <LaunchOfferGate>
       <div className="grid md:grid-cols-2 gap-6">
         {bundles.map((bundle) => (
           <div key={bundle.name} className="border border-[var(--line)] rounded-2xl p-6">
@@ -119,6 +121,7 @@ export default async function BundlesPage() {
           </div>
         ))}
       </div>
+      </LaunchOfferGate>
     </div>
   );
 }
