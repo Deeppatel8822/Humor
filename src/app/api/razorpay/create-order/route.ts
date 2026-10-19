@@ -5,6 +5,7 @@ import { calculateBundleSavings } from "@/lib/bundles";
 import { calculateCheckoutPricing } from "@/lib/checkoutPricing";
 import { calculatePartnerDiscount, findPartnerByCode } from "@/lib/marketingPartner";
 import { getStorePricingSettings } from "@/lib/storePricing";
+import { LAUNCH_OFFER_ENABLED, getLaunchOfferPrice } from "@/lib/launchOffer";
 
 interface CartLineInput {
   productId: string;
@@ -19,6 +20,14 @@ export async function POST(req: NextRequest) {
     const vendorCode = String(body.vendorCode || "").trim();
     const authHeader = req.headers.get("authorization") || "";
     const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
+    let launchOfferActive = false;
+    if (LAUNCH_OFFER_ENABLED) {
+      if (!token) return NextResponse.json({ error: "Please login to use the launch offer." }, { status: 401 });
+      const { data: authData, error: authError } = await (await import("@/lib/supabase")).supabaseAdmin().auth.getUser(token);
+      if (authError || !authData.user) return NextResponse.json({ error: "Please login again to use the launch offer." }, { status: 401 });
+      launchOfferActive = true;
+      if (vendorCode) return NextResponse.json({ error: "Partner codes and other discounts are unavailable during the launch offer." }, { status: 400 });
+    }
 
     if (
       !Array.isArray(lines) || lines.length === 0 || lines.length > 100 ||
@@ -52,60 +61,53 @@ export async function POST(req: NextRequest) {
         );
       }
       quantitiesByProduct.set(product.id, totalQuantity);
-      subtotalInr += product.price_inr * line.quantity;
+      subtotalInr += (launchOfferActive ? (getLaunchOfferPrice(product) ?? product.price_inr) : product.price_inr) * line.quantity;
     }
 
-    const pricingSettings = await getStorePricingSettings();
-    const bundleRule = pricingSettings.discounts.bundle;
-    const bundleSavingsInr = bundleRule.enabled ? calculateBundleSavings(
-      lines.map((line) => ({ slug: line.slug || products.find((p) => p.id === line.productId)?.slug || "", quantity: line.quantity })),
-      products,
-      bundleRule.type === "percent" ? bundleRule.value : 0
-    ) : 0;
+    let totalDiscountInr = 0;
+    let shippingInr: number;
+    let totalInr: number;
     let partnerDiscountInr = 0;
-    let partnerMatch: Awaited<ReturnType<typeof findPartnerByCode>> = null;
-    if (vendorCode) {
-      partnerMatch = await findPartnerByCode(vendorCode);
-      if (!partnerMatch) return NextResponse.json({ error: "Invalid or expired vendor code." }, { status: 400 });
+    let bundleSavingsInr = 0;
+
+    if (launchOfferActive) {
+      shippingInr = subtotalInr >= 249 ? 0 : 50;
+      totalInr = subtotalInr + shippingInr;
+    } else {
+      const pricingSettings = await getStorePricingSettings();
+      const bundleRule = pricingSettings.discounts.bundle;
+      bundleSavingsInr = bundleRule.enabled ? calculateBundleSavings(
+        lines.map((line) => ({ slug: line.slug || products.find((p) => p.id === line.productId)?.slug || "", quantity: line.quantity })),
+        products,
+        bundleRule.type === "percent" ? bundleRule.value : 0
+      ) : 0;
+      let firstOrderDiscountInr = 0;
       if (token) {
         const admin = (await import("@/lib/supabase")).supabaseAdmin();
-        const { data: current } = await admin.auth.getUser(token);
-        if (current.user?.id === partnerMatch.user.id) return NextResponse.json({ error: "You cannot use your own partner code." }, { status: 400 });
-      }
-      partnerDiscountInr = calculatePartnerDiscount(lines.map((line) => ({
-        priceInr: products.find((p) => p.id === line.productId || p.slug === line.slug)?.price_inr ?? 0,
-        quantity: line.quantity,
-      })));
-    }
-    let firstOrderDiscountInr = 0;
-    if (token) {
-      const admin = (await import("@/lib/supabase")).supabaseAdmin();
-      const { data: authData } = await admin.auth.getUser(token);
-      if (authData.user) {
-        const identity = authData.user.email || authData.user.phone || "";
-        const field = authData.user.email ? "email" : "phone";
-        const { data: customer } = await admin.from("customers").select("id").eq(field, identity).maybeSingle();
-        if (customer) {
-          const { count } = await admin.from("orders").select("id", { count: "exact", head: true }).eq("customer_id", customer.id);
-          if ((count ?? 0) === 0) firstOrderDiscountInr = Math.round(subtotalInr * 0.10);
-        } else {
-          firstOrderDiscountInr = Math.round(subtotalInr * 0.10);
+        const { data: authData } = await admin.auth.getUser(token);
+        if (authData.user) {
+          const identity = authData.user.email || authData.user.phone || "";
+          const field = authData.user.email ? "email" : "phone";
+          const { data: customer } = await admin.from("customers").select("id").eq(field, identity).maybeSingle();
+          if (customer) {
+            const { count } = await admin.from("orders").select("id", { count: "exact", head: true }).eq("customer_id", customer.id);
+            if ((count ?? 0) === 0) firstOrderDiscountInr = Math.round(subtotalInr * 0.10);
+          } else {
+            firstOrderDiscountInr = Math.round(subtotalInr * 0.10);
+          }
         }
       }
+      const pricing = calculateCheckoutPricing({ subtotalInr, firstOrderDiscountInr, partnerDiscountInr, bundleSavingsInr });
+      shippingInr = pricing.shippingInr;
+      totalDiscountInr = pricing.totalDiscountInr;
+      totalInr = pricing.totalInr;
     }
-    const pricing = calculateCheckoutPricing({
-      subtotalInr,
-      firstOrderDiscountInr,
-      partnerDiscountInr,
-      bundleSavingsInr,
-    });
-    const { shippingInr, totalDiscountInr, totalInr } = pricing;
 
     const order = await razorpayClient().orders.create({
       amount: totalInr * 100, // Razorpay expects paise
       currency: "INR",
       receipt: `hl_${Date.now()}`,
-      notes: { lines: JSON.stringify(lines), vendorCode: vendorCode || "" },
+      notes: { lines: JSON.stringify(lines), vendorCode: vendorCode || "", launchOffer: launchOfferActive ? "true" : "false" },
     });
 
     return NextResponse.json({
@@ -117,6 +119,7 @@ export async function POST(req: NextRequest) {
       discountInr: totalDiscountInr,
       vendorDiscountInr: partnerDiscountInr,
       bundleSavingsInr,
+      launchOfferActive,
     });
   } catch (err) {
     console.error("Razorpay order creation failed:", err);
