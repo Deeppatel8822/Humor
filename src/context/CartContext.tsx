@@ -159,7 +159,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   function addItem(product: Product, quantity = 1) {
     const current = lines.find((line) => line.productId === product.id);
     const effectivePrice = getDisplayPrice(product);
-    trackCartActivity("add_to_cart", [{ productId: product.id, slug: product.slug, name: product.name, price_inr: product.price_inr, quantity: current ? current.quantity + quantity : quantity, shopifyVariantId: product.shopify_variant_id, image: product.images?.[0] ?? null }]);
+    trackCartActivity("add_to_cart", [{ productId: product.id, slug: product.slug, name: product.name, price_inr: effectivePrice, original_price_inr: product.price_inr, quantity: current ? current.quantity + quantity : quantity, shopifyVariantId: product.shopify_variant_id, image: product.images?.[0] ?? null }]);
     if (typeof window !== "undefined") {
       window.setTimeout(() => window.dispatchEvent(new CustomEvent("humor-open-cart-popup")), 0);
     }
