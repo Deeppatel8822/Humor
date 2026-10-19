@@ -77,7 +77,7 @@ export default function SiteHeader() {
   return (
     <div className="sticky top-0 z-50">
       <div className="bg-[var(--ink)] text-white text-center text-xs py-2 px-4">
-        Free shipping on order above ₹249</div>
+        {LAUNCH_OFFER_ENABLED ? "Login-only Launch Offer · Free shipping on ₹249+ prepaid orders" : "Free shipping on order above ₹249"}</div>
 
       <header className="bg-white/95 backdrop-blur border-b border-[var(--line)]">
         <div className="max-w-7xl mx-auto px-5 md:px-8">
