@@ -8,12 +8,12 @@ import type { Product } from "@/types/product";
 export const LAUNCH_OFFER_ENABLED = true;
 
 const launchPricesBySlug: Record<string, number> = {
-  "fullmoon-face-wash": 59,
-  "velvet-touch-face-wash": 59,
-  "blemish-block-face-wash": 59,
-  "fullmoon-face-serum": 69,
-  "velvet-touch-face-serum": 69,
-  "blemish-block-face-serum": 69,
+  "fullmoon-face-wash": 69,
+  "velvet-touch-face-wash": 69,
+  "blemish-block-face-wash": 69,
+  "fullmoon-face-serum": 49,
+  "velvet-touch-face-serum": 49,
+  "blemish-block-face-serum": 49,
   "sunscreen-spf-50": 149,
   "repair-shampoo": 199,
   "smooth-shake-daily-shampoo": 199,
@@ -24,12 +24,12 @@ const launchPricesBySlug: Record<string, number> = {
 
 
 export const launchOfferDisplayItems = [
-  { name: "Fullmoon Face Wash", price: 59 },
-  { name: "Velvet Touch Face Wash", price: 59 },
-  { name: "Blemish Block Face Wash", price: 59 },
-  { name: "Fullmoon Face Serum", price: 69 },
-  { name: "Velvet Touch Face Serum", price: 69 },
-  { name: "Blemish Block Face Serum", price: 69 },
+  { name: "Fullmoon Face Wash", price: 69 },
+  { name: "Velvet Touch Face Wash", price: 69 },
+  { name: "Blemish Block Face Wash", price: 69 },
+  { name: "Fullmoon Face Serum", price: 49 },
+  { name: "Velvet Touch Face Serum", price: 49 },
+  { name: "Blemish Block Face Serum", price: 49 },
   { name: "Light & Shade Sunscreen SPF 50", price: 149 },
   { name: "Protein Shake Anti Hairfall Shampoo", price: 199 },
   { name: "Smooth Shake Daily Shampoo", price: 199 },
