@@ -3,6 +3,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { calculatePartnerDiscount, creditPartnerReward, findPartnerByCode } from "@/lib/marketingPartner";
 import { calculateBundleSavings } from "@/lib/bundles";
 import { getStorePricingSettings } from "@/lib/storePricing";
+import { LAUNCH_OFFER_ENABLED } from "@/lib/launchOffer";
 
 interface CodLine { productId: string; slug?: string; quantity: number; }
 interface ShippingDetails {
@@ -10,7 +11,7 @@ interface ShippingDetails {
   city: string; state: string; pincode: string;
 }
 
-export async function POST(request: Request) {
+export async function POST(request: Request) {\n  if (LAUNCH_OFFER_ENABLED) return NextResponse.json({ error: "Cash on delivery is unavailable during the launch offer. Please pay online." }, { status: 400 });
   try {
     const body = await request.json() as { lines?: CodLine[]; shipping?: ShippingDetails; vendorCode?: string };
     const lines = body.lines ?? [];
