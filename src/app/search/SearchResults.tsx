@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import type { Product } from "@/types/product";
+import { useCart } from "@/context/CartContext";
 
 function normalize(value: string) {
   return value.normalize("NFKD").toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -10,6 +11,7 @@ function normalize(value: string) {
 
 export default function SearchResults({ products }: { products: Product[] }) {
   const [query, setQuery] = useState("");
+  const { getDisplayPrice } = useCart();
 
   useEffect(() => {
     const initialQuery = new URLSearchParams(window.location.search).get("q");
@@ -60,7 +62,7 @@ export default function SearchResults({ products }: { products: Product[] }) {
                     </div>
                     <h2 className="mt-3 line-clamp-2 text-sm font-medium text-[#35243F] group-hover:text-[#7047A0]">{product.name}</h2>
                     <p className="mt-1 line-clamp-2 text-xs text-[#8B7D92]">{product.tagline}</p>
-                    <p className="mt-3 text-sm font-semibold text-[#50336F]">₹{product.price_inr.toLocaleString("en-IN")}</p>
+                    <p className="mt-3 text-sm font-semibold text-[#50336F]">₹{getDisplayPrice(product).toLocaleString("en-IN")}</p>
                   </Link>
                 ))}
               </div>
