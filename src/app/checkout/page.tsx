@@ -324,8 +324,8 @@ export default function CheckoutPage() {
               <div className="flex justify-between text-sm text-[var(--muted)]"><span>Subtotal</span><span>&#8377;{subtotalInr}</span></div>
               {firstOrderDiscountInr > 0 && <div className="flex justify-between text-sm text-[var(--muted)]"><span>First order 10% OFF</span><span className="text-green-700">−₹{firstOrderDiscountInr}</span></div>}
               {prepaidDiscountInr > 0 && <div className="flex justify-between text-sm text-[var(--muted)]"><span>Prepaid savings ({Math.round(prepaidDiscountRate * 100)}%)</span><span className="text-green-700">−₹{prepaidDiscountInr}</span></div>}
-              {vendorDiscountInr > 0 && <div className="flex justify-between text-sm text-[var(--muted)]"><span>Partner discount (10%)</span><span className="text-green-700">−₹{vendorDiscountInr}</span></div>}
-              {bundleSavingsInr > 0 && <div className="flex justify-between text-sm text-[var(--muted)]"><span>Bundle savings</span><span className="text-green-700">−₹{bundleSavingsInr}</span></div>}
+              {!launchOfferActive && vendorDiscountInr > 0 && <div className="flex justify-between text-sm text-[var(--muted)]"><span>Partner discount (10%)</span><span className="text-green-700">−₹{vendorDiscountInr}</span></div>}
+              {!launchOfferActive && bundleSavingsInr > 0 && <div className="flex justify-between text-sm text-[var(--muted)]"><span>Bundle savings</span><span className="text-green-700">−₹{bundleSavingsInr}</span></div>}
               <div className="flex justify-between text-sm text-[var(--muted)]">
                 <span>Shipping</span>
                 <span className={qualifiesForFreeShipping ? "font-medium text-green-700" : "text-[var(--ink)]"}>
