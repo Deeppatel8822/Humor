@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
   const header = request.headers.get("authorization") || "";
   const token = header.startsWith("Bearer ") ? header.slice(7) : "";
   if (!token) {
-    return NextResponse.json({ enabled: true, eligible: false, prices: {} }, { headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json({ enabled: true, eligible: false, prices: {}, basePrices }, { headers: { "Cache-Control": "no-store" } });
   }
 
   const { data, error } = await supabaseAdmin().auth.getUser(token);
