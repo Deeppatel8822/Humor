@@ -155,8 +155,14 @@ function CustomersSection({ customers, orders }: { customers: Customer[]; orders
   const [customerSearch, setCustomerSearch] = useState("");
   const registered = customers.filter((customer) => customer.isAccount);
   const registeredIds = new Set(registered.map((customer) => customer.id));
-  const registeredOrders = orders.filter((order) => !!order.customer?.id && registeredIds.has(order.customer.id));
-  const guestOrders = orders.filter((order) => !order.customer?.id || !registeredIds.has(order.customer.id));
+  const normalizeEmail = (value?: string | null) => String(value || "").trim().toLowerCase();
+  const registeredEmails = new Set(registered.map((customer) => normalizeEmail(customer.email)).filter(Boolean));
+  const belongsToRegistered = (order: Order) => {
+    const orderEmail = normalizeEmail(order.customer?.email);
+    return (!!order.customer?.id && registeredIds.has(order.customer.id)) || (!!orderEmail && registeredEmails.has(orderEmail));
+  };
+  const registeredOrders = orders.filter(belongsToRegistered);
+  const guestOrders = orders.filter((order) => !belongsToRegistered(order));
   const matches = (value: string) => value.toLowerCase().includes(customerSearch.toLowerCase().trim());
   const visibleCustomers = registered.filter((customer) => matches(`${customer.full_name || ""} ${customer.email || ""} ${customer.phone || ""}`));
   const guestGroups = new Map<string, { key: string; name: string; email: string; phone: string; orders: Order[] }>();
@@ -179,11 +185,14 @@ function CustomersSection({ customers, orders }: { customers: Customer[]; orders
     orders: group.orders.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
   }));
   const visibleGuestCustomers = allGuestCustomers.filter((group) => matches(`${group.name} ${group.email} ${group.phone} ${group.orders.map((order) => order.order_number).join(" ")} ${group.orders.map((order) => order.address?.city || "").join(" ")}`));
-  const ordersForCustomer = (customerId: string) => registeredOrders.filter((order) => order.customer?.id === customerId);
+  const ordersForCustomer = (customer: Customer) => registeredOrders.filter((order) =>
+    (!!order.customer?.id && order.customer.id === customer.id) ||
+    (!!normalizeEmail(customer.email) && normalizeEmail(order.customer?.email) === normalizeEmail(customer.email))
+  );
   const registeredCsv = () => downloadCsv("humor-registered-customers.csv",
     ["Customer ID", "Name", "Email", "Mobile", "Joined", "Order Count", "Total Purchase INR", "Order Numbers", "Order Dates", "Order Statuses", "Products Purchased", "Payment Statuses"],
     visibleCustomers.map((customer) => {
-      const customerOrders = ordersForCustomer(customer.id);
+      const customerOrders = ordersForCustomer(customer);
       return [customer.id, customer.full_name, customer.email, customer.phone, customer.created_at, customerOrders.length,
         customerOrders.reduce((sum, order) => sum + Number(order.total_inr || 0), 0),
         customerOrders.map((order) => order.order_number).join(" | "),
