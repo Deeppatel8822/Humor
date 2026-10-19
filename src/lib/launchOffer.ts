@@ -22,6 +22,22 @@ const launchPricesBySlug: Record<string, number> = {
   "repair-conditioner": 149,
 };
 
+
+export const launchOfferDisplayItems = [
+  { name: "Fullmoon Face Wash", price: 59 },
+  { name: "Velvet Touch Face Wash", price: 59 },
+  { name: "Blemish Block Face Wash", price: 59 },
+  { name: "Fullmoon Face Serum", price: 69 },
+  { name: "Velvet Touch Face Serum", price: 69 },
+  { name: "Blemish Block Face Serum", price: 69 },
+  { name: "Light & Shade Sunscreen SPF 50", price: 149 },
+  { name: "Protein Shake Anti Hairfall Shampoo", price: 199 },
+  { name: "Smooth Shake Daily Shampoo", price: 199 },
+  { name: "Milk Shake Repairing Smooth Hair Mask", price: 249 },
+  { name: "Royal Water Soft Shower Cream", price: 29 },
+  { name: "Silk Shake Smooth Shine Conditioner", price: 149 },
+] as const;
+
 export function getLaunchOfferPrice(product: Pick<Product, "slug">): number | null {
   if (!LAUNCH_OFFER_ENABLED) return null;
   return launchPricesBySlug[product.slug] ?? null;
