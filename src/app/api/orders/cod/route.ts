@@ -12,7 +12,6 @@ interface ShippingDetails {
 }
 
 export async function POST(request: Request) {
-  if (LAUNCH_OFFER_ENABLED) return NextResponse.json({ error: "Cash on delivery is unavailable during the launch offer. Please pay online." }, { status: 400 });
   try {
     const body = await request.json() as { lines?: CodLine[]; shipping?: ShippingDetails; vendorCode?: string };
     const lines = body.lines ?? [];
@@ -29,6 +28,11 @@ export async function POST(request: Request) {
     const supabase = supabaseAdmin();
     const authHeader = request.headers.get("authorization") || "";
     const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
+    if (LAUNCH_OFFER_ENABLED && token) {
+      const { data: accountData, error: accountError } = await supabase.auth.getUser(token);
+      if (accountError || !accountData.user) return NextResponse.json({ error: "Your login session expired. Please log in again." }, { status: 401 });
+      return NextResponse.json({ error: "Launch Offer is prepaid only. Please choose online payment." }, { status: 400 });
+    }
 
     let firstOrderDiscountInr = 0;
     let partnerDiscountInr = 0;
