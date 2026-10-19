@@ -36,10 +36,17 @@ export async function GET() {
   }
 
   const accountUserIds = new Set((usersData?.users ?? []).map((user) => user.id));
-  const customers = (data ?? []).map((customer) => ({
-    ...customer,
-    isAccount: accountUserIds.has(customer.id),
-    marketingPartner: partnerByUserId.get(customer.id) ?? null,
-  }));
+  const accountEmails = new Set((usersData?.users ?? []).map((user) => String(user.email || "").trim().toLowerCase()).filter(Boolean));
+  const accountPhones = new Set((usersData?.users ?? []).map((user) => String(user.phone || "").replace(/\\D/g, "")).filter(Boolean));
+  const customers = (data ?? []).map((customer) => {
+    const email = String(customer.email || "").trim().toLowerCase();
+    const phone = String(customer.phone || "").replace(/\\D/g, "");
+    return {
+      ...customer,
+      // Some customer profile rows may have a different DB id from the Supabase Auth user id.
+      isAccount: accountUserIds.has(customer.id) || Boolean(email && accountEmails.has(email)) || Boolean(phone && accountPhones.has(phone)),
+      marketingPartner: partnerByUserId.get(customer.id) ?? null,
+    };
+  });
   return NextResponse.json({ customers });
 }
