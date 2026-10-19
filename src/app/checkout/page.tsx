@@ -267,7 +267,7 @@ export default function CheckoutPage() {
                     <div className="text-xs text-[var(--muted)]">{launchOfferActive ? "Required for launch offer · UPI, Cards, Netbanking" : `Secured by Razorpay · Save ₹${prepaidSavingsPreviewInr} (${Math.round(prepaidDiscountRate * 100)}% prepaid)`}</div>
                   </div>
                 </label>
-                {!launchOfferActive && <label className="flex items-center gap-3 border border-[var(--line)] rounded-xl px-4 py-3.5 cursor-pointer has-[:checked]:border-[var(--deep-wine)] has-[:checked]:bg-[var(--milk-sage)]">
+                {launchOfferReady && !launchOfferActive && <label className="flex items-center gap-3 border border-[var(--line)] rounded-xl px-4 py-3.5 cursor-pointer has-[:checked]:border-[var(--deep-wine)] has-[:checked]:bg-[var(--milk-sage)]">
                   <input type="radio" name="payment" checked={paymentMethod === "cod"} onChange={() => setPaymentMethod("cod")} />
                   <div>
                     <div className="text-sm font-medium text-[var(--ink)]">Cash on delivery</div>
