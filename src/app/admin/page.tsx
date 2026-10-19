@@ -3,6 +3,7 @@
 import ProfitManagementPanel from "@/components/ProfitManagementPanel";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface Product {
   id: string;
@@ -47,7 +48,9 @@ function printShippingLabel(order: Order) {
 }
 
 export default function AdminPage() {
-  const [email, setEmail] = useState(""); const [password, setPassword] = useState(""); const [loggedIn, setLoggedIn] = useState(false);
+  const router = useRouter();
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
   const [products, setProducts] = useState<Product[]>([]); const [orders, setOrders] = useState<Order[]>([]);
   const [tab, setTab] = useState<"orders" | "products" | "profit" | "customers" | "coupons" | "crm" | "cartActivity" | "marketingPartners">("orders");
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -60,7 +63,7 @@ export default function AdminPage() {
       fetch("/api/admin/customers", { cache: "no-store" }),
       fetch("/api/admin/coupons", { cache: "no-store" }),
     ]);
-    if (!productsRes.ok || !ordersRes.ok) { setLoggedIn(false); return; }
+    if (!productsRes.ok || !ordersRes.ok) { setLoggedIn(false); setCheckingSession(false); router.replace("/admin/login"); return; }
     const productsData = await productsRes.json();
     const ordersData = await ordersRes.json();
     const customersData = customersRes.ok ? await customersRes.json() : { customers: [] };
@@ -70,11 +73,11 @@ export default function AdminPage() {
     setCustomers(customersData.customers ?? []);
     setCoupons(couponsData.coupons ?? []);
     setLoggedIn(true);
+    setCheckingSession(false);
   }
-  useEffect(() => { loadAdminData(); const timer = window.setInterval(loadAdminData, 30000); return () => window.clearInterval(timer); }, []);
+  useEffect(() => { void loadAdminData(); const timer = window.setInterval(() => { void loadAdminData(); }, 30000); return () => window.clearInterval(timer); }, []);
   async function loadPartnerApplications() { setPartnerLoading(true); const res = await fetch("/api/admin/marketing-partners", { cache: "no-store" }); if (res.ok) { const data = await res.json(); setPartnerApps(data.applications ?? []); } setPartnerLoading(false); }
   async function actPartner(userId: string, action: "approve" | "reject") { setSaving(userId); setError(""); const res = await fetch("/api/admin/marketing-partners", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId, action }) }); const data = await res.json(); if (!res.ok) setError(data.error || "Could not update marketing partner."); else setPartnerApps((prev) => prev.filter((app) => app.userId !== userId)); setSaving(null); }
-  async function login(e: React.FormEvent) { e.preventDefault(); setLoading(true); setError(""); const res = await fetch("/api/admin/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) }); const data = await res.json(); if (!res.ok) setError(data.error || "Login failed."); else await loadAdminData(); setLoading(false); }
   async function saveProduct(id: string, stock: number) { setSaving(id); setError(""); const res = await fetch("/api/admin/products", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, stock_quantity: stock }) }); const data = await res.json(); if (!res.ok) setError(data.error || "Could not update inventory."); else setProducts((prev) => prev.map((p) => p.id === id ? { ...p, stock_quantity: data.product.stock_quantity } : p)); setSaving(null); }
   async function moveOrder(id: string, nextStatus: string, trackingNumber?: string) { setSaving(id); setError(""); const res = await fetch("/api/admin/orders", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, status: nextStatus, tracking_number: trackingNumber ?? undefined }) }); const data = await res.json(); if (!res.ok) setError(data.error || "Could not update order."); else { setOrders((prev) => prev.map((o) => o.id === id ? { ...o, status: data.order.status, tracking_number: data.order.tracking_number } : o)); if (nextStatus === "shipped") setStage("shipping"); } setSaving(null); }
   async function recordCompletedRefund(order: Order) {
@@ -105,7 +108,7 @@ export default function AdminPage() {
   const stageCounts = useMemo(() => STAGES.reduce((acc, s) => ({ ...acc, [s.key]: orders.filter((o) => stageFor(o.status) === s.key).length }), {} as Record<StageKey, number>), [orders]);
   const newCount = stageCounts.new || 0;
 
-  if (!loggedIn) return <><style>{`body:has([data-admin-panel]) header, body:has([data-admin-panel]) footer, body:has([data-admin-panel]) a[aria-label="Chat with Humor Luxury on WhatsApp"] { display: none !important; }`}</style><main data-admin-panel className="min-h-[70vh] bg-[var(--milk-sage)] flex items-center justify-center px-5 py-16"><form onSubmit={login} className="w-full max-w-md bg-white rounded-3xl border border-[var(--line)] p-8 md:p-10 shadow-sm"><p className="text-xs uppercase tracking-[0.2em] text-[var(--warm-gold)] mb-3">Humor Luxury</p><h1 className="font-display text-3xl text-[var(--deep-wine)]">Admin Login</h1><p className="text-sm text-[var(--muted)] mt-2 mb-8">Manage orders, products and inventory securely.</p><label className="block text-xs font-medium text-[var(--ink)] mb-2">Email</label><input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required className="w-full border border-[var(--line)] rounded-xl px-4 py-3 mb-5 outline-none" /><label className="block text-xs font-medium text-[var(--ink)] mb-2">Password</label><input value={password} onChange={(e) => setPassword(e.target.value)} type="password" required className="w-full border border-[var(--line)] rounded-xl px-4 py-3 mb-5 outline-none" />{error && <p className="text-sm text-red-600 mb-4">{error}</p>}<button disabled={loading} className="w-full bg-[var(--deep-wine)] text-white rounded-full py-3.5 text-sm font-medium disabled:opacity-50">{loading ? "Signing in…" : "Sign in"}</button></form></main></>;
+  if (!loggedIn) return <main className="min-h-screen bg-[var(--milk-sage)] flex items-center justify-center px-5"><p className="text-sm text-[var(--muted)]">{checkingSession ? "Checking admin session…" : "Redirecting to secure OTP login…"}</p></main>;
 
   return <><style>{`body:has([data-admin-panel]) header, body:has([data-admin-panel]) footer, body:has([data-admin-panel]) a[aria-label="Chat with Humor Luxury on WhatsApp"] { display: none !important; }`}</style><main data-admin-panel className="min-h-[70vh] bg-[var(--milk-sage)] px-5 md:px-8 py-10 md:py-14"><div className="max-w-7xl mx-auto"><div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5 mb-7"><div><p className="text-xs uppercase tracking-[0.2em] text-[var(--warm-gold)] mb-2">Humor Luxury</p><h1 className="font-display text-3xl md:text-4xl text-[var(--deep-wine)]">Admin Panel</h1><p className="text-sm text-[var(--muted)] mt-2">Orders move from New → Packing → Ready to Dispatch → Shipping → Complete.</p></div><button onClick={() => setTab("profit")} className="self-start md:self-auto rounded-full bg-[#351724] text-white px-5 py-2.5 text-xs font-semibold">PDPP</button><button onClick={loadAdminData} className="self-start md:self-auto border border-[var(--line)] bg-white rounded-full px-5 py-2.5 text-xs font-medium">Refresh</button></div><div className="flex flex-wrap gap-2 mb-6">
 <button onClick={() => setTab("orders")} className={`rounded-full px-5 md:px-6 py-3 text-sm font-medium ${tab === "orders" ? "bg-[var(--deep-wine)] text-white" : "bg-white border border-[var(--line)]"}`}>Orders {newCount > 0 && <span className="ml-1 inline-flex min-w-5 h-5 px-1 items-center justify-center rounded-full bg-red-500 text-white text-[10px]">{newCount}</span>}</button>
