@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getProduct, getAllProducts } from "@/lib/catalog";
 import { getProducts as getLocalProducts } from "@/lib/products";
 import AddToCartForm from "@/components/AddToCartForm";
+import LaunchOfferPrice from "@/components/LaunchOfferPrice";
 import ProductCard from "@/components/ProductCard";
 import ProductGallery from "@/components/ProductGallery";
 import CustomerReviews from "@/components/CustomerReviews";
@@ -213,7 +214,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               <span className="text-sm text-[var(--muted)]">No reviews yet</span>
             )}
           </div>
-          <div className="flex items-center gap-3 mb-5"><span className="text-2xl md:text-3xl font-semibold text-[var(--deep-wine)]">&#8377;{product.price_inr}</span>{onSale && <span className="text-base text-[var(--ink)]/40 line-through">&#8377;{product.compare_at_price_inr}</span>}{onSale && <span className="rounded-full bg-pink-100 text-pink-700 px-3 py-1 text-xs font-semibold">{Math.round((1 - product.price_inr / product.compare_at_price_inr!) * 100)}% OFF</span>}<span className="ml-auto whitespace-nowrap text-sm md:text-base text-[var(--ink)]/75">{volume || ""}</span></div>
+          <LaunchOfferPrice product={product} volume={volume || ""} />
           <div className="grid grid-cols-4 gap-2 md:gap-3 mb-5" aria-label="Product standards">
             {[
               { label: "Paraben Free", icon: <><path d="M12 3h8v5l3 4v8a2 2 0 0 1-2 2H11a2 2 0 0 1-2-2v-8l3-4z" /><path d="M12 8h8M13 15h6" /></> },
