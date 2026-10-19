@@ -37,8 +37,10 @@ export async function GET() {
 
   const authUsers = usersData?.users ?? [];
   const accountUserIds = new Set(authUsers.map((user) => user.id));
-  const accountByEmail = new Map(authUsers.map((user) => [String(user.email || "").trim().toLowerCase(), user]).filter(([email]) => Boolean(email)));
-  const accountByPhone = new Map(authUsers.map((user) => [String(user.phone || "").replace(/\\D/g, ""), user]).filter(([phone]) => Boolean(phone)));
+  const accountByEmail = new Map<string, (typeof authUsers)[number]>();
+  for (const user of authUsers) { const email = String(user.email || "").trim().toLowerCase(); if (email) accountByEmail.set(email, user); }
+  const accountByPhone = new Map<string, (typeof authUsers)[number]>();
+  for (const user of authUsers) { const phone = String(user.phone || "").replace(/\\D/g, ""); if (phone) accountByPhone.set(phone, user); }
   const customersByIdentity = new Map<string, any>();
   for (const customer of data ?? []) {
     const email = String(customer.email || "").trim().toLowerCase();
