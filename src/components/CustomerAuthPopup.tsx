@@ -47,7 +47,7 @@ export default function CustomerAuthPopup() {
         const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
           if (mounted && session) {
             setOpen(false);
-            if (LAUNCH_OFFER_ENABLED && (event === "SIGNED_IN" || event === "SIGNED_UP")) setShowUnlockedOffer(true);
+            if (LAUNCH_OFFER_ENABLED && event === "SIGNED_IN") setShowUnlockedOffer(true);
           }
         });
         unsubscribe = () => listener.subscription.unsubscribe();
