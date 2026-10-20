@@ -152,6 +152,10 @@ export default function CheckoutPage() {
     const createData = await createRes.json();
     if (!createRes.ok) throw new Error(createData.error ?? "Could not start payment.");
 
+    if (typeof window.Razorpay !== "function") {
+      throw new Error("Razorpay Checkout is still loading. Please wait a moment and try again.");
+    }
+
     return new Promise<void>((resolve, reject) => {
       const rzp = new window.Razorpay({
         key: createData.keyId,
@@ -184,6 +188,10 @@ export default function CheckoutPage() {
           }
         },
         modal: { ondismiss: () => reject(new Error("Payment cancelled.")) },
+      });
+      rzp.on("payment.failed", (event: unknown) => {
+        const failure = event as { error?: { description?: string; reason?: string } };
+        reject(new Error(failure.error?.description || failure.error?.reason || "Payment failed. Please try again or choose another payment method."));
       });
       rzp.open();
     });
