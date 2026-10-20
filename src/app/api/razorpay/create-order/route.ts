@@ -124,6 +124,15 @@ export async function POST(req: NextRequest) {
       totalInr = pricing.totalInr;
     }
 
+    // Razorpay's minimum supported order amount is 100 paise (₹1).
+    if (!Number.isSafeInteger(totalInr) || totalInr < 1) {
+      return NextResponse.json({ error: "The payable amount must be at least ₹1." }, { status: 400 });
+    }
+    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+      console.error("Razorpay is not configured: required server environment variables are missing.");
+      return NextResponse.json({ error: "Online payment is temporarily unavailable. Please try again later." }, { status: 500 });
+    }
+
     const order = await razorpayClient().orders.create({
       amount: totalInr * 100, // Razorpay expects paise
       currency: "INR",
