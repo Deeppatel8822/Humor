@@ -5,6 +5,20 @@ import { Product } from "@/types/product";
 import { useCart } from "@/context/CartContext";
 import { getRoutineUpsells } from "@/lib/bundles";
 
+const routineImageFallbacks: Record<string, string> = {
+  "blemish-block-face-wash": "/products/blemish-block-face-wash-main.webp",
+  "velvet-touch-face-wash": "/products/velvet-touch-face-wash-main.webp",
+  "fullmoon-face-wash": "/products/fullmoon-face-wash-main.webp",
+  "blemish-block-face-serum": "/products/blemish-block-face-serum-main.webp",
+  "velvet-touch-face-serum": "/products/velvet-touch-face-serum-main.webp",
+  "fullmoon-face-serum": "/products/fullmoon-face-serum-main.webp",
+  "repair-shampoo": "/products/protein-shake-shampoo-main.webp",
+  "repair-conditioner": "/products/conditioner-main.webp",
+  "repair-hair-mask": "/products/milk-shake-hair-mask-main.webp",
+  "sunscreen-spf-50": "/products/sunscreen-main.webp",
+  "shower-gel": "/products/shower-gel-main.webp",
+};
+
 export default function RoutineUpsell({ product, products }: { product: Product; products: Product[] }) {
   const { lines, addItem, removeItem, launchOfferActive } = useCart();
   const [added, setAdded] = useState<string | null>(null);
@@ -61,8 +75,17 @@ export default function RoutineUpsell({ product, products }: { product: Product;
                   <div key={item.id} className="flex items-center gap-1.5">
                     {index > 0 && <span className="text-xs text-[var(--muted)]">+</span>}
                     <div className="h-12 w-12 overflow-hidden rounded-lg border border-[var(--line)] bg-white flex shrink-0 items-center justify-center">
-                      {item.images?.[0] ? (
-                        <img src={item.images[0]} alt={item.name} loading="lazy" className="h-full w-full object-contain p-0.5" />
+                      {(item.images?.find((image) => typeof image === "string" && image.trim()) || routineImageFallbacks[item.slug]) ? (
+                        <img
+                          src={item.images?.find((image) => typeof image === "string" && image.trim()) || routineImageFallbacks[item.slug]}
+                          alt={item.name}
+                          loading="lazy"
+                          onError={(event) => {
+                            const fallback = routineImageFallbacks[item.slug];
+                            if (fallback && event.currentTarget.getAttribute("src") !== fallback) event.currentTarget.src = fallback;
+                          }}
+                          className="h-full w-full object-contain p-0.5"
+                        />
                       ) : (
                         <span className="px-1 text-center text-[8px] leading-tight text-[var(--muted)]">{item.name}</span>
                       )}
