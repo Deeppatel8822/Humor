@@ -96,7 +96,8 @@ export async function POST(request: Request) {
       bundleRule.type === "percent" ? bundleRule.value : 0
     ) : 0;
     const firstOrderDiscount = firstOrderDiscountInr ? Math.round(subtotalInr * 0.10) : 0;
-    const combinedDiscount = firstOrderDiscount + partnerDiscountInr + bundleSavingsInr + (freeShippingCoupon ? 50 : 0);
+    const couponShippingWaiver = freeShippingCoupon && Math.max(0, subtotalInr - bundleSavingsInr) < 299 ? 50 : 0;
+    const combinedDiscount = firstOrderDiscount + partnerDiscountInr + bundleSavingsInr + couponShippingWaiver;
     // The account that is logged in owns the order. Shipping email/phone are
     // delivery-contact details and must not decide which account sees the order.
     let rpcShipping = { ...shipping };
