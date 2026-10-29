@@ -216,6 +216,7 @@ export default function CheckoutPage() {
     // Guest checkout is supported. Shipping/contact details are collected in this form;
     // authenticated customers still receive account-specific pricing where eligible.
     if (launchOfferActive && paymentMethod === "cod") return setError("Launch offer is available on prepaid orders only. Please choose online payment.");
+    if (freeShippingCouponApplied && paymentMethod === "cod") return setError("DEEP1992 is a personal prepaid-only coupon. Please choose online payment to pay ₹1.");
     if (!launchOfferActive && vendorCode.trim() && vendorDiscountInr === 0) {
       const appliedDiscount = await applyVendorCode();
       if (appliedDiscount === 0) return setError("Please apply a valid vendor code before placing your order.");
