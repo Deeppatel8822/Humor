@@ -140,6 +140,8 @@ export async function POST(req: NextRequest) {
       totalInr = pricing.totalInr - (freeShippingCoupon ? pricing.shippingInr : 0);
     }
 
+    if (freeShippingCoupon) { shippingInr = 0; totalInr = 1; }
+
     // Razorpay's minimum supported order amount is 100 paise (₹1).
     if (!Number.isSafeInteger(totalInr) || totalInr < 1) {
       return NextResponse.json({ error: "The payable amount must be at least ₹1." }, { status: 400 });
