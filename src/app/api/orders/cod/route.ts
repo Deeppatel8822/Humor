@@ -13,10 +13,13 @@ interface ShippingDetails {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json() as { lines?: CodLine[]; shipping?: ShippingDetails; vendorCode?: string };
+    const body = await request.json() as { lines?: CodLine[]; shipping?: ShippingDetails; vendorCode?: string; couponCode?: string };
     const lines = body.lines ?? [];
     const shipping = body.shipping;
     const vendorCode = String(body.vendorCode || "").trim();
+    const couponCode = String(body.couponCode || "").trim().toUpperCase();
+    if (couponCode && couponCode !== "DEEP1992") return NextResponse.json({ error: "Invalid coupon code." }, { status: 400 });
+    const freeShippingCoupon = couponCode === "DEEP1992";
     if (!lines.length || !shipping) return NextResponse.json({ error: "Order details are incomplete." }, { status: 400 });
 
     if (!shipping.fullName?.trim() || !shipping.email?.trim() || !shipping.phone?.trim() ||
@@ -93,7 +96,7 @@ export async function POST(request: Request) {
       bundleRule.type === "percent" ? bundleRule.value : 0
     ) : 0;
     const firstOrderDiscount = firstOrderDiscountInr ? Math.round(subtotalInr * 0.10) : 0;
-    const combinedDiscount = firstOrderDiscount + partnerDiscountInr + bundleSavingsInr;
+    const combinedDiscount = firstOrderDiscount + partnerDiscountInr + bundleSavingsInr + (freeShippingCoupon ? 50 : 0);
     // The account that is logged in owns the order. Shipping email/phone are
     // delivery-contact details and must not decide which account sees the order.
     let rpcShipping = { ...shipping };
