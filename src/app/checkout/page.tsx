@@ -55,14 +55,53 @@ export default function CheckoutPage() {
   const totalDiscountInr = firstOrderDiscountInr + prepaidDiscountInr + effectiveVendorDiscountInr + effectiveBundleSavingsInr;
   const totalInr = freeShippingCouponApplied ? 1 : Math.max(0, subtotalInr - totalDiscountInr + shippingInr + codChargeInr);
 
-  function applyShippingCoupon() {
-    if (couponCode.trim().toUpperCase() === "DEEP1992") {
-      setFreeShippingCouponApplied(true);
-      setCouponCode("DEEP1992");
-      setCouponMessage("✓ Personal coupon applied. Pay just ₹1 to record your order.");
-    } else {
+  async function applyShippingCoupon() {
+    const code = couponCode.trim().toUpperCase();
+    setCouponMessage("");
+    if (!code) {
       setFreeShippingCouponApplied(false);
-      setCouponMessage("Invalid coupon code.");
+      setVendorDiscountInr(0);
+      setVendorCodeMessage("");
+      setCouponMessage("Enter a coupon or partner code.");
+      return;
+    }
+    if (code === "DEEP1992") {
+      setFreeShippingCouponApplied(true);
+      setCouponCode(code);
+      setVendorCode("");
+      setVendorDiscountInr(0);
+      setVendorCodeMessage("");
+      setCouponMessage("✓ Personal coupon applied. Pay just ₹1 to record your order.");
+      return;
+    }
+    setFreeShippingCouponApplied(false);
+    setVendorCode(code);
+    if (launchOfferActive) {
+      setVendorDiscountInr(0);
+      setCouponMessage("Partner codes are unavailable during the launch offer.");
+      return;
+    }
+    setVendorCodeLoading(true);
+    try {
+      const response = await fetch("/api/marketing-partner/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, lines: lines.map((l) => ({ productId: l.productId, slug: l.slug, quantity: l.quantity })) }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.valid || Number(data.discountInr) <= 0) {
+        setVendorDiscountInr(0);
+        setCouponMessage(data.error || "Invalid coupon or partner code.");
+      } else {
+        const discount = Number(data.discountInr) || 0;
+        setVendorDiscountInr(discount);
+        setCouponMessage(`✓ Partner code applied. You save ₹${discount}.`);
+      }
+    } catch {
+      setVendorDiscountInr(0);
+      setCouponMessage("Could not validate this code. Please try again.");
+    } finally {
+      setVendorCodeLoading(false);
     }
   }
 
@@ -315,38 +354,31 @@ export default function CheckoutPage() {
                 : null;
             })()}
             <div className="mb-5 rounded-2xl border border-[var(--line)] bg-white/70 p-4">
-              <label htmlFor="owner-shipping-coupon" className="block text-xs font-semibold tracking-wide text-[var(--deep-wine)] mb-2">COUPON CODE</label>
-              <div className="flex gap-2">
-                <input id="owner-shipping-coupon" value={couponCode} onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); setFreeShippingCouponApplied(false); setCouponMessage(""); }} placeholder="Enter coupon code" className="min-w-0 flex-1 border border-[var(--line)] rounded-full px-4 py-2.5 text-xs bg-white" />
-                <button type="button" onClick={applyShippingCoupon} className="rounded-full border border-[var(--line)] px-4 py-2 text-xs font-medium text-[var(--deep-wine)] hover:bg-[var(--milk-sage)]">Apply</button>
-              </div>
-              {couponMessage && <p className={`mt-2 text-[11px] ${freeShippingCouponApplied ? "text-green-700" : "text-[var(--dusty-rose)]"}`} role="status">{couponMessage}</p>}
-            </div>
-
-            {!launchOfferActive && <div className="mb-5 rounded-2xl border border-[var(--line)] bg-white/70 p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--deep-wine)]">Have a partner code?</span>
-                <span className="text-[10px] text-[var(--muted)]">Optional</span>
-              </div>
+              <label htmlFor="checkout-coupon-code" className="block text-xs font-semibold tracking-wide text-[var(--deep-wine)] mb-2">COUPON / PARTNER CODE</label>
               <div className="flex gap-2">
                 <input
-                  value={vendorCode}
-                  onChange={(e) => { setVendorCode(e.target.value); setVendorDiscountInr(0); setVendorCodeMessage(""); }}
-                  placeholder="Enter partner code"
-                  aria-label="Partner code"
-                  className="min-w-0 flex-1 rounded-full border border-[var(--line)] bg-white px-4 py-2.5 text-xs outline-none focus:border-[var(--deep-wine)]"
+                  id="checkout-coupon-code"
+                  value={couponCode}
+                  onChange={(e) => {
+                    const value = e.target.value.toUpperCase();
+                    setCouponCode(value);
+                    setVendorCode(value);
+                    setFreeShippingCouponApplied(false);
+                    setVendorDiscountInr(0);
+                    setCouponMessage("");
+                    setVendorCodeMessage("");
+                  }}
+                  placeholder="Enter coupon or partner code"
+                  aria-label="Coupon or partner code"
+                  className="min-w-0 flex-1 border border-[var(--line)] rounded-full px-4 py-2.5 text-xs bg-white"
                 />
-                <button
-                  type="button"
-                  disabled={vendorCodeLoading}
-                  onClick={() => { void applyVendorCode(); }}
-                  className="shrink-0 rounded-full border border-[var(--deep-wine)] px-4 py-2.5 text-xs font-semibold text-[var(--deep-wine)] hover:bg-[var(--deep-wine)] hover:text-white transition-colors disabled:opacity-50"
-                >
-                  {vendorCodeLoading ? "Checking…" : vendorDiscountInr > 0 ? "Applied" : "Apply"}
+                <button type="button" disabled={vendorCodeLoading} onClick={() => { void applyShippingCoupon(); }} className="shrink-0 rounded-full border border-[var(--line)] px-4 py-2 text-xs font-medium text-[var(--deep-wine)] hover:bg-[var(--milk-sage)] disabled:opacity-50">
+                  {vendorCodeLoading ? "Checking…" : freeShippingCouponApplied || vendorDiscountInr > 0 ? "Applied" : "Apply"}
                 </button>
               </div>
-              {vendorCodeMessage && <p className={`mt-2 text-[11px] ${vendorDiscountInr > 0 ? "text-green-700" : "text-[var(--muted)]"}`} role="status">{vendorCodeMessage}{vendorDiscountInr > 0 ? ` · Save ₹${vendorDiscountInr}` : ""}</p>}
-            </div>}
+              {couponMessage && <p className={`mt-2 text-[11px] ${freeShippingCouponApplied || vendorDiscountInr > 0 ? "text-green-700" : "text-[var(--dusty-rose)]"}`} role="status">{couponMessage}</p>}
+              {!launchOfferActive && vendorDiscountInr > 0 && <p className="mt-1 text-[11px] text-green-700">Partner discount: ₹{vendorDiscountInr}</p>}
+            </div>
             <div className="border-t border-[var(--line)] pt-4 space-y-2">
               <div className="flex justify-between text-sm text-[var(--muted)]"><span>Subtotal</span><span>&#8377;{subtotalInr}</span></div>
               {firstOrderDiscountInr > 0 && <div className="flex justify-between text-sm text-[var(--muted)]"><span>First order 10% OFF</span><span className="text-green-700">−₹{firstOrderDiscountInr}</span></div>}
