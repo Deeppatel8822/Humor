@@ -200,13 +200,8 @@ export default function CheckoutPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!launchOfferReady) { setError("Please wait while we confirm your launch offer pricing."); return; }
-    const { getSupabase } = await import("@/lib/supabase");
-    const { data: sessionData } = await getSupabase().auth.getSession();
-    if (!sessionData.session) {
-      window.dispatchEvent(new CustomEvent("humor-open-customer-auth"));
-      setError("Please login or create your account before placing an order.");
-      return;
-    }
+    // Guest checkout is supported. Shipping/contact details are collected in this form;
+    // authenticated customers still receive account-specific pricing where eligible.
     if (launchOfferActive && paymentMethod === "cod") return setError("Launch offer is available on prepaid orders only. Please choose online payment.");
     if (!launchOfferActive && vendorCode.trim() && vendorDiscountInr === 0) {
       const appliedDiscount = await applyVendorCode();
