@@ -41,10 +41,37 @@ export async function POST(req: NextRequest) {
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
   let launchOfferActive = false;
   if (LAUNCH_OFFER_ENABLED && token) {
-    const { data: authData, error: authError } = await supabaseAdmin().auth.getUser(token);
+    const admin = supabaseAdmin();
+    const { data: authData, error: authError } = await admin.auth.getUser(token);
     if (authError || !authData.user) return NextResponse.json({ error: "Your login session expired. Please log in again." }, { status: 401 });
-    launchOfferActive = true;
-    if (vendorCode) return NextResponse.json({ error: "Other discounts are unavailable during the launch offer." }, { status: 400 });
+
+    const email = authData.user.email;
+    if (email) {
+      const { data: customer, error: customerError } = await admin
+        .from("customers")
+        .select("id")
+        .eq("email", email)
+        .maybeSingle();
+      if (customerError) {
+        console.error("Launch offer eligibility lookup failed during verification:", customerError);
+      } else if (customer) {
+        const { count, error: ordersError } = await admin
+          .from("orders")
+          .select("id", { count: "exact", head: true })
+          .eq("customer_id", customer.id);
+        if (ordersError) {
+          console.error("Launch offer order history lookup failed during verification:", ordersError);
+        } else {
+          launchOfferActive = (count ?? 0) === 0;
+        }
+      } else {
+        launchOfferActive = true;
+      }
+    }
+
+    if (launchOfferActive && vendorCode) {
+      return NextResponse.json({ error: "Other discounts are unavailable during the launch offer." }, { status: 400 });
+    }
   }
   if (
     !Array.isArray(lines) || lines.length === 0 ||
