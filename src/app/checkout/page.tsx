@@ -53,13 +53,13 @@ export default function CheckoutPage() {
   const codChargeInr = paymentMethod === "cod" ? 25 : 0;
   const effectiveVendorDiscountInr = launchOfferActive ? 0 : vendorDiscountInr;
   const totalDiscountInr = firstOrderDiscountInr + prepaidDiscountInr + effectiveVendorDiscountInr + effectiveBundleSavingsInr;
-  const totalInr = Math.max(0, subtotalInr - totalDiscountInr + shippingInr + codChargeInr);
+  const totalInr = freeShippingCouponApplied ? 1 : Math.max(0, subtotalInr - totalDiscountInr + shippingInr + codChargeInr);
 
   function applyShippingCoupon() {
     if (couponCode.trim().toUpperCase() === "DEEP1992") {
       setFreeShippingCouponApplied(true);
       setCouponCode("DEEP1992");
-      setCouponMessage("✓ DEEP1992 applied. Shipping is free on this order.");
+      setCouponMessage("✓ Personal coupon applied. Pay just ₹1 to record your order.");
     } else {
       setFreeShippingCouponApplied(false);
       setCouponMessage("Invalid coupon code.");
@@ -314,7 +314,7 @@ export default function CheckoutPage() {
                 : null;
             })()}
             <div className="mb-5 rounded-2xl border border-[var(--line)] bg-white/70 p-4">
-              <label htmlFor="owner-shipping-coupon" className="block text-xs font-semibold tracking-wide text-[var(--deep-wine)] mb-2">OWNER COUPON · FREE SHIPPING</label>
+              <label htmlFor="owner-shipping-coupon" className="block text-xs font-semibold tracking-wide text-[var(--deep-wine)] mb-2">COUPON CODE</label>
               <div className="flex gap-2">
                 <input id="owner-shipping-coupon" value={couponCode} onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); setFreeShippingCouponApplied(false); setCouponMessage(""); }} placeholder="Enter coupon code" className="min-w-0 flex-1 border border-[var(--line)] rounded-full px-4 py-2.5 text-xs bg-white" />
                 <button type="button" onClick={applyShippingCoupon} className="rounded-full border border-[var(--line)] px-4 py-2 text-xs font-medium text-[var(--deep-wine)] hover:bg-[var(--milk-sage)]">Apply</button>
@@ -355,12 +355,12 @@ export default function CheckoutPage() {
               <div className="flex justify-between text-sm text-[var(--muted)]">
                 <span>Shipping</span>
                 <span className={qualifiesForFreeShipping ? "font-medium text-green-700" : "text-[var(--ink)]"}>
-                  {shippingInr === 0 ? "Free" : "₹50"}
+                  {freeShippingCouponApplied ? "Waived" : shippingInr === 0 ? "Free" : "₹50"}
                 </span>
               </div>
-              {shippingInr === 0 ? (
+              {freeShippingCouponApplied ? (
                 <div className="rounded-lg bg-green-50 px-3 py-2 text-xs font-medium text-green-700">
-                  🎉 {freeShippingCouponApplied ? "DEEP1992 applied: free shipping!" : "You’re eligible for FREE shipping!"}
+                  🔒 DEEP1992 personal coupon applied. Final payable amount: ₹1.
                 </div>
               ) : (
                 <div className="rounded-lg bg-white/70 px-3 py-2 text-xs text-[var(--muted)]">
@@ -368,7 +368,8 @@ export default function CheckoutPage() {
                 </div>
               )}
               {paymentMethod === "cod" && <div className="flex justify-between text-sm text-[var(--muted)]"><span>COD charge</span><span>+&#8377;25</span></div>}
-              {totalDiscountInr > 0 && <div className="mt-2 rounded-lg bg-white/70 px-3 py-2 text-xs font-medium text-green-700">You save &#8377;{totalDiscountInr} on this order</div>}
+              {freeShippingCouponApplied && <div className="mt-2 rounded-lg bg-white/70 px-3 py-2 text-xs font-medium text-green-700">Personal coupon discount applied</div>}
+              {!freeShippingCouponApplied && totalDiscountInr > 0 && <div className="mt-2 rounded-lg bg-white/70 px-3 py-2 text-xs font-medium text-green-700">You save &#8377;{totalDiscountInr} on this order</div>}
               <div className="flex justify-between text-base font-semibold text-[var(--ink)] pt-2"><span>Total</span><span>&#8377;{totalInr}</span></div>
             </div>
             <button type="submit" disabled={submitting || !launchOfferReady} className="w-full mt-6 bg-[var(--deep-wine)] text-white px-6 py-3.5 rounded-full text-sm font-medium hover:bg-[var(--ink)] transition-colors disabled:opacity-50">
