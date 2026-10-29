@@ -27,6 +27,7 @@ interface VerifyBody {
   subtotalInr: number;
   shippingInr: number;
   vendorCode?: string;
+  couponCode?: string;
 }
 
 export async function POST(req: NextRequest) {
@@ -36,7 +37,10 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
   }
-  const { razorpay_order_id, razorpay_payment_id, razorpay_signature, lines, shipping, subtotalInr, shippingInr, vendorCode } = body;
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature, lines, shipping, subtotalInr, shippingInr, vendorCode, couponCode } = body;
+  const normalizedCouponCode = String(couponCode || "").trim().toUpperCase();
+  if (normalizedCouponCode && normalizedCouponCode !== "DEEP1992") return NextResponse.json({ error: "Invalid coupon code." }, { status: 400 });
+  const freeShippingCoupon = normalizedCouponCode === "DEEP1992";
   const authHeader = req.headers.get("authorization") || "";
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
   let launchOfferActive = false;
@@ -151,7 +155,7 @@ export async function POST(req: NextRequest) {
   let totalInr: number;
 
   if (launchOfferActive) {
-    calculatedShippingInr = subtotalInr >= 249 ? 0 : 50;
+    calculatedShippingInr = freeShippingCoupon || subtotalInr >= 249 ? 0 : 50;
     totalDiscountInr = 0;
     totalInr = subtotalInr + calculatedShippingInr;
   } else {
@@ -175,9 +179,9 @@ export async function POST(req: NextRequest) {
       bundleRule.type === "percent" ? bundleRule.value : 0
     ) : 0;
     const pricing = calculateCheckoutPricing({ subtotalInr, firstOrderDiscountInr, partnerDiscountInr, bundleSavingsInr });
-    calculatedShippingInr = pricing.shippingInr;
+    calculatedShippingInr = freeShippingCoupon ? 0 : pricing.shippingInr;
     totalDiscountInr = pricing.totalDiscountInr;
-    totalInr = pricing.totalInr;
+    totalInr = pricing.totalInr - (freeShippingCoupon ? pricing.shippingInr : 0);
   }
   if (shippingInr !== calculatedShippingInr) {
     return NextResponse.json({ error: "Shipping charge does not match checkout pricing." }, { status: 400 });
@@ -227,11 +231,13 @@ export async function POST(req: NextRequest) {
     const createdCart = normalizeCart(createdLines);
     const savedVendorCode = String(razorpayOrder.notes?.vendorCode ?? "").trim().toUpperCase();
     const savedLaunchOffer = String(razorpayOrder.notes?.launchOffer ?? "false") === "true";
+    const savedCouponCode = String(razorpayOrder.notes?.couponCode ?? "").trim().toUpperCase();
     if (
       !submittedCart || !createdCart ||
       JSON.stringify(submittedCart) !== JSON.stringify(createdCart) ||
       savedVendorCode !== String(vendorCode ?? "").trim().toUpperCase() ||
-      savedLaunchOffer !== launchOfferActive
+      savedLaunchOffer !== launchOfferActive ||
+      savedCouponCode !== normalizedCouponCode
     ) {
       return NextResponse.json({ error: "Cart or partner code differs from the original Razorpay checkout." }, { status: 400 });
     }
