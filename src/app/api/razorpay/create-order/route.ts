@@ -18,6 +18,9 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const lines: CartLineInput[] = body.lines ?? [];
     const vendorCode = String(body.vendorCode || "").trim();
+    const couponCode = String(body.couponCode || "").trim().toUpperCase();
+    if (couponCode && couponCode !== "DEEP1992") return NextResponse.json({ error: "Invalid coupon code." }, { status: 400 });
+    const freeShippingCoupon = couponCode === "DEEP1992";
     const authHeader = req.headers.get("authorization") || "";
     const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
     let launchOfferActive = false;
@@ -92,7 +95,7 @@ export async function POST(req: NextRequest) {
     let bundleSavingsInr = 0;
 
     if (launchOfferActive) {
-      shippingInr = subtotalInr >= 249 ? 0 : 50;
+      shippingInr = freeShippingCoupon || subtotalInr >= 249 ? 0 : 50;
       totalInr = subtotalInr + shippingInr;
     } else {
       if (vendorCode) {
@@ -132,9 +135,9 @@ export async function POST(req: NextRequest) {
         }
       }
       const pricing = calculateCheckoutPricing({ subtotalInr, firstOrderDiscountInr, partnerDiscountInr, bundleSavingsInr });
-      shippingInr = pricing.shippingInr;
+      shippingInr = freeShippingCoupon ? 0 : pricing.shippingInr;
       totalDiscountInr = pricing.totalDiscountInr;
-      totalInr = pricing.totalInr;
+      totalInr = pricing.totalInr - (freeShippingCoupon ? pricing.shippingInr : 0);
     }
 
     // Razorpay's minimum supported order amount is 100 paise (₹1).
@@ -150,7 +153,7 @@ export async function POST(req: NextRequest) {
       amount: totalInr * 100, // Razorpay expects paise
       currency: "INR",
       receipt: `hl_${Date.now()}`,
-      notes: { lines: JSON.stringify(lines), vendorCode: vendorCode || "", launchOffer: launchOfferActive ? "true" : "false" },
+      notes: { lines: JSON.stringify(lines), vendorCode: vendorCode || "", launchOffer: launchOfferActive ? "true" : "false", couponCode: freeShippingCoupon ? "DEEP1992" : "" },
     });
 
     return NextResponse.json({
