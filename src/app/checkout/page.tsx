@@ -355,12 +355,12 @@ export default function CheckoutPage() {
               <div className="flex justify-between text-sm text-[var(--muted)]">
                 <span>Shipping</span>
                 <span className={qualifiesForFreeShipping ? "font-medium text-green-700" : "text-[var(--ink)]"}>
-                  {qualifiesForFreeShipping ? "Free" : "₹50"}
+                  {shippingInr === 0 ? "Free" : "₹50"}
                 </span>
               </div>
-              {qualifiesForFreeShipping ? (
+              {shippingInr === 0 ? (
                 <div className="rounded-lg bg-green-50 px-3 py-2 text-xs font-medium text-green-700">
-                  🎉 You’re eligible for FREE shipping!
+                  🎉 {freeShippingCouponApplied ? "DEEP1992 applied: free shipping!" : "You’re eligible for FREE shipping!"}
                 </div>
               ) : (
                 <div className="rounded-lg bg-white/70 px-3 py-2 text-xs text-[var(--muted)]">
