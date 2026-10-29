@@ -24,17 +24,30 @@ export async function POST(req: NextRequest) {
     if (LAUNCH_OFFER_ENABLED && token) {
       const { data: authData, error: authError } = await (await import("@/lib/supabase")).supabaseAdmin().auth.getUser(token);
       if (authError || !authData.user) return NextResponse.json({ error: "Your login session expired. Please log in again." }, { status: 401 });
-      launchOfferActive = true;
       const accountEmail = authData.user.email;
-      if (!accountEmail) return NextResponse.json({ error: "Your account needs a verified email to use the launch offer." }, { status: 400 });
       const admin = (await import("@/lib/supabase")).supabaseAdmin();
-      const { data: customer } = await admin.from("customers").select("id").eq("email", accountEmail).maybeSingle();
-      if (customer) {
-        const { count, error: orderCountError } = await admin.from("orders").select("id", { count: "exact", head: true }).eq("customer_id", customer.id);
-        if (orderCountError) throw orderCountError;
-        if ((count ?? 0) > 0) return NextResponse.json({ error: "The launch offer allows one order per account. Our records show an order already exists for this account." }, { status: 409 });
+      if (accountEmail) {
+        const { data: customer, error: customerError } = await admin
+          .from("customers")
+          .select("id")
+          .eq("email", accountEmail)
+          .maybeSingle();
+        if (customerError) throw customerError;
+        if (customer) {
+          const { count, error: orderCountError } = await admin
+            .from("orders")
+            .select("id", { count: "exact", head: true })
+            .eq("customer_id", customer.id);
+          if (orderCountError) throw orderCountError;
+          launchOfferActive = (count ?? 0) === 0;
+        } else {
+          launchOfferActive = true;
+        }
       }
-      if (vendorCode) return NextResponse.json({ error: "Partner codes and other discounts are unavailable during the launch offer." }, { status: 400 });
+      // Customers who already used the offer may still purchase at normal prices.
+      if (launchOfferActive && vendorCode) {
+        return NextResponse.json({ error: "Partner codes and other discounts are unavailable during the launch offer." }, { status: 400 });
+      }
     }
 
     if (
