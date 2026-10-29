@@ -32,6 +32,7 @@ export default function CheckoutPage() {
   const [vendorCodeLoading, setVendorCodeLoading] = useState(false);
   const [couponCode, setCouponCode] = useState("");
   const [couponMessage, setCouponMessage] = useState("");
+  const [freeShippingCouponApplied, setFreeShippingCouponApplied] = useState(false);
   const [form, setForm] = useState({
     fullName: "", email: "", phone: "", line1: "", line2: "", city: "", state: "", pincode: "",
   });
@@ -41,7 +42,8 @@ export default function CheckoutPage() {
   // checkout preview and Razorpay verification use the same shipping amount.
   const effectiveBundleSavingsInr = launchOfferActive ? 0 : bundleSavingsInr;
   const shippingBaseInr = Math.max(0, subtotalInr - effectiveBundleSavingsInr);
-  const shippingInr = shippingBaseInr >= freeShippingThresholdInr ? 0 : 50;
+  const regularShippingInr = shippingBaseInr >= freeShippingThresholdInr ? 0 : 50;
+  const shippingInr = freeShippingCouponApplied ? 0 : regularShippingInr;
   const amountToFreeShippingInr = Math.max(0, freeShippingThresholdInr - shippingBaseInr);
   const qualifiesForFreeShipping = shippingBaseInr >= freeShippingThresholdInr;
   const firstOrderDiscountInr = !launchOfferActive && isLoggedIn && isFirstOrder ? Math.round(subtotalInr * 0.10) : 0;
@@ -52,6 +54,17 @@ export default function CheckoutPage() {
   const effectiveVendorDiscountInr = launchOfferActive ? 0 : vendorDiscountInr;
   const totalDiscountInr = firstOrderDiscountInr + prepaidDiscountInr + effectiveVendorDiscountInr + effectiveBundleSavingsInr;
   const totalInr = Math.max(0, subtotalInr - totalDiscountInr + shippingInr + codChargeInr);
+
+  function applyShippingCoupon() {
+    if (couponCode.trim().toUpperCase() === "DEEP1992") {
+      setFreeShippingCouponApplied(true);
+      setCouponCode("DEEP1992");
+      setCouponMessage("✓ DEEP1992 applied. Shipping is free on this order.");
+    } else {
+      setFreeShippingCouponApplied(false);
+      setCouponMessage("Invalid coupon code.");
+    }
+  }
 
   async function applyVendorCode(): Promise<number> {
     if (launchOfferActive) { setVendorDiscountInr(0); setVendorCodeMessage("Partner codes are unavailable during the launch offer."); return 0; }
@@ -147,7 +160,7 @@ export default function CheckoutPage() {
     const createRes = await fetch("/api/razorpay/create-order", {
       method: "POST",
       headers: { "Content-Type": "application/json", ...(await authHeaders()) },
-      body: JSON.stringify({ lines: lines.map((l) => ({ productId: l.productId, slug: l.slug, quantity: l.quantity })), paymentMethod: "online", firstOrderDiscountInr, prepaidDiscountInr, vendorCode: launchOfferActive ? "" : vendorCode }),
+      body: JSON.stringify({ lines: lines.map((l) => ({ productId: l.productId, slug: l.slug, quantity: l.quantity })), paymentMethod: "online", firstOrderDiscountInr, prepaidDiscountInr, vendorCode: launchOfferActive ? "" : vendorCode, couponCode: freeShippingCouponApplied ? "DEEP1992" : "" }),
     });
     const createData = await createRes.json();
     if (!createRes.ok) throw new Error(createData.error ?? "Could not start payment.");
@@ -175,7 +188,7 @@ export default function CheckoutPage() {
               body: JSON.stringify({
                 ...r,
                 lines: lines.map((l) => ({ productId: l.productId, slug: l.slug, quantity: l.quantity })),
-                shipping: form, subtotalInr, shippingInr, firstOrderDiscountInr, prepaidDiscountInr, vendorCode: launchOfferActive ? "" : vendorCode,
+                shipping: form, subtotalInr, shippingInr, firstOrderDiscountInr, prepaidDiscountInr, vendorCode: launchOfferActive ? "" : vendorCode, couponCode: freeShippingCouponApplied ? "DEEP1992" : "",
               }),
             });
             const verifyData = await verifyRes.json();
@@ -300,6 +313,15 @@ export default function CheckoutPage() {
                 ? <RoutineUpsell product={firstOfferProduct} products={catalogProducts} />
                 : null;
             })()}
+            <div className="mb-5 rounded-2xl border border-[var(--line)] bg-white/70 p-4">
+              <label htmlFor="owner-shipping-coupon" className="block text-xs font-semibold tracking-wide text-[var(--deep-wine)] mb-2">OWNER COUPON · FREE SHIPPING</label>
+              <div className="flex gap-2">
+                <input id="owner-shipping-coupon" value={couponCode} onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); setFreeShippingCouponApplied(false); setCouponMessage(""); }} placeholder="Enter coupon code" className="min-w-0 flex-1 border border-[var(--line)] rounded-full px-4 py-2.5 text-xs bg-white" />
+                <button type="button" onClick={applyShippingCoupon} className="rounded-full border border-[var(--line)] px-4 py-2 text-xs font-medium text-[var(--deep-wine)] hover:bg-[var(--milk-sage)]">Apply</button>
+              </div>
+              {couponMessage && <p className={`mt-2 text-[11px] ${freeShippingCouponApplied ? "text-green-700" : "text-[var(--dusty-rose)]"}`} role="status">{couponMessage}</p>}
+            </div>
+
             {!launchOfferActive && <div className="mb-5 rounded-2xl border border-[var(--line)] bg-white/70 p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--deep-wine)]">Have a partner code?</span>
