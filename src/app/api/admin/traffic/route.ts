@@ -28,7 +28,15 @@ export async function GET(request: Request) {
       .select("id,session_id,event_type,product_slug,product_name,page_path,created_at")
       .gte("created_at", since.toISOString()).order("created_at", { ascending: false }).limit(10000),
   ]);
-  if (trafficResult.error) return NextResponse.json({ error: "Traffic table is not ready. Please apply the website traffic migration." }, { status: 503 });
+  if (trafficResult.error) {
+    console.error("[admin/traffic] website_traffic_events query failed:", trafficResult.error);
+    return NextResponse.json({
+      error: "Traffic analytics query failed.",
+      details: trafficResult.error.message,
+      code: trafficResult.error.code,
+      hint: trafficResult.error.hint,
+    }, { status: 503 });
+  }
   return NextResponse.json({
     events: trafficResult.data ?? [],
     cartEvents: cartResult.error ? [] : cartResult.data ?? [],
