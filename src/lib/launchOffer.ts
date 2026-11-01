@@ -5,7 +5,7 @@ import type { Product } from "@/types/product";
  * To end the campaign manually, set LAUNCH_OFFER_ENABLED to false.
  * Original catalog prices are never modified.
  */
-export const LAUNCH_OFFER_ENABLED = false;
+export const LAUNCH_OFFER_ENABLED = true;
 
 const launchPricesBySlug: Record<string, number> = {
   "fullmoon-face-wash": 69,
