@@ -17,6 +17,7 @@ type Dashboard = {
   totalSales: number;
   referredCustomers: number;
   history: { amount: number; status: string; requestedAt: string | null; kind: string }[];
+  demo?: boolean;
 };
 
 const inr = (n: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
@@ -49,7 +50,36 @@ export default function PartnerDashboardPage() {
         if (!res.ok) throw new Error(json.error || "Could not load dashboard.");
         if (active) setData(json);
       } catch (e) {
-        if (active) setError(e instanceof Error ? e.message : "Could not load dashboard.");
+        // A verified owner preview account can inspect the dashboard without paying the registration fee.
+        try {
+          const { data: userData } = await getSupabase().auth.getUser();
+          const email = userData.user?.email?.trim().toLowerCase();
+          if (active && email === "deep.pokar@gmail.com") {
+            setData({
+              status: "approved",
+              userId: "DEMO-HUMOR-2026",
+              code: "HUMORDEMO",
+              rewardTier: "Silver",
+              rewardRate: 27,
+              walletBalance: 1250,
+              lifetimeCoins: 4850,
+              qualificationCoins: 3200,
+              qualificationPeriodStartedAt: new Date().toISOString(),
+              totalSales: 18400,
+              referredCustomers: 12,
+              history: [
+                { amount: 540, status: "demo:sample reward", requestedAt: new Date().toISOString(), kind: "reward" },
+                { amount: 710, status: "demo:sample reward", requestedAt: new Date(Date.now() - 86400000 * 3).toISOString(), kind: "reward" },
+              ],
+              demo: true,
+            });
+            setError("");
+          } else if (active) {
+            setError(e instanceof Error ? e.message : "Could not load dashboard.");
+          }
+        } catch {
+          if (active) setError(e instanceof Error ? e.message : "Could not load dashboard.");
+        }
       } finally {
         if (active) setLoading(false);
       }
@@ -62,6 +92,7 @@ export default function PartnerDashboardPage() {
 
   async function requestWithdrawal() {
     setWithdrawalMessage("");
+    if (data?.demo) { setWithdrawalMessage("Demo preview only. Real withdrawals are disabled."); return; }
     setWithdrawing(true);
     try {
       const { data: sessionData } = await getSupabase().auth.getSession();
@@ -108,6 +139,7 @@ export default function PartnerDashboardPage() {
         {error && !loading && <div className="mt-8 rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-900">{error}<div className="mt-3"><button type="button" onClick={() => window.dispatchEvent(new CustomEvent("humor-open-customer-auth"))} className="font-semibold text-[var(--warm-gold)] underline">Log in / create account</button></div></div>}
 
         {data && !loading && <>
+          {data.demo && <div className="mt-6 rounded-xl border border-amber-300 bg-amber-50 px-5 py-4 text-sm font-medium text-amber-900">DEMO PREVIEW · Sample figures only. No real partner account, earnings, coupon or withdrawal has been created. Payment is not required to view this preview.</div>}
           <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
               ["Available coin balance", inr(data.walletBalance)],
@@ -137,7 +169,7 @@ export default function PartnerDashboardPage() {
             <p className="mt-2 text-sm text-[var(--muted)]">Minimum ₹1,000. Requested funds are reserved from your available balance while the request is reviewed.</p>
             <div className="mt-4 flex flex-wrap gap-3">
               <label className="flex min-w-[180px] flex-col gap-2 text-xs text-[var(--muted)]">Amount (₹)<input type="number" min="1000" max={data.walletBalance} step="1" value={withdrawalAmount} onChange={(e) => setWithdrawalAmount(e.target.value)} className="rounded-xl border border-[var(--line)] bg-white px-4 py-3 text-base text-[var(--ink)] outline-none focus:border-[#D49A6A]" /></label>
-              <button type="button" onClick={requestWithdrawal} disabled={withdrawing || data.status !== "approved" || data.walletBalance < 1000} className="self-end rounded-full bg-[var(--warm-gold)] px-6 py-3 text-sm font-bold text-[var(--ink)] disabled:cursor-not-allowed disabled:opacity-40">{withdrawing ? "Submitting…" : "Submit withdrawal request"}</button>
+              <button type="button" onClick={requestWithdrawal} disabled={data.demo || withdrawing || data.status !== "approved" || data.walletBalance < 1000} className="self-end rounded-full bg-[var(--warm-gold)] px-6 py-3 text-sm font-bold text-[var(--ink)] disabled:cursor-not-allowed disabled:opacity-40">{withdrawing ? "Submitting…" : "Submit withdrawal request"}</button>
             </div>
             {withdrawalMessage && <p className="mt-3 text-sm text-[var(--ink)]" role="status">{withdrawalMessage}</p>}
           </section>
