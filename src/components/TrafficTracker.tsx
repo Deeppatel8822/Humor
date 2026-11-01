@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 const SESSION_KEY = "humor-cart-session-id";
 
@@ -24,12 +24,11 @@ function deviceType() {
 
 export default function TrafficTracker() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
 
   useEffect(() => {
     if (!pathname || pathname.startsWith("/admin")) return;
     try {
-      const params = new URLSearchParams(searchParams?.toString() || "");
+      const params = new URLSearchParams(window.location.search);
       const productSlug = pathname.match(/^\/(?:product|products)\/([^/]+)/i)?.[1] || null;
       const referrer = document.referrer;
       const host = referrer ? new URL(referrer).hostname.replace(/^www\./, "") : "";
@@ -59,7 +58,7 @@ export default function TrafficTracker() {
     } catch {
       // Analytics must never interfere with the storefront.
     }
-  }, [pathname, searchParams]);
+  }, [pathname]);
 
   return null;
 }
