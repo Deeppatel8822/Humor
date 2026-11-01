@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import "./globals.css";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
@@ -87,16 +88,18 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
-        <MetaPixel />
-        <TrafficTracker />
-        <CustomerAuthPopup />
-        <CartProvider>
-          <SiteHeader />
-          <main className="flex-1">{children}</main>
-          <SiteFooter />
-          <WhatsAppButton />
-          <AdminProfileWidget />
-        </CartProvider>
+        <Suspense fallback={null}>
+          <MetaPixel />
+          <TrafficTracker />
+          <CustomerAuthPopup />
+          <CartProvider>
+            <SiteHeader />
+            <main className="flex-1">{children}</main>
+            <SiteFooter />
+            <WhatsAppButton />
+            <AdminProfileWidget />
+          </CartProvider>
+        </Suspense>
       </body>
     </html>
   );
