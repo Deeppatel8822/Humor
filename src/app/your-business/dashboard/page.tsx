@@ -42,6 +42,32 @@ export default function PartnerDashboardPage() {
     let active = true;
     (async () => {
       try {
+        // An authenticated administrator can open this page directly for a read-only programme preview.
+        const adminCheck = await fetch("/api/admin/products", { cache: "no-store" });
+        if (adminCheck.ok) {
+          if (active) {
+            setData({
+              status: "approved",
+              userId: "ADMIN-PREVIEW",
+              code: "SAMPLE-CODE",
+              rewardTier: "Silver",
+              rewardRate: 27,
+              walletBalance: 1250,
+              lifetimeCoins: 4850,
+              qualificationCoins: 3200,
+              qualificationPeriodStartedAt: new Date().toISOString(),
+              totalSales: 18400,
+              referredCustomers: 12,
+              history: [
+                { amount: 540, status: "demo:sample reward", requestedAt: new Date().toISOString(), kind: "reward" },
+                { amount: 710, status: "demo:sample reward", requestedAt: new Date(Date.now() - 86400000 * 3).toISOString(), kind: "reward" },
+              ],
+              demo: true,
+            });
+            setError("");
+          }
+          return;
+        }
         const { data: sessionData } = await getSupabase().auth.getSession();
         const token = sessionData.session?.access_token;
         if (!token) throw new Error("Please log in to view your partner dashboard.");
@@ -139,7 +165,7 @@ export default function PartnerDashboardPage() {
         {error && !loading && <div className="mt-8 rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-900">{error}<div className="mt-3"><button type="button" onClick={() => window.dispatchEvent(new CustomEvent("humor-open-customer-auth"))} className="font-semibold text-[var(--warm-gold)] underline">Log in / create account</button></div></div>}
 
         {data && !loading && <>
-          {data.demo && <div className="mt-6 rounded-xl border border-amber-300 bg-amber-50 px-5 py-4 text-sm font-medium text-amber-900">DEMO PREVIEW · Sample figures only. No real partner account, earnings, coupon or withdrawal has been created. Payment is not required to view this preview.</div>}
+          {data.demo && <div className="mt-6 rounded-xl border border-amber-300 bg-amber-50 px-5 py-4 text-sm font-medium text-amber-900">PREVIEW MODE · Sample figures only. No real partner account, earnings, coupon or withdrawal has been created. Admin preview is read-only; payment is not required.</div>}
           <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
               ["Available coin balance", inr(data.walletBalance)],
