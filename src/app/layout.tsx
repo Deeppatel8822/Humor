@@ -7,6 +7,7 @@ import AdminProfileWidget from "@/components/AdminProfileWidget";
 import MetaPixel from "@/components/MetaPixel";
 import CustomerAuthPopup from "@/components/CustomerAuthPopup";
 import { CartProvider } from "@/context/CartContext";
+import TrafficTracker from "@/components/TrafficTracker";
 
 const siteUrl = "https://www.humorluxury.com";
 
@@ -87,6 +88,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
         <MetaPixel />
+        <TrafficTracker />
         <CustomerAuthPopup />
         <CartProvider>
           <SiteHeader />
