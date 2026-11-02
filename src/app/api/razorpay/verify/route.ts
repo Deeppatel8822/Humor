@@ -7,7 +7,7 @@ import { calculateBundleSavings } from "@/lib/bundles";
 import { calculateCheckoutPricing } from "@/lib/checkoutPricing";
 import { calculatePartnerDiscount, creditPartnerReward, findPartnerByCode } from "@/lib/marketingPartner";
 import { getStorePricingSettings } from "@/lib/storePricing";
-import { LAUNCH_OFFER_ENABLED, getLaunchOfferPrice } from "@/lib/launchOffer";
+import { getLaunchOfferPrice } from "@/lib/launchOffer";
 
 interface VerifyBody {
   razorpay_order_id: string;
@@ -215,7 +215,6 @@ export async function POST(req: NextRequest) {
     };
     const submittedCart = normalizeCart(lines);
     const createdCart = normalizeCart(createdLines);
-    const savedVendorCode = String(razorpayOrder.notes?.vendorCode ?? "").trim().toUpperCase();
     const notesLaunchOffer = String(razorpayOrder.notes?.launchOffer ?? "false") === "true";
     const notesCouponCode = String(razorpayOrder.notes?.couponCode ?? "").trim().toUpperCase();
     if (
