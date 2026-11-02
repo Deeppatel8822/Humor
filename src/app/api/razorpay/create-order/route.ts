@@ -23,11 +23,13 @@ export async function POST(req: NextRequest) {
     const freeShippingCoupon = couponCode === "DEEP1992";
     const authHeader = req.headers.get("authorization") || "";
     const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
+    let checkoutAccountEmail = "";
     let launchOfferActive = false;
     if (LAUNCH_OFFER_ENABLED && token) {
       const { data: authData, error: authError } = await (await import("@/lib/supabase")).supabaseAdmin().auth.getUser(token);
       if (authError || !authData.user) return NextResponse.json({ error: "Your login session expired. Please log in again." }, { status: 401 });
       const accountEmail = authData.user.email;
+      checkoutAccountEmail = String(accountEmail || "").trim().toLowerCase();
       const admin = (await import("@/lib/supabase")).supabaseAdmin();
       if (accountEmail) {
         const { data: customer, error: customerError } = await admin
@@ -155,7 +157,13 @@ export async function POST(req: NextRequest) {
       amount: totalInr * 100, // Razorpay expects paise
       currency: "INR",
       receipt: `hl_${Date.now()}`,
-      notes: { lines: JSON.stringify(lines), vendorCode: vendorCode || "", launchOffer: launchOfferActive ? "true" : "false", couponCode: freeShippingCoupon ? "DEEP1992" : "" },
+      notes: {
+        lines: JSON.stringify(lines),
+        vendorCode: vendorCode || "",
+        launchOffer: launchOfferActive ? "true" : "false",
+        couponCode: freeShippingCoupon ? "DEEP1992" : "",
+        customerEmail: checkoutAccountEmail,
+      },
     });
 
     return NextResponse.json({
