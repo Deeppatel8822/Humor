@@ -44,6 +44,32 @@ export async function POST(req: NextRequest) {
   const authHeader = req.headers.get("authorization") || "";
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
   // Launch-offer eligibility is bound to the immutable Razorpay order notes below.
+  // 1. Verify the payment signature — this is the step that actually confirms
+  // Razorpay processed the payment, rather than trusting the client's word for it.
+  const razorpaySecret = process.env.RAZORPAY_KEY_SECRET;
+  if (!razorpaySecret || !razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+    return NextResponse.json({ error: "Missing payment verification details or server configuration." }, { status: 400 });
+  }
+  const expectedSignature = crypto
+    .createHmac("sha256", razorpaySecret)
+    .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+    .digest("hex");
+
+  // Reject malformed signatures before hex decoding. Buffer.from(..., "hex")
+  // silently ignores a trailing non-hex suffix, which must never be accepted.
+  if (!/^[a-f0-9]{64}$/i.test(razorpay_signature)) {
+    return NextResponse.json({ error: "Payment verification failed." }, { status: 400 });
+  }
+  const signatureBuffer = Buffer.from(razorpay_signature, "hex");
+  const expectedBuffer = Buffer.from(expectedSignature, "hex");
+  if (
+    signatureBuffer.length !== expectedBuffer.length ||
+    !crypto.timingSafeEqual(signatureBuffer, expectedBuffer)
+  ) {
+    return NextResponse.json({ error: "Payment verification failed." }, { status: 400 });
+  }
+
+
   if (
     !Array.isArray(lines) || lines.length === 0 ||
     !shipping || typeof shipping.fullName !== "string" ||
@@ -190,8 +216,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Payment amount does not match the verified checkout total." }, { status: 400 });
   }
 
-  {
-    // The cart and partner code must match the immutable values saved when
+  // The cart and partner code must match the immutable values saved when
     // the Razorpay order was created, not merely add up to the same amount.
     let createdLines: { productId?: string; slug?: string; quantity?: number }[];
     try {
@@ -226,10 +251,6 @@ export async function POST(req: NextRequest) {
     ) {
       return NextResponse.json({ error: "Cart or partner code differs from the original Razorpay checkout." }, { status: 400 });
     }
-  } catch (error) {
-    console.error("Razorpay payment status lookup failed:", error);
-    return NextResponse.json({ error: "Could not confirm captured payment with Razorpay. Please retry." }, { status: 503 });
-  }
   // Use a high-entropy order number so collisions cannot cross-link reward ledger references.
   const orderNumber = `HL-${Date.now().toString(36).toUpperCase()}-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
 
