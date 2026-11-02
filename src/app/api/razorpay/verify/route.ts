@@ -43,7 +43,6 @@ export async function POST(req: NextRequest) {
   const freeShippingCoupon = normalizedCouponCode === "DEEP1992";
   const authHeader = req.headers.get("authorization") || "";
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
-  // Launch-offer eligibility is bound to the immutable Razorpay order notes below.
   // 1. Verify the payment signature — this is the step that actually confirms
   // Razorpay processed the payment, rather than trusting the client's word for it.
   const razorpaySecret = process.env.RAZORPAY_KEY_SECRET;
@@ -67,6 +66,38 @@ export async function POST(req: NextRequest) {
     !crypto.timingSafeEqual(signatureBuffer, expectedBuffer)
   ) {
     return NextResponse.json({ error: "Payment verification failed." }, { status: 400 });
+  }
+
+
+
+  // Read immutable checkout metadata from Razorpay before recalculating totals.
+  let payment: any;
+  let razorpayOrder: any;
+  try {
+    const razorpay = razorpayClient();
+    [payment, razorpayOrder] = await Promise.all([
+      razorpay.payments.fetch(razorpay_payment_id),
+      razorpay.orders.fetch(razorpay_order_id),
+    ]);
+    if (payment.order_id !== razorpay_order_id || payment.status !== "captured" ||
+        razorpayOrder.id !== razorpay_order_id || payment.currency !== "INR" ||
+        payment.amount !== razorpayOrder.amount || razorpayOrder.currency !== "INR") {
+      return NextResponse.json({ error: "Payment is not captured or does not match the Razorpay order." }, { status: 400 });
+    }
+  } catch (error) {
+    console.error("Razorpay payment status lookup failed:", error);
+    return NextResponse.json({ error: "Could not confirm captured payment with Razorpay. Please retry." }, { status: 503 });
+  }
+  const savedLaunchOffer = String(razorpayOrder.notes?.launchOffer ?? "false") === "true";
+  const savedVendorCode = String(razorpayOrder.notes?.vendorCode ?? "").trim().toUpperCase();
+  const savedCouponCode = String(razorpayOrder.notes?.couponCode ?? "").trim().toUpperCase();
+  if (savedVendorCode !== String(vendorCode ?? "").trim().toUpperCase() ||
+      savedCouponCode !== normalizedCouponCode) {
+    return NextResponse.json({ error: "Cart or partner code differs from the original Razorpay checkout." }, { status: 400 });
+  }
+  const launchOfferActive = savedLaunchOffer;
+  if (launchOfferActive && vendorCode) {
+    return NextResponse.json({ error: "Other discounts are unavailable during the launch offer." }, { status: 400 });
   }
 
 
@@ -97,61 +128,6 @@ export async function POST(req: NextRequest) {
   }
   if (trustedSubtotalInr !== subtotalInr) {
     return NextResponse.json({ error: "Checkout subtotal does not match current product prices." }, { status: 400 });
-  }
-
-  // 1. Verify the payment signature — this is the step that actually confirms
-  // Razorpay processed the payment, rather than trusting the client's word for it.
-  const razorpaySecret = process.env.RAZORPAY_KEY_SECRET;
-  if (!razorpaySecret || !razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-    return NextResponse.json({ error: "Missing payment verification details or server configuration." }, { status: 400 });
-  }
-  const expectedSignature = crypto
-    .createHmac("sha256", razorpaySecret)
-    .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-    .digest("hex");
-
-  // Reject malformed signatures before hex decoding. Buffer.from(..., "hex")
-  // silently ignores a trailing non-hex suffix, which must never be accepted.
-  if (!/^[a-f0-9]{64}$/i.test(razorpay_signature)) {
-    return NextResponse.json({ error: "Payment verification failed." }, { status: 400 });
-  }
-  const signatureBuffer = Buffer.from(razorpay_signature, "hex");
-  const expectedBuffer = Buffer.from(expectedSignature, "hex");
-  if (
-    signatureBuffer.length !== expectedBuffer.length ||
-    !crypto.timingSafeEqual(signatureBuffer, expectedBuffer)
-  ) {
-    return NextResponse.json({ error: "Payment verification failed." }, { status: 400 });
-  }
-
-  // Read immutable checkout metadata from Razorpay before recalculating totals.
-  let payment: any;
-  let razorpayOrder: any;
-  try {
-    const razorpay = razorpayClient();
-    [payment, razorpayOrder] = await Promise.all([
-      razorpay.payments.fetch(razorpay_payment_id),
-      razorpay.orders.fetch(razorpay_order_id),
-    ]);
-    if (payment.order_id !== razorpay_order_id || payment.status !== "captured" ||
-        razorpayOrder.id !== razorpay_order_id || payment.currency !== "INR" ||
-        payment.amount !== razorpayOrder.amount || razorpayOrder.currency !== "INR") {
-      return NextResponse.json({ error: "Payment is not captured or does not match the Razorpay order." }, { status: 400 });
-    }
-  } catch (error) {
-    console.error("Razorpay payment status lookup failed:", error);
-    return NextResponse.json({ error: "Could not confirm captured payment with Razorpay. Please retry." }, { status: 503 });
-  }
-  const savedLaunchOffer = String(razorpayOrder.notes?.launchOffer ?? "false") === "true";
-  const savedVendorCode = String(razorpayOrder.notes?.vendorCode ?? "").trim().toUpperCase();
-  const savedCouponCode = String(razorpayOrder.notes?.couponCode ?? "").trim().toUpperCase();
-  if (savedVendorCode !== String(vendorCode ?? "").trim().toUpperCase() ||
-      savedCouponCode !== normalizedCouponCode) {
-    return NextResponse.json({ error: "Cart or partner code differs from the original Razorpay checkout." }, { status: 400 });
-  }
-  const launchOfferActive = savedLaunchOffer;
-  if (launchOfferActive && vendorCode) {
-    return NextResponse.json({ error: "Other discounts are unavailable during the launch offer." }, { status: 400 });
   }
 
   let firstOrderDiscountInr = 0;
@@ -217,7 +193,7 @@ export async function POST(req: NextRequest) {
   }
 
   // The cart and partner code must match the immutable values saved when
-    // the Razorpay order was created, not merely add up to the same amount.
+  // the Razorpay order was created, not merely add up to the same amount.
     let createdLines: { productId?: string; slug?: string; quantity?: number }[];
     try {
       createdLines = JSON.parse(String(razorpayOrder.notes?.lines ?? ""));
