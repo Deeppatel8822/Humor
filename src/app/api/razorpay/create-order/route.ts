@@ -17,6 +17,16 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const lines: CartLineInput[] = body.lines ?? [];
+    const shipping = body.shipping;
+    if (!shipping || typeof shipping.fullName !== "string" || !shipping.fullName.trim() ||
+        typeof shipping.email !== "string" || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(shipping.email.trim()) ||
+        typeof shipping.phone !== "string" || !/^\\d{10}$/.test(shipping.phone.trim()) ||
+        typeof shipping.line1 !== "string" || !shipping.line1.trim() ||
+        typeof shipping.city !== "string" || !shipping.city.trim() ||
+        typeof shipping.state !== "string" || !shipping.state.trim() ||
+        typeof shipping.pincode !== "string" || !/^\\d{6}$/.test(shipping.pincode.trim())) {
+      return NextResponse.json({ error: "Please enter a complete and valid shipping address before payment." }, { status: 400 });
+    }
     const vendorCode = String(body.vendorCode || "").trim();
     const couponCode = String(body.couponCode || "").trim().toUpperCase();
     if (couponCode && couponCode !== "DEEP1992") return NextResponse.json({ error: "Invalid coupon code." }, { status: 400 });
@@ -165,6 +175,34 @@ export async function POST(req: NextRequest) {
         customerEmail: checkoutAccountEmail,
       },
     });
+
+    // Persist the exact shipping details before opening Razorpay. If this write fails,
+    // do not expose the payment order to the browser.
+    const { error: draftError } = await (await import("@/lib/supabase")).supabaseAdmin()
+      .from("checkout_payment_drafts")
+      .upsert({
+        razorpay_order_id: order.id,
+        shipping: {
+          fullName: shipping.fullName.trim(),
+          email: shipping.email.trim().toLowerCase(),
+          phone: shipping.phone.trim(),
+          line1: shipping.line1.trim(),
+          line2: typeof shipping.line2 === "string" ? shipping.line2.trim() : "",
+          city: shipping.city.trim(),
+          state: shipping.state.trim(),
+          pincode: shipping.pincode.trim(),
+        },
+        lines,
+        subtotal_inr: subtotalInr,
+        shipping_inr: shippingInr,
+        vendor_code: vendorCode || "",
+        coupon_code: freeShippingCoupon ? "DEEP1992" : "",
+        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      }, { onConflict: "razorpay_order_id" });
+    if (draftError) {
+      console.error("Checkout address draft persistence failed:", draftError);
+      return NextResponse.json({ error: "We could not securely save your delivery details. No payment has been started. Please retry." }, { status: 503 });
+    }
 
     return NextResponse.json({
       razorpayOrderId: order.id,
