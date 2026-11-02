@@ -43,40 +43,7 @@ export async function POST(req: NextRequest) {
   const freeShippingCoupon = normalizedCouponCode === "DEEP1992";
   const authHeader = req.headers.get("authorization") || "";
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
-  let launchOfferActive = false;
-  if (LAUNCH_OFFER_ENABLED && token) {
-    const admin = supabaseAdmin();
-    const { data: authData, error: authError } = await admin.auth.getUser(token);
-    if (authError || !authData.user) return NextResponse.json({ error: "Your login session expired. Please log in again." }, { status: 401 });
-
-    const email = authData.user.email;
-    if (email) {
-      const { data: customer, error: customerError } = await admin
-        .from("customers")
-        .select("id")
-        .eq("email", email)
-        .maybeSingle();
-      if (customerError) {
-        console.error("Launch offer eligibility lookup failed during verification:", customerError);
-      } else if (customer) {
-        const { count, error: ordersError } = await admin
-          .from("orders")
-          .select("id", { count: "exact", head: true })
-          .eq("customer_id", customer.id);
-        if (ordersError) {
-          console.error("Launch offer order history lookup failed during verification:", ordersError);
-        } else {
-          launchOfferActive = (count ?? 0) === 0;
-        }
-      } else {
-        launchOfferActive = true;
-      }
-    }
-
-    if (launchOfferActive && vendorCode) {
-      return NextResponse.json({ error: "Other discounts are unavailable during the launch offer." }, { status: 400 });
-    }
-  }
+  // Launch-offer eligibility is bound to the immutable Razorpay order notes below.
   if (
     !Array.isArray(lines) || lines.length === 0 ||
     !shipping || typeof shipping.fullName !== "string" ||
@@ -129,6 +96,36 @@ export async function POST(req: NextRequest) {
     !crypto.timingSafeEqual(signatureBuffer, expectedBuffer)
   ) {
     return NextResponse.json({ error: "Payment verification failed." }, { status: 400 });
+  }
+
+  // Read immutable checkout metadata from Razorpay before recalculating totals.
+  let payment: any;
+  let razorpayOrder: any;
+  try {
+    const razorpay = razorpayClient();
+    [payment, razorpayOrder] = await Promise.all([
+      razorpay.payments.fetch(razorpay_payment_id),
+      razorpay.orders.fetch(razorpay_order_id),
+    ]);
+    if (payment.order_id !== razorpay_order_id || payment.status !== "captured" ||
+        razorpayOrder.id !== razorpay_order_id || payment.currency !== "INR" ||
+        payment.amount !== razorpayOrder.amount || razorpayOrder.currency !== "INR") {
+      return NextResponse.json({ error: "Payment is not captured or does not match the Razorpay order." }, { status: 400 });
+    }
+  } catch (error) {
+    console.error("Razorpay payment status lookup failed:", error);
+    return NextResponse.json({ error: "Could not confirm captured payment with Razorpay. Please retry." }, { status: 503 });
+  }
+  const savedLaunchOffer = String(razorpayOrder.notes?.launchOffer ?? "false") === "true";
+  const savedVendorCode = String(razorpayOrder.notes?.vendorCode ?? "").trim().toUpperCase();
+  const savedCouponCode = String(razorpayOrder.notes?.couponCode ?? "").trim().toUpperCase();
+  if (savedVendorCode !== String(vendorCode ?? "").trim().toUpperCase() ||
+      savedCouponCode !== normalizedCouponCode) {
+    return NextResponse.json({ error: "Cart or partner code differs from the original Razorpay checkout." }, { status: 400 });
+  }
+  const launchOfferActive = savedLaunchOffer;
+  if (launchOfferActive && vendorCode) {
+    return NextResponse.json({ error: "Other discounts are unavailable during the launch offer." }, { status: 400 });
   }
 
   let firstOrderDiscountInr = 0;
@@ -189,24 +186,11 @@ export async function POST(req: NextRequest) {
   }
 
   // Confirm the captured payment against the trusted, server-calculated total.
-  try {
-    const razorpay = razorpayClient();
-    const [payment, razorpayOrder] = await Promise.all([
-      razorpay.payments.fetch(razorpay_payment_id),
-      razorpay.orders.fetch(razorpay_order_id),
-    ]);
-    if (
-      payment.order_id !== razorpay_order_id ||
-      payment.status !== "captured" ||
-      razorpayOrder.id !== razorpay_order_id ||
-      payment.currency !== "INR" ||
-      payment.amount !== razorpayOrder.amount ||
-      razorpayOrder.currency !== "INR" ||
-      razorpayOrder.amount !== Math.round(totalInr * 100)
-    ) {
-      return NextResponse.json({ error: "Payment is not captured or does not match the Razorpay order." }, { status: 400 });
-    }
+  if (razorpayOrder.amount !== Math.round(totalInr * 100)) {
+    return NextResponse.json({ error: "Payment amount does not match the verified checkout total." }, { status: 400 });
+  }
 
+  {
     // The cart and partner code must match the immutable values saved when
     // the Razorpay order was created, not merely add up to the same amount.
     let createdLines: { productId?: string; slug?: string; quantity?: number }[];
@@ -231,14 +215,14 @@ export async function POST(req: NextRequest) {
     const submittedCart = normalizeCart(lines);
     const createdCart = normalizeCart(createdLines);
     const savedVendorCode = String(razorpayOrder.notes?.vendorCode ?? "").trim().toUpperCase();
-    const savedLaunchOffer = String(razorpayOrder.notes?.launchOffer ?? "false") === "true";
-    const savedCouponCode = String(razorpayOrder.notes?.couponCode ?? "").trim().toUpperCase();
+    const notesLaunchOffer = String(razorpayOrder.notes?.launchOffer ?? "false") === "true";
+    const notesCouponCode = String(razorpayOrder.notes?.couponCode ?? "").trim().toUpperCase();
     if (
       !submittedCart || !createdCart ||
       JSON.stringify(submittedCart) !== JSON.stringify(createdCart) ||
       savedVendorCode !== String(vendorCode ?? "").trim().toUpperCase() ||
-      savedLaunchOffer !== launchOfferActive ||
-      savedCouponCode !== normalizedCouponCode
+      notesLaunchOffer !== launchOfferActive ||
+      notesCouponCode !== normalizedCouponCode
     ) {
       return NextResponse.json({ error: "Cart or partner code differs from the original Razorpay checkout." }, { status: 400 });
     }
@@ -342,9 +326,9 @@ export async function POST(req: NextRequest) {
       const { data: accountData, error: accountError } = token
         ? await admin.auth.getUser(token)
         : { data: { user: null }, error: new Error("Missing account token") };
-      const accountEmail = accountData.user?.email;
-      if (accountError || !accountEmail) {
-        return NextResponse.json({ error: "Please sign in to the account used for this launch offer order." }, { status: 401 });
+      const accountEmail = accountData.user?.email || String(razorpayOrder.notes?.customerEmail ?? "").trim().toLowerCase();
+      if (!accountEmail || shipping.email.trim().toLowerCase() !== accountEmail.trim().toLowerCase()) {
+        return NextResponse.json({ error: "Please use the email address associated with the launch offer checkout." }, { status: 401 });
       }
       const { data: priorCustomer } = await admin.from("customers").select("id").eq("email", accountEmail).maybeSingle();
       if (priorCustomer) {
