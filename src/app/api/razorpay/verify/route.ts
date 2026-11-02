@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
   }
-  const { razorpay_order_id, razorpay_payment_id, razorpay_signature, lines, shipping, subtotalInr, shippingInr, vendorCode, couponCode } = body;
+  let { razorpay_order_id, razorpay_payment_id, razorpay_signature, lines, shipping, subtotalInr, shippingInr, vendorCode, couponCode } = body;
   const normalizedCouponCode = String(couponCode || "").trim().toUpperCase();
   if (normalizedCouponCode && normalizedCouponCode !== "DEEP1992") return NextResponse.json({ error: "Invalid coupon code." }, { status: 400 });
   const freeShippingCoupon = normalizedCouponCode === "DEEP1992";
@@ -88,6 +88,27 @@ export async function POST(req: NextRequest) {
     console.error("Razorpay payment status lookup failed:", error);
     return NextResponse.json({ error: "Could not confirm captured payment with Razorpay. Please retry." }, { status: 503 });
   }
+  // Rehydrate checkout data from the server-side draft saved before payment.
+  // Never trust the browser to supply or alter the delivery address after payment.
+  const { data: checkoutDraft, error: draftLookupError } = await supabaseAdmin()
+    .from("checkout_payment_drafts")
+    .select("shipping, lines, subtotal_inr, shipping_inr, vendor_code, coupon_code")
+    .eq("razorpay_order_id", razorpay_order_id)
+    .maybeSingle();
+  if (draftLookupError) {
+    console.error("Checkout draft lookup failed:", draftLookupError);
+    return NextResponse.json({ error: "Could not retrieve your saved delivery details. Your payment is safe; please contact support with your Razorpay order ID." }, { status: 503 });
+  }
+  if (!checkoutDraft) {
+    return NextResponse.json({ error: "Saved checkout details were not found. Your payment is safe; please contact support with your Razorpay order ID. Do not pay again." }, { status: 409 });
+  }
+  shipping = checkoutDraft.shipping as VerifyBody["shipping"];
+  lines = checkoutDraft.lines as VerifyBody["lines"];
+  subtotalInr = Number(checkoutDraft.subtotal_inr);
+  shippingInr = Number(checkoutDraft.shipping_inr);
+  vendorCode = String(checkoutDraft.vendor_code ?? "");
+  couponCode = String(checkoutDraft.coupon_code ?? "");
+
   const savedLaunchOffer = String(razorpayOrder.notes?.launchOffer ?? "false") === "true";
   const savedVendorCode = String(razorpayOrder.notes?.vendorCode ?? "").trim().toUpperCase();
   const savedCouponCode = String(razorpayOrder.notes?.couponCode ?? "").trim().toUpperCase();
