@@ -38,9 +38,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
   }
   let { razorpay_order_id, razorpay_payment_id, razorpay_signature, lines, shipping, subtotalInr, shippingInr, vendorCode, couponCode } = body;
-  const normalizedCouponCode = String(couponCode || "").trim().toUpperCase();
-  if (normalizedCouponCode && normalizedCouponCode !== "DEEP1992") return NextResponse.json({ error: "Invalid coupon code." }, { status: 400 });
-  const freeShippingCoupon = normalizedCouponCode === "DEEP1992";
+  let normalizedCouponCode = String(couponCode || "").trim().toUpperCase();
+  let freeShippingCoupon = normalizedCouponCode === "DEEP1992";
   const authHeader = req.headers.get("authorization") || "";
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
   // 1. Verify the payment signature — this is the step that actually confirms
@@ -108,6 +107,9 @@ export async function POST(req: NextRequest) {
   shippingInr = Number(checkoutDraft.shipping_inr);
   vendorCode = String(checkoutDraft.vendor_code ?? "");
   couponCode = String(checkoutDraft.coupon_code ?? "");
+  normalizedCouponCode = couponCode.trim().toUpperCase();
+  if (normalizedCouponCode && normalizedCouponCode !== "DEEP1992") return NextResponse.json({ error: "Invalid coupon code in saved checkout." }, { status: 400 });
+  freeShippingCoupon = normalizedCouponCode === "DEEP1992";
 
   const savedLaunchOffer = String(razorpayOrder.notes?.launchOffer ?? "false") === "true";
   const savedVendorCode = String(razorpayOrder.notes?.vendorCode ?? "").trim().toUpperCase();
