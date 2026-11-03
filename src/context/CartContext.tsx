@@ -5,6 +5,8 @@ import { Product } from "@/types/product";
 import { calculateBundleSavings } from "@/lib/bundles";
 import { getLaunchOfferPrice } from "@/lib/launchOffer";
 
+declare global { interface Window { fbq?: (...args: any[]) => void } }
+
 export interface CartLine {
   productId: string;
   slug: string;
@@ -176,6 +178,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
       ? lines.map((line) => line.productId === product.id ? { ...line, price_inr: effectivePrice, quantity: line.quantity + quantity } : line)
       : [...lines, { productId: product.id, slug: product.slug, name: product.name, price_inr: effectivePrice, original_price_inr: product.price_inr, quantity, shopifyVariantId: product.shopify_variant_id, image: product.images?.[0] ?? null }];
     trackCartActivity("add_to_cart", nextLines);
+    if (typeof window !== "undefined" && typeof window.fbq === "function") {
+      window.fbq("track", "AddToCart", {
+        content_ids: [product.id], content_name: product.name, content_type: "product",
+        value: effectivePrice * quantity, currency: "INR",
+        contents: [{ id: product.id, quantity, item_price: effectivePrice }],
+      });
+    }
     if (typeof window !== "undefined") {
       window.setTimeout(() => window.dispatchEvent(new CustomEvent("humor-open-cart-popup")), 0);
     }
