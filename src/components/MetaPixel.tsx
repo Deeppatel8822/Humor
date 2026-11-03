@@ -39,13 +39,16 @@ export default function MetaPixel() {
       document.head.appendChild(script);
     }
 
+    const pixel = window.fbq;
+    if (typeof pixel !== "function") return;
+
     if (!window.__humorMetaPixelInitialized) {
-      window.fbq("init", PIXEL_ID);
+      pixel("init", PIXEL_ID);
       window.__humorMetaPixelInitialized = true;
     }
 
     if (pathname && lastTrackedPath.current !== pathname) {
-      window.fbq("track", "PageView");
+      pixel("track", "PageView");
       lastTrackedPath.current = pathname;
     }
   }, [pathname]);
