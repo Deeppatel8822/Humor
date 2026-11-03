@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Script from "next/script";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
@@ -9,6 +9,7 @@ import RoutineUpsell from "@/components/RoutineUpsell";
 
 declare global {
   interface Window {
+    fbq?: (...args: any[]) => void;
     Razorpay: new (options: Record<string, unknown>) => {
       open: () => void;
       on: (event: string, handler: (response: unknown) => void) => void;
@@ -54,6 +55,18 @@ export default function CheckoutPage() {
   const effectiveVendorDiscountInr = launchOfferActive ? 0 : vendorDiscountInr;
   const totalDiscountInr = firstOrderDiscountInr + prepaidDiscountInr + effectiveVendorDiscountInr + effectiveBundleSavingsInr;
   const totalInr = freeShippingCouponApplied ? 1 : Math.max(0, subtotalInr - totalDiscountInr + shippingInr + codChargeInr);
+
+  const checkoutEventSent = useRef(false);
+  useEffect(() => {
+    if (!checkoutEventSent.current && lines.length > 0 && typeof window.fbq === "function") {
+      window.fbq("track", "InitiateCheckout", {
+        content_ids: lines.map((line) => line.productId), content_type: "product",
+        num_items: lines.reduce((sum, line) => sum + line.quantity, 0),
+        value: subtotalInr, currency: "INR",
+      });
+      checkoutEventSent.current = true;
+    }
+  }, [lines, subtotalInr]);
 
   async function applyShippingCoupon() {
     const code = couponCode.trim().toUpperCase();
@@ -190,6 +203,9 @@ export default function CheckoutPage() {
     const data = await response.json();
     if (!response.ok) throw new Error(data.error ?? "Could not place your order.");
 
+    if (typeof window.fbq === "function") {
+      window.fbq("track", "Purchase", { content_ids: lines.map((line) => line.productId), content_type: "product", num_items: lines.reduce((sum, line) => sum + line.quantity, 0), value: Number(data.totalInr) || totalInr, currency: "INR" }, { eventID: String(data.orderNumber) });
+    }
     clearCart();
     router.push(`/order-confirmed?method=cod&order=${data.orderNumber}&total=${data.totalInr}`);
   }
@@ -232,6 +248,9 @@ export default function CheckoutPage() {
             });
             const verifyData = await verifyRes.json();
             if (!verifyRes.ok) throw new Error(verifyData.error ?? "Payment verification failed.");
+            if (typeof window.fbq === "function") {
+              window.fbq("track", "Purchase", { content_ids: lines.map((line) => line.productId), content_type: "product", num_items: lines.reduce((sum, line) => sum + line.quantity, 0), value: Number(verifyData.totalInr) || totalInr, currency: "INR" }, { eventID: String(r.razorpay_payment_id) });
+            }
             clearCart();
             router.push(`/order-confirmed?method=online&order=${verifyData.orderNumber}&total=${verifyData.totalInr}`);
             resolve();
