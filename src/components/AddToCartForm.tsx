@@ -5,12 +5,17 @@ import { useRouter } from "next/navigation";
 import { Product } from "@/types/product";
 import { useCart } from "@/context/CartContext";
 
+declare global { interface Window { fbq?: (...args: any[]) => void } }
+
 export default function AddToCartForm({ product }: { product: Product }) {
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const { addItem, trackCartActivity } = useCart();
   useEffect(() => {
     trackCartActivity("product_view", [{ productId: product.id, slug: product.slug, name: product.name, price_inr: product.price_inr, quantity: 1, shopifyVariantId: product.shopify_variant_id, image: product.images?.[0] ?? null }]);
+    if (typeof window.fbq === "function") {
+      window.fbq("track", "ViewContent", { content_ids: [product.id], content_name: product.name, content_type: "product", value: Number(product.price_inr) || 0, currency: "INR" });
+    }
   }, [product.id]);
   const router = useRouter();
 
