@@ -40,6 +40,10 @@ export async function POST(req: NextRequest) {
       if (authError || !authData.user) return NextResponse.json({ error: "Your login session expired. Please log in again." }, { status: 401 });
       const accountEmail = authData.user.email;
       checkoutAccountEmail = String(accountEmail || "").trim().toLowerCase();
+      // Validate Launch Offer email before creating a Razorpay order, never after charging.
+      if (LAUNCH_OFFER_ENABLED && checkoutAccountEmail && String(shipping.email || "").trim().toLowerCase() !== checkoutAccountEmail) {
+        return NextResponse.json({ error: "Your checkout email must match your signed-in email for the Launch Offer. No payment has been started.", code: "LAUNCH_OFFER_EMAIL_MISMATCH" }, { status: 400 });
+      }
       const admin = (await import("@/lib/supabase")).supabaseAdmin();
       if (accountEmail) {
         const { data: customer, error: customerError } = await admin
