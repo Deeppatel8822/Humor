@@ -177,7 +177,7 @@ export async function POST(req: NextRequest) {
   let totalInr: number;
 
   if (launchOfferActive) {
-    calculatedShippingInr = freeShippingCoupon || subtotalInr >= 249 ? 0 : 50;
+    calculatedShippingInr = freeShippingCoupon || subtotalInr >= 100 ? 0 : 50;
     totalDiscountInr = 0;
     totalInr = subtotalInr + calculatedShippingInr;
   } else {
