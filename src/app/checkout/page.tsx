@@ -38,7 +38,7 @@ export default function CheckoutPage() {
     fullName: "", email: "", phone: "", line1: "", line2: "", city: "", state: "", pincode: "",
   });
 
-  const freeShippingThresholdInr = launchOfferActive ? 100 : 299;
+  const freeShippingThresholdInr = launchOfferActive ? 100 : 249;
   // Match the server's shipping threshold base after bundle savings, so the
   // checkout preview and Razorpay verification use the same shipping amount.
   const effectiveBundleSavingsInr = launchOfferActive ? 0 : bundleSavingsInr;
