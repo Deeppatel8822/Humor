@@ -19,12 +19,12 @@ export async function POST(req: NextRequest) {
     const lines: CartLineInput[] = body.lines ?? [];
     const shipping = body.shipping;
     if (!shipping || typeof shipping.fullName !== "string" || !shipping.fullName.trim() ||
-        typeof shipping.email !== "string" || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(shipping.email.trim()) ||
-        typeof shipping.phone !== "string" || !/^\\d{10}$/.test(shipping.phone.trim()) ||
+        typeof shipping.email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(shipping.email.trim()) ||
+        typeof shipping.phone !== "string" || !/^\d{10}$/.test(shipping.phone.trim()) ||
         typeof shipping.line1 !== "string" || !shipping.line1.trim() ||
         typeof shipping.city !== "string" || !shipping.city.trim() ||
         typeof shipping.state !== "string" || !shipping.state.trim() ||
-        typeof shipping.pincode !== "string" || !/^\\d{6}$/.test(shipping.pincode.trim())) {
+        typeof shipping.pincode !== "string" || !/^\d{6}$/.test(shipping.pincode.trim())) {
       return NextResponse.json({ error: "Please enter a complete and valid shipping address before payment." }, { status: 400 });
     }
     const vendorCode = String(body.vendorCode || "").trim();
