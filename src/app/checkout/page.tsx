@@ -246,8 +246,32 @@ export default function CheckoutPage() {
                 shipping: form, subtotalInr, shippingInr, firstOrderDiscountInr, prepaidDiscountInr, vendorCode: launchOfferActive ? "" : vendorCode, couponCode: freeShippingCouponApplied ? "DEEP1992" : "",
               }),
             });
-            const verifyData = await verifyRes.json();
-            if (!verifyRes.ok) throw new Error(verifyData.error ?? "Payment verification failed.");
+            let verifyData = await verifyRes.json();
+            if (!verifyRes.ok) {
+              // A bank-confirmed payment must not be treated as a failed order
+              // just because the browser callback verification had a transient
+              // problem. Wait for the signed Razorpay webhook to persist it.
+              let recovered = false;
+              for (let attempt = 0; attempt < 20; attempt += 1) {
+                await new Promise((resolve) => window.setTimeout(resolve, 1000));
+                try {
+                  const statusRes = await fetch(`/api/razorpay/order-status?razorpay_order_id=${encodeURIComponent(r.razorpay_order_id)}`, { cache: "no-store" });
+                  if (statusRes.ok) {
+                    const statusData = await statusRes.json();
+                    if (statusData.ready) {
+                      verifyData = statusData;
+                      recovered = true;
+                      break;
+                    }
+                  }
+                } catch {
+                  // Keep checking until the webhook retry window is exhausted.
+                }
+              }
+              if (!recovered) {
+                throw new Error(`Your payment was submitted successfully, but order confirmation is still processing. Do not pay again. Please contact support with Razorpay Order ID: ${r.razorpay_order_id}`);
+              }
+            }
             if (typeof window.fbq === "function") {
               window.fbq("track", "Purchase", { content_ids: lines.map((line) => line.productId), content_type: "product", num_items: lines.reduce((sum, line) => sum + line.quantity, 0), value: Number(verifyData.totalInr) || totalInr, currency: "INR" }, { eventID: String(r.razorpay_payment_id) });
             }
