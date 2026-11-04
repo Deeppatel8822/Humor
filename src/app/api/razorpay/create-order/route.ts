@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
     let bundleSavingsInr = 0;
 
     if (launchOfferActive) {
-      shippingInr = freeShippingCoupon || subtotalInr >= 249 ? 0 : 50;
+      shippingInr = freeShippingCoupon || subtotalInr >= 100 ? 0 : 50;
       totalInr = subtotalInr + shippingInr;
     } else {
       if (vendorCode) {
