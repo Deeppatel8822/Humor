@@ -31,14 +31,14 @@ export async function POST(request: Request) {
 
     const db = supabaseAdmin();
     const { data: order, error: orderError } = await db.from("orders")
-      .select("id,order_number,created_at,status,subtotal_inr,total_inr,addresses(line1,line2,city,state,pincode,phone),customers(full_name,email,phone),order_items(quantity,unit_price_inr,product:products(name,sku))")
+      .select("id,order_number,created_at,status,payment_status,subtotal_inr,total_inr,address:addresses(line1,line2,city,state,pincode,phone),customer:customers(full_name,email,phone),order_items(quantity,unit_price_inr,product:products(name,sku))")
       .eq("id", orderId).single();
     if (orderError || !order) return NextResponse.json({ error: "Order not found." }, { status: 404 });
     const { data: existing } = await db.from("shipmozo_shipments").select("id,provider_order_id,awb_number,courier_name,shipment_status")
       .eq("order_id", order.id).maybeSingle();
     if (existing?.awb_number) return NextResponse.json({ success: true, alreadyBooked: true, shipment: existing });
-    const address = Array.isArray(order.addresses) ? order.addresses[0] : order.addresses;
-    const customer = Array.isArray(order.customers) ? order.customers[0] : order.customers;
+    const address = Array.isArray(order.address) ? order.address[0] : order.address;
+    const customer = Array.isArray(order.customer) ? order.customer[0] : order.customer;
     if (!address || !customer) return NextResponse.json({ error: "Order delivery address or customer details are missing." }, { status: 400 });
     const phone = normalizePhone(address.phone || customer.phone);
     if (!phone || !/^\d{6}$/.test(String(address.pincode || ""))) return NextResponse.json({ error: "Order has invalid delivery phone or pincode." }, { status: 400 });
@@ -84,8 +84,13 @@ export async function POST(request: Request) {
     }, { onConflict: "order_id" }).select("id").single();
     if (pendingError) throw pendingError;
 
-    const pushed = await shipmozoRequest<any>("push-order", { method: "POST", body: JSON.stringify(pushBody) });
-    const assigned = await shipmozoRequest<any>("auto-assign-order", { method: "POST", body: JSON.stringify({ order_id: providerOrderId }) });
+    const pushed = existing?.provider_order_id
+      ? { result: "1", message: "Previously pushed order reused." }
+      : await shipmozoRequest<any>("push-order", { method: "POST", body: JSON.stringify(pushBody) });
+    let assigned: any = null;
+    let assignmentError = "";
+    try { assigned = await shipmozoRequest<any>("auto-assign-order", { method: "POST", body: JSON.stringify({ order_id: providerOrderId }) }); }
+    catch (error) { assignmentError = error instanceof Error ? error.message : "Automatic courier assignment failed."; }
     const awb = String(assigned?.data?.awb_number || "");
     const courier = String(assigned?.data?.courier_company || assigned?.data?.courier_company_service || "");
     let pickup: any = null;
@@ -97,13 +102,13 @@ export async function POST(request: Request) {
       shipment_status: awb ? (pickup && String(pickup.result) === "1" ? "pickup_scheduled" : "assigned") : "pushed_unassigned",
       awb_number: awb || null,
       courier_name: courier || null,
-      response_snapshot: { push: pushed, assignment: assigned, pickup },
+      response_snapshot: { push: pushed, assignment: assigned, assignment_error: assignmentError, pickup },
       updated_at: new Date().toISOString(),
     };
     const { data: saved, error: saveError } = await db.from("shipmozo_shipments").update(finalData).eq("id", pending.id).select("*").single();
     if (saveError) throw saveError;
     if (awb) await db.from("orders").update({ tracking_number: awb, updated_at: new Date().toISOString() }).eq("id", order.id);
-    return NextResponse.json({ success: true, shipment: saved, note: awb ? "Courier assigned." : "Order pushed, but automatic courier assignment did not return an AWB. Assign it from Shipmozo panel and retry tracking sync." });
+    return NextResponse.json({ success: true, shipment: saved, note: awb ? "Courier assigned." : `Order pushed, but courier assignment is pending: ${assignmentError || "No AWB was returned"}. Assign it from Shipmozo panel.` });
   } catch (error) {
     console.error("Shipmozo shipment push failed:", error);
     const message = error instanceof Error ? error.message : "Could not create Shipmozo shipment.";
