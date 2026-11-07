@@ -93,7 +93,11 @@ export async function POST(request: Request) {
     catch (error) { assignmentError = error instanceof Error ? error.message : "Automatic courier assignment failed."; }
     const awb = String(assigned?.data?.awb_number || "");
     const courier = String(assigned?.data?.courier_company || assigned?.data?.courier_company_service || "");
-    // Do not call schedule-pickup blindly: Shipmozo says it is only required when\n    // rate-calculator returns pickups_automatically_scheduled = NO. That flag is\n    // not returned by auto-assign-order, so pickup scheduling remains manual here.\n    const finalData = {\n      shipment_status: awb ? "assigned" : "pushed_unassigned",
+    // Do not call schedule-pickup blindly: Shipmozo says it is only required when
+    // rate-calculator returns pickups_automatically_scheduled = NO. That flag is
+    // not returned by auto-assign-order, so pickup scheduling remains manual here.
+    const finalData = {
+      shipment_status: awb ? "assigned" : "pushed_unassigned",
       awb_number: awb || null,
       courier_name: courier || null,
       response_snapshot: { push: pushed, assignment: assigned, assignment_error: assignmentError },
