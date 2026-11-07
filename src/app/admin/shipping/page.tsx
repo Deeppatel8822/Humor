@@ -72,7 +72,7 @@ export default function AdminShippingPage() {
     <div className="mx-auto max-w-6xl space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div><p className="text-xs uppercase tracking-[0.2em] text-[var(--warm-gold)]">Humor Luxury · Logistics</p><h1 className="mt-2 font-display text-3xl text-[var(--deep-wine)]">Shipmozo Shipping Setup</h1><p className="mt-2 text-sm text-[var(--muted)]">Set packed-product weight and dimensions before enabling live shipping quotes.</p></div>
-        <a href="/admin" className="rounded-full border border-[var(--line)] bg-white px-5 py-2.5 text-sm">Back to Admin</a>
+        <div className="flex flex-wrap gap-2"><a href="/admin/shipments" className="rounded-full bg-[var(--deep-wine)] px-5 py-2.5 text-sm text-white">Dispatch Orders</a><a href="/admin" className="rounded-full border border-[var(--line)] bg-white px-5 py-2.5 text-sm">Back to Admin</a></div>
       </div>
 
       <section className="rounded-2xl border border-[var(--line)] bg-white p-5">
