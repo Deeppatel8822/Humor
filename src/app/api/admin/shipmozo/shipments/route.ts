@@ -43,6 +43,11 @@ export async function POST(request: Request) {
     const phone = normalizePhone(address.phone || customer.phone);
     if (!phone || !/^\d{6}$/.test(String(address.pincode || ""))) return NextResponse.json({ error: "Order has invalid delivery phone or pincode." }, { status: 400 });
 
+    // Supabase generated types currently omit payment_status although the orders query requests it.
+    // Keep the API response typed locally until the generated database types are refreshed.
+    const orderPaymentStatus = (order as unknown as { payment_status?: string | null }).payment_status;
+    const isPrepaid = String(orderPaymentStatus || "").trim().toLowerCase() === "paid";
+
     const providerOrderId = String(order.order_number);
     const orderDate = new Date(order.created_at).toISOString().slice(0,10);
     const items = (order.order_items || []).map((item: any) => ({
@@ -69,8 +74,8 @@ export async function POST(request: Request) {
       consignee_city: String(address.city || ""),
       consignee_state: String(address.state || ""),
       product_detail: items,
-      payment_type: String(order.payment_status || "").toLowerCase() === "paid" ? "PREPAID" : "COD",
-      cod_amount: String(order.payment_status || "").toLowerCase() === "paid" ? "" : String(order.total_inr),
+      payment_type: isPrepaid ? "PREPAID" : "COD",
+      cod_amount: isPrepaid ? "" : String(order.total_inr),
       weight: Math.ceil(weight),
       length, width, height,
       warehouse_id: warehouseId,
