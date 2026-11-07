@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
-import { shipmozoRequest, ShipmozoError, getShipmozoWarehouseId } from "@/lib/shipmozo";
+import { shipmozoRequest, ShipmozoError } from "@/lib/shipmozo";
 
 type QuoteBody = {
   lines?: { productId: string; quantity: number }[];
@@ -22,8 +22,8 @@ export async function POST(request: Request) {
     if (lines.some(line => !line.productId || !Number.isInteger(line.quantity) || line.quantity < 1 || line.quantity > 50)) {
       return NextResponse.json({ error: "Invalid cart quantities." }, { status: 400 });
     }
-    const warehouseId = getShipmozoWarehouseId();
-    if (!warehouseId) return NextResponse.json({ error: "Set SHIPMOZO_WAREHOUSE_ID to your active pickup warehouse ID." }, { status: 503 });
+    const pickupPincode = String(process.env.SHIPMOZO_PICKUP_PINCODE || "");
+    if (!/^\\d{6}$/.test(pickupPincode)) return NextResponse.json({ error: "Set a valid SHIPMOZO_PICKUP_PINCODE in the server environment." }, { status: 503 });
 
     const ids = [...new Set(lines.map(line => line.productId))];
     const { data: products, error } = await supabaseAdmin().from("products")
@@ -51,14 +51,14 @@ export async function POST(request: Request) {
       method: "POST",
       body: JSON.stringify({
         order_id: "",
-        pickup_pincode: Number(process.env.SHIPMOZO_PICKUP_PINCODE),
+        pickup_pincode: Number(pickupPincode),
         delivery_pincode: Number(deliveryPincode),
         payment_type: paymentType,
         shipment_type: "FORWARD",
-        order_amount: Number.isFinite(Number(body.orderAmount)) ? Number(body.orderAmount) : orderAmount,
+        order_amount: orderAmount,
         type_of_package: process.env.SHIPMOZO_PACKAGE_TYPE || "SPS",
         rov_type: process.env.SHIPMOZO_ROV_TYPE || "ROV_OWNER",
-        cod_amount: paymentType === "COD" ? String(body.codAmount ?? body.orderAmount ?? orderAmount) : "",
+        cod_amount: paymentType === "COD" ? String(orderAmount) : "",
         weight: Math.ceil(weight),
         dimensions: [{ no_of_box: "1", length: String(length), width: String(width), height: String(height) }],
       }),
