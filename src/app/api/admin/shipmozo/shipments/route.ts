@@ -93,22 +93,16 @@ export async function POST(request: Request) {
     catch (error) { assignmentError = error instanceof Error ? error.message : "Automatic courier assignment failed."; }
     const awb = String(assigned?.data?.awb_number || "");
     const courier = String(assigned?.data?.courier_company || assigned?.data?.courier_company_service || "");
-    let pickup: any = null;
-    if (awb) {
-      try { pickup = await shipmozoRequest<any>("schedule-pickup", { method: "POST", body: JSON.stringify({ order_id: providerOrderId }) }); }
-      catch (e) { console.error("Shipmozo pickup scheduling pending:", e); }
-    }
-    const finalData = {
-      shipment_status: awb ? (pickup && String(pickup.result) === "1" ? "pickup_scheduled" : "assigned") : "pushed_unassigned",
+    // Do not call schedule-pickup blindly: Shipmozo says it is only required when\n    // rate-calculator returns pickups_automatically_scheduled = NO. That flag is\n    // not returned by auto-assign-order, so pickup scheduling remains manual here.\n    const finalData = {\n      shipment_status: awb ? "assigned" : "pushed_unassigned",
       awb_number: awb || null,
       courier_name: courier || null,
-      response_snapshot: { push: pushed, assignment: assigned, assignment_error: assignmentError, pickup },
+      response_snapshot: { push: pushed, assignment: assigned, assignment_error: assignmentError },
       updated_at: new Date().toISOString(),
     };
     const { data: saved, error: saveError } = await db.from("shipmozo_shipments").update(finalData).eq("id", pending.id).select("*").single();
     if (saveError) throw saveError;
     if (awb) await db.from("orders").update({ tracking_number: awb, updated_at: new Date().toISOString() }).eq("id", order.id);
-    return NextResponse.json({ success: true, shipment: saved, note: awb ? "Courier assigned." : `Order pushed, but courier assignment is pending: ${assignmentError || "No AWB was returned"}. Assign it from Shipmozo panel.` });
+    return NextResponse.json({ success: true, shipment: saved, note: awb ? "Courier assigned. Confirm pickup scheduling in Shipmozo; the API guide makes this conditional on the rate quote response." : `Order pushed, but courier assignment is pending: ${assignmentError || "No AWB was returned"}. Assign it from Shipmozo panel.` });
   } catch (error) {
     console.error("Shipmozo shipment push failed:", error);
     const message = error instanceof Error ? error.message : "Could not create Shipmozo shipment.";
