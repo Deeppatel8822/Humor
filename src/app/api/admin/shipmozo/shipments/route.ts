@@ -78,7 +78,7 @@ export async function POST(request: Request) {
       gstin_number: "",
     };
     const { data: pending, error: pendingError } = await db.from("shipmozo_shipments").upsert({
-      order_id: order.id, provider_order_id: providerOrderId, shipment_status: "pushing",
+      order_id: order.id, provider_order_id: existing?.provider_order_id || null, shipment_status: "pushing",
       package_weight_grams: weight, package_length_cm: length, package_width_cm: width, package_height_cm: height,
       request_snapshot: pushBody, updated_at: new Date().toISOString(),
     }, { onConflict: "order_id" }).select("id").single();
@@ -87,6 +87,10 @@ export async function POST(request: Request) {
     const pushed = existing?.provider_order_id
       ? { result: "1", message: "Previously pushed order reused." }
       : await shipmozoRequest<any>("push-order", { method: "POST", body: JSON.stringify(pushBody) });
+    if (!existing?.provider_order_id) {
+      const { error: pushedSaveError } = await db.from("shipmozo_shipments").update({ provider_order_id: providerOrderId, shipment_status: "pushed", updated_at: new Date().toISOString() }).eq("id", pending.id);
+      if (pushedSaveError) throw pushedSaveError;
+    }
     let assigned: any = null;
     let assignmentError = "";
     try { assigned = await shipmozoRequest<any>("auto-assign-order", { method: "POST", body: JSON.stringify({ order_id: providerOrderId }) }); }
