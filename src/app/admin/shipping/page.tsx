@@ -20,6 +20,8 @@ export default function AdminShippingPage() {
   const [saving, setSaving] = useState<string | null>(null);
   const [connection, setConnection] = useState<{ connected: boolean; configured: boolean; message: string } | null>(null);
   const [error, setError] = useState("");
+  const [warehouses, setWarehouses] = useState<any[]>([]);
+  const [warehouseMessage, setWarehouseMessage] = useState("");
 
   async function load() {
     setLoading(true); setError("");
@@ -47,6 +49,17 @@ export default function AdminShippingPage() {
     } catch {
       setConnection({ connected: false, configured: false, message: "Connection test could not be completed." });
     }
+  }
+
+  async function loadWarehouses() {
+    setWarehouseMessage("Loading warehouses…");
+    try {
+      const response = await fetch("/api/admin/shipmozo/warehouses", { cache: "no-store" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Could not load warehouses.");
+      setWarehouses(data.warehouses || []);
+      setWarehouseMessage(data.configuredWarehouseId ? `Configured warehouse ID: ${data.configuredWarehouseId}` : "Choose an ACTIVE warehouse and set its ID as SHIPMOZO_WAREHOUSE_ID in Vercel.");
+    } catch (e) { setWarehouseMessage(e instanceof Error ? e.message : "Could not load warehouses."); }
   }
 
   async function save(product: ShippingProduct) {
@@ -78,7 +91,8 @@ export default function AdminShippingPage() {
       <section className="rounded-2xl border border-[var(--line)] bg-white p-5">
         <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="font-display text-xl text-[var(--deep-wine)]">API Connection</h2><p className="mt-1 text-sm text-[var(--muted)]">Credentials are read only from server environment variables. They are never sent to the browser.</p></div><button onClick={testConnection} className="rounded-full bg-[var(--deep-wine)] px-5 py-2.5 text-sm text-white">Test connection</button></div>
         {connection && <p className={`mt-4 rounded-xl border p-3 text-sm ${connection.connected ? "border-green-200 bg-green-50 text-green-800" : "border-amber-200 bg-amber-50 text-amber-900"}`}>{connection.message}</p>}
-        <p className="mt-3 text-xs text-[var(--muted)]">Required Vercel variables: SHIPMOZO_PUBLIC_KEY and SHIPMOZO_PRIVATE_KEY.</p>
+        <p className="mt-3 text-xs text-[var(--muted)]">Required Vercel variables: SHIPMOZO_PUBLIC_KEY, SHIPMOZO_PRIVATE_KEY, SHIPMOZO_WAREHOUSE_ID and SHIPMOZO_PICKUP_PINCODE.</p>
+        <div className="mt-4"><button onClick={loadWarehouses} className="rounded-full border border-[var(--line)] px-4 py-2 text-xs">Load Shipmozo warehouses</button>{warehouseMessage && <p className="mt-2 text-xs text-[var(--muted)]">{warehouseMessage}</p>}{warehouses.length > 0 && <div className="mt-3 grid gap-2 md:grid-cols-2">{warehouses.map((w:any)=><div key={w.id} className="rounded-xl border border-[var(--line)] p-3 text-xs"><p className="font-semibold">{w.address_title} · ID {w.id}</p><p>{w.address_line_one}, {w.city}, {w.state} - {w.pincode}</p><p className="mt-1">Status: {w.status} · Default: {w.default}</p></div>)}</div>}</div>
       </section>
 
       <section className="rounded-2xl border border-[var(--line)] bg-white p-5">
