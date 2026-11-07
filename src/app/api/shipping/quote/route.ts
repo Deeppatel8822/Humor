@@ -23,7 +23,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid cart quantities." }, { status: 400 });
     }
     const pickupPincode = String(process.env.SHIPMOZO_PICKUP_PINCODE || "");
-    if (!/^\\d{6}$/.test(pickupPincode)) return NextResponse.json({ error: "Set a valid SHIPMOZO_PICKUP_PINCODE in the server environment." }, { status: 503 });
+    if (!/^\d{6}$/.test(pickupPincode)) return NextResponse.json({ error: "Set a valid SHIPMOZO_PICKUP_PINCODE in the server environment." }, { status: 503 });
 
     const ids = [...new Set(lines.map(line => line.productId))];
     const { data: products, error } = await supabaseAdmin().from("products")
