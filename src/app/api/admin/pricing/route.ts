@@ -1,17 +1,12 @@
+import { validAdminSession } from "@/lib/adminAuth";
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import crypto from "crypto";
 import { supabaseAdmin } from "@/lib/supabase";
 import { PROFIT_COOKIE, validProfitCookie } from "@/lib/profitAccess";
 
 export const dynamic = "force-dynamic";
-async function authorized() {
-  const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
-  const secret = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
-  const value = (await cookies()).get("humor_admin")?.value;
-  if (!email || !value || !secret) return false;
-  return value === crypto.createHmac("sha256", secret).update(email).digest("hex");
-}
+async function authorized() { return validAdminSession((await cookies()).get("humor_admin")?.value); }
+
 const defaults = {
   discounts: {
     firstOrder: { enabled: true, type: "percent", value: 10 },
