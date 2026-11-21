@@ -1,18 +1,7 @@
+import { validAdminSession } from "@/lib/adminAuth";
 import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
 
-const COOKIE_NAME = "humor_admin";
-
-function tokenFor(email: string) {
-  const secret = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
-  return crypto.createHmac("sha256", secret).update(email).digest("hex");
-}
-
-function isAuthenticated(request: NextRequest) {
-  const cookie = request.cookies.get(COOKIE_NAME)?.value;
-  const email = process.env.ADMIN_EMAIL?.trim().toLowerCase() || "";
-  return Boolean(cookie && email && cookie === tokenFor(email));
-}
+function isAuthenticated(request: NextRequest) { return validAdminSession(request.cookies.get("humor_admin")?.value); }
 
 function maskMobile(value: string) {
   const digits = value.replace(/\D/g, "");

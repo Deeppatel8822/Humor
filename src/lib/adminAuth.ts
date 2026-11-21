@@ -31,9 +31,41 @@ export function otpHash(identifier: string, otp: string, expiresAt: number) {
   return crypto.createHmac("sha256", adminOtpSecret()).update(`${normalizeIdentifier(identifier)}:${otp}:${expiresAt}`).digest("hex");
 }
 
-// Keep the established admin session token format so existing admin APIs remain compatible.
-export function sessionToken(_identifier: string) {
-  return crypto.createHmac("sha256", adminOtpSecret()).update(adminEmail()).digest("hex");
+// Versioned, expiring and independently signed admin sessions.
+// A fresh nonce prevents identical tokens across successive OTP logins.
+function adminSessionSecret() {
+  return process.env.ADMIN_SESSION_SECRET || process.env.ADMIN_OTP_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+}
+
+export function sessionToken(identifier: string, now = Date.now()) {
+  const secret = adminSessionSecret();
+  if (!secret || !adminEmail() || !isAdminIdentifier(identifier)) {
+    throw new Error("Admin session configuration is invalid.");
+  }
+  const expiresAt = now + SESSION_TTL_SECONDS * 1000;
+  const payload = Buffer.from(JSON.stringify({
+    v: 1, sub: adminEmail(), exp: expiresAt, nonce: crypto.randomBytes(16).toString("hex"),
+  })).toString("base64url");
+  const signature = crypto.createHmac("sha256", secret).update(payload).digest("base64url");
+  return `${payload}.${signature}`;
+}
+
+export function validAdminSession(value: string | undefined, now = Date.now()): boolean {
+  const secret = adminSessionSecret();
+  if (!secret || !adminEmail() || !value || value.length > 1024) return false;
+  const parts = value.split(".");
+  if (parts.length !== 2 || !/^[A-Za-z0-9_-]+$/.test(parts[0]) || !/^[A-Za-z0-9_-]+$/.test(parts[1])) return false;
+  const expected = crypto.createHmac("sha256", secret).update(parts[0]).digest();
+  let supplied: Buffer;
+  try { supplied = Buffer.from(parts[1], "base64url"); } catch { return false; }
+  if (supplied.length !== expected.length || !crypto.timingSafeEqual(supplied, expected)) return false;
+  try {
+    const data = JSON.parse(Buffer.from(parts[0], "base64url").toString("utf8")) as Record<string, unknown>;
+    return data.v === 1 && data.sub === adminEmail() &&
+      typeof data.exp === "number" && Number.isSafeInteger(data.exp) &&
+      data.exp > now && data.exp <= now + SESSION_TTL_SECONDS * 1000 &&
+      typeof data.nonce === "string" && /^[a-f0-9]{32}$/.test(data.nonce);
+  } catch { return false; }
 }
 
 export function generateOtp() {

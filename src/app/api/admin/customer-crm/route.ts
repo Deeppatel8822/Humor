@@ -1,16 +1,9 @@
+import { validAdminSession } from "@/lib/adminAuth";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import crypto from "crypto";
 import { supabaseAdmin } from "@/lib/supabase";
 
-async function authorized() {
-  const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
-  const secret = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
-  const value = (await cookies()).get("humor_admin")?.value;
-  if (!email || !value || !secret) return false;
-  const expected = crypto.createHmac("sha256", secret).update(email).digest("hex");
-  return value === expected;
-}
+async function authorized() { return validAdminSession((await cookies()).get("humor_admin")?.value); }
 
 function normalizeIndianPhone(value: unknown) {
   let digits = String(value || "").replace(/\D/g, "");

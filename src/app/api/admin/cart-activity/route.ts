@@ -1,15 +1,10 @@
+import { validAdminSession } from "@/lib/adminAuth";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import crypto from "crypto";
 import { supabaseAdmin } from "@/lib/supabase";
 
-async function authorized() {
-  const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
-  const secret = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
-  const value = (await cookies()).get("humor_admin")?.value;
-  if (!email || !value || !secret) return false;
-  return value === crypto.createHmac("sha256", secret).update(email).digest("hex");
-}
+async function authorized() { return validAdminSession((await cookies()).get("humor_admin")?.value); }
+
 const eventTypes = ["product_view","add_to_cart","remove_from_cart","quantity_updated","checkout_started","purchase_completed","cart_cleared"];
 function safeString(v: unknown, max = 200) { return String(v ?? "").trim().slice(0, max); }
 function normalizePhone(v: unknown) { let digits = String(v ?? "").replace(/\\D/g, ""); if (digits.length === 10) digits = "91" + digits; if (digits.startsWith("0") && digits.length === 11) digits = "91" + digits.slice(1); return digits.length >= 11 && digits.length <= 15 ? "+" + digits : ""; }

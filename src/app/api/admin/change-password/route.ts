@@ -1,18 +1,12 @@
+import { validAdminSession } from "@/lib/adminAuth";
 import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
 import { supabaseAdmin } from "@/lib/supabase";
 import { hashPassword } from "@/lib/adminPassword";
-
-const COOKIE_NAME = "humor_admin";
-function tokenFor(email: string) {
-  return crypto.createHmac("sha256", process.env.SUPABASE_SERVICE_ROLE_KEY || "").update(email).digest("hex");
-}
 
 export async function POST(request: NextRequest) {
   try {
     const email = process.env.ADMIN_EMAIL?.trim().toLowerCase() || "";
-    const cookie = request.cookies.get(COOKIE_NAME)?.value || "";
-    if (!email || !cookie || cookie !== tokenFor(email)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!email || !validAdminSession(request.cookies.get("humor_admin")?.value)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { newPassword } = await request.json();
     if (typeof newPassword !== "string" || newPassword.length < 10) {

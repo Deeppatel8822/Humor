@@ -1,22 +1,9 @@
+import { validAdminSession } from "@/lib/adminAuth";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import crypto from "crypto";
 import { supabaseAdmin } from "@/lib/supabase";
 
-const COOKIE_NAME = "humor_admin";
-
-function validAdmin(value: string | undefined) {
-  const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
-  const secret = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
-  if (!email || !value || !secret) return false;
-  const expected = crypto.createHmac("sha256", secret).update(email).digest("hex");
-  return value === expected;
-}
-
-async function authorized() {
-  const cookieStore = await cookies();
-  return validAdmin(cookieStore.get(COOKIE_NAME)?.value);
-}
+async function authorized() { return validAdminSession((await cookies()).get("humor_admin")?.value); }
 
 export async function GET() {
   if (!(await authorized())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
