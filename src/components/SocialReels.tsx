@@ -82,11 +82,10 @@ export default function SocialReels() {
                     type="button"
                     onClick={() => setLoadedReels((current) => [...current, id])}
                     aria-label={"Load Instagram Reel " + id}
-                    className="flex h-full w-full flex-col items-center justify-center gap-3 bg-[#241820] px-5 text-center text-white transition-colors hover:bg-[#402635]"
+                    className="relative flex h-full w-full items-center justify-center overflow-hidden bg-[#f6e9f3] transition-opacity hover:opacity-95"
                   >
-                    <span aria-hidden="true" className="flex h-14 w-14 items-center justify-center rounded-full border border-white/50 text-2xl">▶</span>
-                    <span className="text-sm font-medium">Watch Instagram Reel</span>
-                    <span className="text-xs text-white/70">Tap to load video</span>
+                    <img src="/images/instagram-reel-cover.svg" alt="Humor Luxury Instagram Reels cover" className="absolute inset-0 h-full w-full object-cover" loading="lazy" decoding="async" />
+                    <span className="sr-only">Watch Instagram Reel</span>
                   </button>
                 )}
               </div>
