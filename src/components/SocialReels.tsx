@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 const reels = [
   "DVtIYYjkbG5",
   "DVQZ2d-EhG9",
@@ -27,6 +29,8 @@ function InstagramIcon({ className = "h-5 w-5" }: { className?: string }) {
 
 
 export default function SocialReels() {
+  const [loadedReels, setLoadedReels] = useState<string[]>([]);
+
   return (
     <section className="border-y border-[var(--line)] bg-white py-20">
       <div className="mx-auto max-w-7xl px-5 md:px-8">
@@ -64,14 +68,27 @@ export default function SocialReels() {
               className="w-[78vw] max-w-[330px] shrink-0 snap-start overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--milk-sage)] shadow-sm md:w-auto md:max-w-none"
             >
               <div className="aspect-[9/16] w-full overflow-hidden bg-black">
-                <iframe
-                  src={"https://www.instagram.com/reel/" + id + "/embed"}
-                  title={"Humor Luxury Instagram Reel " + id}
-                  className="h-full w-full border-0"
-                  loading="lazy"
-                  allow="autoplay; encrypted-media; picture-in-picture; web-share"
-                  allowFullScreen
-                />
+                {loadedReels.includes(id) ? (
+                  <iframe
+                    src={"https://www.instagram.com/reel/" + id + "/embed"}
+                    title={"Humor Luxury Instagram Reel " + id}
+                    className="h-full w-full border-0"
+                    loading="lazy"
+                    allow="autoplay; encrypted-media; picture-in-picture; web-share"
+                    allowFullScreen
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setLoadedReels((current) => [...current, id])}
+                    aria-label={"Load Instagram Reel " + id}
+                    className="flex h-full w-full flex-col items-center justify-center gap-3 bg-[#241820] px-5 text-center text-white transition-colors hover:bg-[#402635]"
+                  >
+                    <span aria-hidden="true" className="flex h-14 w-14 items-center justify-center rounded-full border border-white/50 text-2xl">▶</span>
+                    <span className="text-sm font-medium">Watch Instagram Reel</span>
+                    <span className="text-xs text-white/70">Tap to load video</span>
+                  </button>
+                )}
               </div>
             </article>
           ))}
