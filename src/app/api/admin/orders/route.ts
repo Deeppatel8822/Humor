@@ -3,8 +3,6 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabase";
 
-const COOKIE_NAME = "humor_admin";
-
 async function authorized() { return validAdminSession((await cookies()).get("humor_admin")?.value); }
 
 export async function GET() {
