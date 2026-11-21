@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const product = await getProduct(slug);
   if (!product) return {};
-  const description = (product.tagline || product.description).replace(/\s+/g, " ").slice(0, 155);
+  const description = `${product.name} by Humor Luxury. ${(product.tagline || product.description).replace(/\s+/g, " ")}`.slice(0, 155);
   const canonical = `/product/${encodeURIComponent(product.slug)}`;
   const image = product.images?.[0];
   return {
@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     robots: product.status === "live" ? { index: true, follow: true } : { index: false, follow: false },
     openGraph: {
       type: "website",
-      title: product.name,
+      title: `${product.name} | Humor Luxury`,
       description,
       url: canonical,
       siteName: "Humor Luxury",
