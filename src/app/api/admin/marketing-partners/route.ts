@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { validAdminSession } from "@/lib/adminAuth";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
