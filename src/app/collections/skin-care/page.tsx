@@ -39,7 +39,7 @@ export default async function SkinCarePage({
       <p className="text-[var(--muted)] mb-10">
         {range
           ? `Explore our ${range.toLowerCase()} skincare range.`
-          : `${products.length} products across our skincare ranges.`}
+          : `Explore Humor Luxury face washes, face serums and SPF 50 sunscreen across our Fullmoon, Blemish Block and Velvet Touch skincare ranges. Browse ${products.length} products.`}
       </p>
 
       <div
