@@ -6,9 +6,22 @@ import { LAUNCH_OFFER_ENABLED, launchOfferDisplayItems } from "@/lib/launchOffer
 
 type Mode = "signup" | "login";
 
+const FIRST_PROMPT_DELAY_MS = 10_000;
+const PAGE_REMINDER_INTERVAL = 5;
+const FIRST_VISIT_KEY = "humor-auth-first-visit";
+const FIRST_SHOWN_KEY = "humor-auth-first-shown";
+const PAGE_COUNT_KEY = "humor-auth-page-count";
+const LAST_PATH_KEY = "humor-auth-last-path";
+
+function isExcludedPath(path: string) {
+  return ["/admin", "/cart", "/checkout", "/account", "/marketing-partner", "/login", "/register", "/reset-password"].some(
+    (prefix) => path === prefix || path.startsWith(`${prefix}/`)
+  );
+}
+
 export default function CustomerAuthPopup() {
   const pathname = usePathname();
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const [showUnlockedOffer, setShowUnlockedOffer] = useState(false);
   const [mode, setMode] = useState<Mode>("signup");
   const [email, setEmail] = useState("");
@@ -23,14 +36,16 @@ export default function CustomerAuthPopup() {
   const [resetEmail, setResetEmail] = useState("");
 
   useEffect(() => {
-    if (window.location.pathname.startsWith("/admin") || window.location.pathname === "/cart" || window.location.pathname === "/checkout" || window.location.pathname === "/account" || window.location.pathname === "/marketing-partner" || window.location.pathname.startsWith("/admin/marketing-partners")) {
-      setOpen(false);
-      return;
-    }
-
     let mounted = true;
     let unsubscribe: (() => void) | undefined;
-    const openEvent = () => setOpen(true);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const excluded = isExcludedPath(pathname);
+    if (excluded) setOpen(false);
+
+    // Manual login requests are never subject to reminder timing.
+    const openEvent = () => {
+      if (!isExcludedPath(window.location.pathname)) setOpen(true);
+    };
     window.addEventListener("humor-open-customer-auth", openEvent);
 
     import("@/lib/supabase")
@@ -39,13 +54,53 @@ export default function CustomerAuthPopup() {
         const supabase = getSupabase();
         supabase.auth.getSession().then(({ data }) => {
           if (!mounted) return;
-          setOpen(!data.session);
+          if (data.session) {
+            setOpen(false);
+            return;
+          }
+          if (excluded) return;
+
+          // Session storage prevents navigation from resetting the first delay
+          // or causing a popup on every page.
+          try {
+            const now = Date.now();
+            let firstVisit = Number(sessionStorage.getItem(FIRST_VISIT_KEY)) || 0;
+            if (!firstVisit) {
+              firstVisit = now;
+              sessionStorage.setItem(FIRST_VISIT_KEY, String(now));
+            }
+            const firstShown = sessionStorage.getItem(FIRST_SHOWN_KEY) === "1";
+            if (!firstShown) {
+              timer = setTimeout(() => {
+                if (!mounted || isExcludedPath(window.location.pathname)) return;
+                sessionStorage.setItem(FIRST_SHOWN_KEY, "1");
+                sessionStorage.setItem(PAGE_COUNT_KEY, "0");
+                setOpen(true);
+              }, Math.max(0, FIRST_PROMPT_DELAY_MS - (now - firstVisit)));
+              return;
+            }
+
+            const previousPath = sessionStorage.getItem(LAST_PATH_KEY);
+            if (previousPath === pathname) return;
+            sessionStorage.setItem(LAST_PATH_KEY, pathname);
+            // The first page is not a page change.
+            if (!previousPath) return;
+            const count = (Number(sessionStorage.getItem(PAGE_COUNT_KEY)) || 0) + 1;
+            sessionStorage.setItem(PAGE_COUNT_KEY, String(count));
+            if (count >= PAGE_REMINDER_INTERVAL) {
+              sessionStorage.setItem(PAGE_COUNT_KEY, "0");
+              setOpen(true);
+            }
+          } catch {
+            // Do not interrupt browsing when session storage is unavailable.
+          }
         }).catch(() => {
-          if (mounted) setOpen(true);
+          // Never force the popup if session status cannot be confirmed.
         });
 
         const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
           if (mounted && session) {
+            if (timer) clearTimeout(timer);
             setOpen(false);
             if (LAUNCH_OFFER_ENABLED && event === "SIGNED_IN") setShowUnlockedOffer(true);
           }
@@ -53,11 +108,12 @@ export default function CustomerAuthPopup() {
         unsubscribe = () => listener.subscription.unsubscribe();
       })
       .catch(() => {
-        if (mounted) setOpen(true);
+        // An auth service error must not block browsing.
       });
 
     return () => {
       mounted = false;
+      if (timer) clearTimeout(timer);
       unsubscribe?.();
       window.removeEventListener("humor-open-customer-auth", openEvent);
     };
