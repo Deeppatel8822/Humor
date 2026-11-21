@@ -5,6 +5,7 @@ export const metadata = {
   title: "About Humor Luxury | Thoughtfully Made Beauty",
   description:
     "Discover the story, philosophy and standards behind Humor Luxury skincare, haircare and bodycare.",
+  alternates: { canonical: "/about" },
 };
 
 const values = [
