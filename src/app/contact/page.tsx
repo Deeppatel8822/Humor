@@ -1,6 +1,7 @@
 export const metadata = {
   title: "Contact Us | Humor Luxury",
   description: "Get in touch with the Humor Luxury team.",
+  alternates: { canonical: "/contact" },
 };
 
 export default function ContactPage() {
