@@ -4,7 +4,6 @@ import { getAllProducts } from "@/lib/catalog";
 const siteUrl = "https://www.humorluxury.com";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const now = new Date();
   const staticRoutes = [
     { route: "", priority: 1, changeFrequency: "weekly" as const },
     { route: "/shop", priority: 0.9, changeFrequency: "daily" as const },
@@ -27,7 +26,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...staticRoutes.map(({ route, priority, changeFrequency }) => ({
       url: `${siteUrl}${route}`,
-      lastModified: now,
       changeFrequency,
       priority,
     })),
@@ -35,7 +33,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .filter((product) => product.status === "live" && product.slug)
       .map((product) => ({
         url: `${siteUrl}/product/${encodeURIComponent(product.slug)}`,
-        lastModified: now,
         changeFrequency: "weekly" as const,
         priority: 0.8,
       })),
