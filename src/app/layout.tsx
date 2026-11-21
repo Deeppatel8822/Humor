@@ -21,9 +21,6 @@ export const metadata: Metadata = {
   },
   description:
     "Shop Humor Luxury skincare, face washes, serums, sunscreen, shampoos and haircare essentials. Discover thoughtful everyday beauty routines made in India.",
-  alternates: {
-    canonical: "/",
-  },
   robots: {
     index: true,
     follow: true,
