@@ -4,8 +4,6 @@ import { cookies } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabase";
 import { PROFIT_COOKIE, validProfitCookie } from "@/lib/profitAccess";
 
-const COOKIE_NAME = "humor_admin";
-
 async function authorized() { return validAdminSession((await cookies()).get("humor_admin")?.value); }
 
 export async function GET() {
